@@ -14,7 +14,13 @@
     <p class="sottotitolo" id="sottotitolo">Caricamento…</p>
   </header>
 
+  <p class="avviso-lettura" id="avviso-lettura" hidden>
+    Questa è la pagina pubblicata: si guarda, non si modifica. Si aggiorna da sola ogni mattina.
+  </p>
+
   <nav class="profili" id="barra-profili"></nav>
+
+  <section class="scheda-profilo" id="scheda-profilo" hidden></section>
 
   <section class="editor" id="editor" hidden>
     <div class="campo">
@@ -124,6 +130,10 @@ const $ = (id) => document.getElementById(id);
 let PROFILI = [], VOCE = { settori: [], regioni: [], tipi_ente: [] };
 let profiloAttivo = "", inModifica = null;
 
+// La copia pubblicata non ha un server dietro: i pulsanti che scrivono vanno tolti,
+// non lasciati lì a far finta di salvare.
+const SOLA_LETTURA = window.SOLA_LETTURA === true;
+
 const chiedi = (url, dati) =>
   fetch(url, dati ? {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dati),
@@ -155,21 +165,62 @@ const virgole = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 function disegnaBarraProfili() {
   const chip = (testo, attivo, extra = "") =>
     `<button class="chip${attivo ? " attivo" : ""}" ${extra}>${testo}</button>`;
+  const attivo = PROFILI.find((p) => String(p.id) === profiloAttivo);
+
   $("barra-profili").innerHTML =
     chip("Tutti i bandi", profiloAttivo === "", 'data-scegli=""') +
     PROFILI.map((p) => chip(
       `${p.nome} <span class="conta">${p.quanti}</span>`,
       String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
-    PROFILI.map((p) => String(p.id) === profiloAttivo
-      ? `<button class="chip fantasma" data-modifica="${p.id}">Modifica</button>` : "").join("") +
-    `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>`;
+    (attivo ? `<button class="chip fantasma" data-modifica="${attivo.id}">${
+      SOLA_LETTURA ? "Vedi le impostazioni" : "Modifica"}</button>` : "") +
+    (SOLA_LETTURA ? "" : `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>`);
 
   $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
-    b.onclick = () => { profiloAttivo = b.dataset.scegli; $("editor").hidden = true; aggiorna(); };
+    b.onclick = () => {
+      profiloAttivo = b.dataset.scegli;
+      $("editor").hidden = true;
+      $("scheda-profilo").hidden = true;
+      // Va ridisegnata anche la barra, o il tasto per vedere/modificare il profilo
+      // non compare mai: restava attaccato al profilo attivo al caricamento.
+      disegnaBarraProfili();
+      aggiorna();
+    };
   });
-  $("barra-profili").querySelector("[data-nuovo]").onclick = () => apriEditor(null);
+  const nuovo = $("barra-profili").querySelector("[data-nuovo]");
+  if (nuovo) nuovo.onclick = () => apriEditor(null);
   const mod = $("barra-profili").querySelector("[data-modifica]");
-  if (mod) mod.onclick = () => apriEditor(PROFILI.find((p) => String(p.id) === mod.dataset.modifica));
+  if (mod) {
+    mod.onclick = () => {
+      const p = PROFILI.find((x) => String(x.id) === mod.dataset.modifica);
+      if (SOLA_LETTURA) mostraScheda(p);
+      else apriEditor(p);
+    };
+  }
+}
+
+// Le impostazioni del profilo, in sola lettura: cosi' si vedono anche dalla pagina
+// pubblicata, dove l'editor non potrebbe salvare.
+function mostraScheda(p) {
+  const box = $("scheda-profilo");
+  if (!p) return;
+  if (!box.hidden) { box.hidden = true; return; }
+  const riga = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : "";
+  const fascia = (min, max) => {
+    if (min == null && max == null) return "qualsiasi importo";
+    if (min != null && max != null) return `da ${min.toLocaleString("it-IT")} € a ${max.toLocaleString("it-IT")} €`;
+    return min != null ? `almeno ${min.toLocaleString("it-IT")} €` : `fino a ${max.toLocaleString("it-IT")} €`;
+  };
+  box.innerHTML = `<h3>Impostazioni di «${p.nome}»</h3><dl>
+      ${riga("Che cosa sei", p.tipo_ente)}
+      ${riga("Di cosa ti occupi", p.settori.join(" · ") || "tutto")}
+      ${riga("Dove", p.regioni.join(" · ") || "ovunque")}
+      ${riga("Importo", fascia(p.importo_min, p.importo_max))}
+      ${riga("Parole tue", p.parole.join(", "))}
+      ${riga("Parole che escludono", p.escluse.join(", "))}
+      ${riga("Bandi compatibili adesso", p.quanti)}
+    </dl>${SOLA_LETTURA ? '<p class="fioco">Per cambiarle si apre l\'app sul computer.</p>' : ""}`;
+  box.hidden = false;
 }
 
 function caselle(contenitore, voci, scelte) {
@@ -306,7 +357,7 @@ function disegnaBandi(bandi) {
       ${chiPuo}
       <div class="riga-dati">${dati.join("")}
         <button class="apri" data-apri="${b.id}">Leggi di più</button>
-        <button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>
+        ${SOLA_LETTURA ? "" : `<button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>`}
       </div>
       ${dettaglio}
     </article>`;
@@ -393,6 +444,10 @@ async function caricaSiti() {
     </tr>`).join("")
     : '<tr><td colspan="4" class="vuoto-riga">Nessun sito aggiunto.</td></tr>';
 
+  if (SOLA_LETTURA) {
+    $("tabella-siti").querySelectorAll("[data-rimuovi]").forEach((b) => b.remove());
+    return;
+  }
   $("tabella-siti").querySelectorAll("[data-rimuovi]").forEach((b) => {
     b.onclick = async () => {
       await chiedi("/api/siti/rimuovi", { id: Number(b.dataset.rimuovi) });
@@ -414,6 +469,11 @@ $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna,
 ["fonte", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
 
 (async () => {
+  if (SOLA_LETTURA) {
+    $("avviso-lettura").hidden = false;
+    document.querySelector(".aggiungi-sito").hidden = true;
+    $("archiviati").closest("label").hidden = true;
+  }
   VOCE = await chiedi("/api/vocabolario");
   await caricaProfili();
   await caricaFonti();

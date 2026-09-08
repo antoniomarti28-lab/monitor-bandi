@@ -55,6 +55,36 @@ h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em
 .chip.fantasma { background: none; color: var(--tenue); border-style: dashed; }
 .chip .conta { opacity: 0.6; font-size: 11px; margin-left: 3px; }
 
+.avviso-lettura {
+  background: var(--carta);
+  border: 1px solid var(--bordo);
+  border-left: 3px solid var(--accento);
+  border-radius: var(--raggio);
+  padding: 10px 14px;
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--tenue);
+}
+
+.scheda-profilo {
+  background: var(--carta);
+  border: 1px solid var(--bordo);
+  border-radius: var(--raggio);
+  padding: 16px 20px;
+  margin: 12px 0 0;
+}
+.scheda-profilo h3 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
+.scheda-profilo dl {
+  display: grid;
+  grid-template-columns: minmax(150px, 32%) 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 14px;
+}
+.scheda-profilo dt { color: var(--tenue); font-size: 13px; }
+.scheda-profilo dd { margin: 0; }
+.scheda-profilo .fioco { color: var(--tenue); font-size: 12px; margin: 12px 0 0; }
+
 /* ---- pannello del profilo ---- */
 
 .editor {

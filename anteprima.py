@@ -71,6 +71,8 @@ def costruisci():
     finto = """
 <script>
 // Copia da guardare: al posto del server risponde questo, con i dati gia' in pagina.
+// SOLA_LETTURA toglie i pulsanti che scrivono, invece di lasciarli fingere.
+window.SOLA_LETTURA = true;
 const DATI = %s;
 window.fetch = async (url, opzioni) => {
   const u = new URL(url, "http://x/");
