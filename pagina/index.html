@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor Bandi</title>
+<link rel="stylesheet" href="/stile.css">
+</head>
+<body>
+<div class="involucro">
+
+  <header>
+    <h1>Monitor Bandi</h1>
+    <p class="sottotitolo" id="sottotitolo">Caricamento…</p>
+  </header>
+
+  <nav class="profili" id="barra-profili"></nav>
+
+  <section class="editor" id="editor" hidden>
+    <div class="campo">
+      <label for="p-nome">Nome del profilo</label>
+      <input type="text" id="p-nome" placeholder="Es. Associazione culturale">
+    </div>
+
+    <div class="campo">
+      <label for="p-tipo">Che cosa sei</label>
+      <select id="p-tipo"></select>
+    </div>
+
+    <div class="campo">
+      <label>Di cosa ti occupi <span class="aiuto">spunta tutto quello che ti riguarda</span></label>
+      <div class="caselle" id="p-settori"></div>
+    </div>
+
+    <div class="campo">
+      <label>Dove <span class="aiuto">scegli anche «Tutta Italia» e «Europa» se ti interessano</span></label>
+      <div class="caselle" id="p-regioni"></div>
+    </div>
+
+    <div class="campo doppio">
+      <div>
+        <label for="p-min">Importo minimo</label>
+        <input type="number" id="p-min" placeholder="nessun minimo" min="0" step="1000">
+      </div>
+      <div>
+        <label for="p-max">Importo massimo</label>
+        <input type="number" id="p-max" placeholder="nessun massimo" min="0" step="1000">
+      </div>
+    </div>
+
+    <details class="avanzate">
+      <summary>Parole in più (facoltativo)</summary>
+      <div class="campo">
+        <label for="p-parole">Parole che ti interessano, separate da virgola</label>
+        <input type="text" id="p-parole" placeholder="es. residenza artistica, borgo, festival">
+      </div>
+      <div class="campo">
+        <label for="p-escluse">Parole che escludono un bando</label>
+        <input type="text" id="p-escluse" placeholder="es. agricoltura, edilizia">
+      </div>
+    </details>
+
+    <div class="azioni">
+      <button class="primario" id="b-salva">Salva profilo</button>
+      <button id="b-annulla">Annulla</button>
+      <button class="pericolo" id="b-elimina" hidden>Elimina</button>
+    </div>
+  </section>
+
+  <div class="riepilogo">
+    <div class="dato"><span class="numero" id="n-aperti">–</span><span class="etichetta">Aperti</span></div>
+    <div class="dato"><span class="numero" id="n-imminenti">–</span><span class="etichetta">Entro 30 giorni</span></div>
+    <div class="dato"><span class="numero" id="n-letti">–</span><span class="etichetta">Letti dal modello</span></div>
+    <div class="dato"><span class="numero" id="n-archiviati">–</span><span class="etichetta">Archiviati</span></div>
+  </div>
+
+  <div class="filtri">
+    <input type="search" id="cerca" placeholder="Cerca nel titolo, nel testo o nell'ente…">
+    <select id="fonte"><option value="">Tutte le fonti</option></select>
+    <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
+    <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
+  </div>
+
+  <div id="elenco"></div>
+
+  <details class="fonti">
+    <summary>Notifiche che ti ho mandato</summary>
+    <table>
+      <thead><tr><th>Quando</th><th>Bando</th><th>Profilo</th><th>Esito</th></tr></thead>
+      <tbody id="tabella-notifiche"></tbody>
+    </table>
+  </details>
+
+  <details class="fonti">
+    <summary>Siti che controllo per te</summary>
+    <p class="aiuto-blocco">
+      Incolla l'indirizzo di una pagina che elenca bandi — per esempio la pagina «Bandi» di un
+      Comune o di una fondazione. Ogni giorno la apro, seguo i collegamenti che sembrano bandi
+      e leggo anche i PDF.
+    </p>
+    <div class="aggiungi-sito">
+      <input type="url" id="s-url" placeholder="https://…/bandi">
+      <input type="text" id="s-nome" placeholder="Come chiamarlo (facoltativo)">
+      <button id="b-aggiungi-sito">Aggiungi</button>
+    </div>
+    <table>
+      <thead><tr><th>Sito</th><th>Esito ultimo giro</th><th>Trovati</th><th></th></tr></thead>
+      <tbody id="tabella-siti"></tbody>
+    </table>
+  </details>
+
+  <details class="fonti">
+    <summary>Stato delle fonti</summary>
+    <table>
+      <thead><tr><th>Fonte</th><th>Esito</th><th>Voci</th><th>Ultimo giro</th></tr></thead>
+      <tbody id="tabella-fonti"></tbody>
+    </table>
+  </details>
+
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let PROFILI = [], VOCE = { settori: [], regioni: [], tipi_ente: [] };
+let profiloAttivo = "", inModifica = null;
+
+const chiedi = (url, dati) =>
+  fetch(url, dati ? {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dati),
+  } : undefined).then((r) => r.json());
+
+// ------------------------------------------------------------------ utili
+
+function dataItaliana(iso) {
+  if (!iso) return null;
+  const [a, m, g] = iso.split("-");
+  return `${g}/${m}/${a}`;
+}
+
+function giorniMancanti(iso) {
+  if (!iso) return null;
+  const oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+  return Math.round((new Date(iso) - oggi) / 86400000);
+}
+
+function soldi(n, grezzo) {
+  if (n == null) return grezzo;
+  return "€ " + n.toLocaleString("it-IT", { maximumFractionDigits: 0 });
+}
+
+const virgole = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
+
+// ------------------------------------------------------------------ profili
+
+function disegnaBarraProfili() {
+  const chip = (testo, attivo, extra = "") =>
+    `<button class="chip${attivo ? " attivo" : ""}" ${extra}>${testo}</button>`;
+  $("barra-profili").innerHTML =
+    chip("Tutti i bandi", profiloAttivo === "", 'data-scegli=""') +
+    PROFILI.map((p) => chip(
+      `${p.nome} <span class="conta">${p.quanti}</span>`,
+      String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
+    PROFILI.map((p) => String(p.id) === profiloAttivo
+      ? `<button class="chip fantasma" data-modifica="${p.id}">Modifica</button>` : "").join("") +
+    `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>`;
+
+  $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
+    b.onclick = () => { profiloAttivo = b.dataset.scegli; $("editor").hidden = true; aggiorna(); };
+  });
+  $("barra-profili").querySelector("[data-nuovo]").onclick = () => apriEditor(null);
+  const mod = $("barra-profili").querySelector("[data-modifica]");
+  if (mod) mod.onclick = () => apriEditor(PROFILI.find((p) => String(p.id) === mod.dataset.modifica));
+}
+
+function caselle(contenitore, voci, scelte) {
+  $(contenitore).innerHTML = voci.map((v) => `
+    <label class="casella"><input type="checkbox" value="${v}"${scelte.includes(v) ? " checked" : ""}>
+    <span>${v}</span></label>`).join("");
+}
+
+function apriEditor(p) {
+  inModifica = p;
+  $("p-nome").value = p ? p.nome : "";
+  $("p-tipo").innerHTML = VOCE.tipi_ente
+    .map((t) => `<option${p && p.tipo_ente === t ? " selected" : ""}>${t}</option>`).join("");
+  caselle("p-settori", VOCE.settori, p ? p.settori : []);
+  caselle("p-regioni", VOCE.regioni, p ? p.regioni : []);
+  $("p-min").value = p && p.importo_min != null ? p.importo_min : "";
+  $("p-max").value = p && p.importo_max != null ? p.importo_max : "";
+  $("p-parole").value = p ? p.parole.join(", ") : "";
+  $("p-escluse").value = p ? p.escluse.join(", ") : "";
+  $("b-elimina").hidden = !p;
+  $("editor").hidden = false;
+  $("p-nome").focus();
+}
+
+const spuntate = (id) =>
+  [...$(id).querySelectorAll("input:checked")].map((i) => i.value);
+
+$("b-salva").onclick = async () => {
+  const r = await chiedi("/api/profili/salva", {
+    id: inModifica ? inModifica.id : null,
+    nome: $("p-nome").value,
+    tipo_ente: $("p-tipo").value,
+    settori: spuntate("p-settori"),
+    regioni: spuntate("p-regioni"),
+    parole: virgole($("p-parole").value),
+    escluse: virgole($("p-escluse").value),
+    importo_min: $("p-min").value ? Number($("p-min").value) : null,
+    importo_max: $("p-max").value ? Number($("p-max").value) : null,
+  });
+  $("editor").hidden = true;
+  profiloAttivo = String(r.id);
+  await caricaProfili();
+  aggiorna();
+};
+
+$("b-annulla").onclick = () => { $("editor").hidden = true; };
+
+$("b-elimina").onclick = async () => {
+  if (!inModifica) return;
+  await chiedi("/api/profili/elimina", { id: inModifica.id });
+  $("editor").hidden = true;
+  profiloAttivo = "";
+  await caricaProfili();
+  aggiorna();
+};
+
+async function caricaProfili() {
+  PROFILI = await chiedi("/api/profili");
+  disegnaBarraProfili();
+}
+
+// ------------------------------------------------------------------ elenco
+
+function disegnaBandi(bandi) {
+  const box = $("elenco");
+  if (!bandi.length) {
+    box.innerHTML = profiloAttivo
+      ? '<p class="vuoto">Nessun bando compatibile con questo profilo.<br>Prova ad allargare i settori o le zone.</p>'
+      : '<p class="vuoto">Nessun bando con questi filtri.</p>';
+    return;
+  }
+  box.innerHTML = bandi.map((b) => {
+    const g = giorniMancanti(b.scadenza);
+    const dati = [];
+    if (b.ente) dati.push(`<span class="etichetta-dato">${b.ente}</span>`);
+    if (b.scadenza) {
+      const urgente = g !== null && g <= 30 ? " scade" : "";
+      const coda = g !== null && g >= 0 ? ` · tra ${g} gg` : " · scaduto";
+      dati.push(`<span class="etichetta-dato${urgente}">Scade ${dataItaliana(b.scadenza)}${coda}</span>`);
+    }
+    if (b.contributo) dati.push(`<span class="etichetta-dato soldi">Puoi ottenere: ${b.contributo}</span>`);
+    if (b.importo) dati.push(`<span class="etichetta-dato">Fondi totali ${soldi(b.importo_num, b.importo)}</span>`);
+    if (b.aperto === 0) dati.push(`<span class="etichetta-dato scade">chiuso</span>`);
+    if (b.pubblicato) dati.push(`<span class="etichetta-dato">Pubblicato ${dataItaliana(b.pubblicato)}</span>`);
+    dati.push(`<span class="etichetta-dato">${b.fonte}</span>`);
+
+    // Quando il modello ha letto il bando, il suo riassunto vale più del testo del feed.
+    const testo = b.riassunto || b.sommario || "";
+    const sommario = testo.slice(0, 300) + (testo.length > 300 ? "…" : "");
+    const punteggio = b.punteggio != null
+      ? `<span class="punteggio ${b.punteggio >= 70 ? "alto" : b.punteggio >= 55 ? "medio" : "basso"}">${b.punteggio}</span>` : "";
+    const motivi = (b.motivi && b.motivi.length)
+      ? `<p class="motivi">Perché ti riguarda: ${b.motivi.join(" · ")}</p>` : "";
+
+    const etichette = { si: "Puoi parteciparci", forse: "Forse puoi parteciparci", no: "Non sembra per te" };
+    const verdetto = b.llm_verdetto
+      ? `<p class="verdetto ${b.llm_verdetto}"><strong>${etichette[b.llm_verdetto] || b.llm_verdetto}</strong>${b.llm_motivo ? " — " + b.llm_motivo : ""}</p>`
+      : "";
+
+    let requisiti = [];
+    try { requisiti = JSON.parse(b.requisiti || "[]"); } catch (e) { requisiti = []; }
+    const chiPuo = requisiti.length
+      ? `<p class="requisiti"><span>Chi può partecipare:</span> ${requisiti.slice(0, 4).join(" · ")}</p>` : "";
+
+    // Il pannello «Leggi di più»: tutto quello che sappiamo, senza uscire dalla pagina.
+    const scheda = [];
+    if (b.riassunto) scheda.push(["Di cosa si tratta", b.riassunto]);
+    if (requisiti.length) scheda.push(["Chi può partecipare", requisiti.join("<br>")]);
+    if (b.contributo) scheda.push(["Quanto puoi ottenere", b.contributo]);
+    if (b.importo) scheda.push(["Fondi messi a disposizione in tutto", soldi(b.importo_num, b.importo)]);
+    if (b.scadenza) scheda.push(["Scadenza", dataItaliana(b.scadenza) +
+      (b.origine_scadenza ? ` <span class="fioco">(${b.origine_scadenza})</span>` : "")]);
+    if (b.ente) scheda.push(["Chi lo pubblica", b.ente]);
+    scheda.push(["Dove l'ho trovato", b.fonte]);
+    if (b.pubblicato) scheda.push(["Pubblicato il", dataItaliana(b.pubblicato)]);
+    if (b.nota) scheda.push(["Nota", b.nota]);
+    if (b.aperto === 0) scheda.push(["Stato", "risulta chiuso: le domande non si possono più presentare"]);
+    if (b.analizzato_il) scheda.push(["Letto dal modello il", b.analizzato_il.replace("T", " ").slice(0, 16)]);
+
+    const estratto = (b.estratto || "").trim();
+    const dettaglio = `<div class="dettaglio" hidden>
+      <dl>${scheda.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+      ${estratto ? `<h3>Dal testo del bando</h3><pre class="testo-bando">${estratto
+        .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c])}${
+        b.quanto_testo > 3000 ? "\n\n[…] " + (b.quanto_testo - 3000).toLocaleString("it-IT") + " caratteri in più nel documento originale." : ""}</pre>` : ""}
+      <p><a href="${b.link}" target="_blank" rel="noopener noreferrer">Apri il bando sul sito dell'ente →</a></p>
+    </div>`;
+
+    return `<article class="bando">
+      <h2>${punteggio}<a href="${b.link}" target="_blank" rel="noopener noreferrer">${b.titolo}</a></h2>
+      ${verdetto}
+      ${motivi}
+      ${sommario ? `<p>${sommario}</p>` : ""}
+      ${chiPuo}
+      <div class="riga-dati">${dati.join("")}
+        <button class="apri" data-apri="${b.id}">Leggi di più</button>
+        <button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>
+      </div>
+      ${dettaglio}
+    </article>`;
+  }).join("");
+
+  box.querySelectorAll("[data-apri]").forEach((b) => {
+    b.onclick = () => {
+      const pannello = b.closest("article").querySelector(".dettaglio");
+      pannello.hidden = !pannello.hidden;
+      b.textContent = pannello.hidden ? "Leggi di più" : "Chiudi";
+    };
+  });
+
+  box.querySelectorAll("button.archivia").forEach((b) => {
+    b.onclick = async () => {
+      await chiedi("/api/archivia", { id: b.dataset.id, archivia: b.dataset.stato === "0" });
+      caricaProfili();
+      aggiorna();
+    };
+  });
+}
+
+async function aggiorna() {
+  const p = new URLSearchParams({
+    q: $("cerca").value,
+    fonte: $("fonte").value,
+    profilo: profiloAttivo,
+    chiusi: $("chiusi").checked ? "1" : "0",
+    archiviati: $("archiviati").checked ? "1" : "0",
+  });
+  const [bandi, riepilogo] = await Promise.all([
+    chiedi("/api/bandi?" + p),
+    chiedi("/api/riepilogo?profilo=" + profiloAttivo),
+  ]);
+  disegnaBandi(bandi);
+  $("n-aperti").textContent = riepilogo.aperti;
+  $("n-imminenti").textContent = riepilogo.in_scadenza;
+  $("n-letti").textContent = riepilogo.letti;
+  $("n-archiviati").textContent = riepilogo.archiviati;
+  const nome = PROFILI.find((x) => String(x.id) === profiloAttivo);
+  const restano = riepilogo.da_leggere
+    ? ` · ${riepilogo.da_leggere} ancora da leggere` : "";
+  $("sottotitolo").textContent =
+    (nome ? `Profilo «${nome.nome}» · ` : "") +
+    `${riepilogo.fonti_ok} fonti attive su ${riepilogo.fonti_totali} · ` +
+    `${bandi.length} mostrati${restano}`;
+}
+
+async function caricaFonti() {
+  const fonti = await chiedi("/api/fonti");
+  $("fonte").insertAdjacentHTML("beforeend",
+    fonti.filter((f) => f.esito === "ok")
+         .map((f) => `<option value="${f.nome}">${f.nome}</option>`).join(""));
+  $("tabella-fonti").innerHTML = fonti.map((f) => `<tr>
+      <td>${f.nome}</td>
+      <td class="${f.esito === "ok" ? "" : "ko"}">${f.esito}</td>
+      <td>${f.voci}</td>
+      <td>${f.ultimo_giro ? f.ultimo_giro.replace("T", " ").slice(0, 16) : "–"}</td>
+    </tr>`).join("");
+}
+
+// ------------------------------------------------------------------ storico notifiche
+
+async function caricaNotifiche() {
+  const elenco = await chiedi("/api/notifiche");
+  $("tabella-notifiche").innerHTML = elenco.length ? elenco.map((n) => `<tr>
+      <td>${n.quando ? n.quando.replace("T", " ").slice(0, 16) : "–"}</td>
+      <td>${n.link ? `<a href="${n.link}" target="_blank" rel="noopener noreferrer">${(n.titolo || "").slice(0, 60)}</a>` : (n.titolo || "–")}</td>
+      <td>${n.profilo || "–"}</td>
+      <td class="${n.esito === "ok" ? "" : "ko"}">${n.canale}${n.esito === "ok" ? "" : " — " + n.esito}</td>
+    </tr>`).join("")
+    : '<tr><td colspan="4" class="vuoto-riga">Nessuna notifica inviata finora.</td></tr>';
+}
+
+// ------------------------------------------------------------------ siti a mano
+
+async function caricaSiti() {
+  const elenco = await chiedi("/api/siti");
+  $("tabella-siti").innerHTML = elenco.length ? elenco.map((s) => `<tr>
+      <td><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.nome}</a></td>
+      <td class="${!s.esito || s.esito === "ok" ? "" : "ko"}">${s.esito || "mai controllato"}</td>
+      <td>${s.trovati || 0}</td>
+      <td><button class="archivia" data-rimuovi="${s.id}">Togli</button></td>
+    </tr>`).join("")
+    : '<tr><td colspan="4" class="vuoto-riga">Nessun sito aggiunto.</td></tr>';
+
+  $("tabella-siti").querySelectorAll("[data-rimuovi]").forEach((b) => {
+    b.onclick = async () => {
+      await chiedi("/api/siti/rimuovi", { id: Number(b.dataset.rimuovi) });
+      caricaSiti();
+    };
+  });
+}
+
+$("b-aggiungi-sito").onclick = async () => {
+  const url = $("s-url").value.trim();
+  if (!url) return;
+  await chiedi("/api/siti/aggiungi", { url, nome: $("s-nome").value.trim() });
+  $("s-url").value = ""; $("s-nome").value = "";
+  caricaSiti();
+};
+
+let attesa;
+$("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna, 250); };
+["fonte", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
+
+(async () => {
+  VOCE = await chiedi("/api/vocabolario");
+  await caricaProfili();
+  await caricaFonti();
+  await caricaSiti();
+  await caricaNotifiche();
+  aggiorna();
+})();
+</script>
+</body>
+</html>

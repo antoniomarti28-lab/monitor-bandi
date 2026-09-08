@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""
+Crea 'anteprima.html': una copia della pagina con i dati gia' dentro,
+da guardare con un doppio clic senza avviare nessun server.
+Si rigenera con:  python anteprima.py
+"""
+import json
+import sqlite3
+from pathlib import Path
+
+import profili
+
+BASE = Path(__file__).parent
+
+
+def costruisci():
+    db = sqlite3.connect(BASE / "dati.db")
+    db.row_factory = sqlite3.Row
+    profili.prepara(db)
+
+    # Come nel server: nell'elenco va un estratto, non il testo intero, o il file
+    # diventa di parecchi megabyte.
+    bandi = [dict(r) for r in db.execute(
+        "SELECT id,titolo,link,ente,fonte,pubblicato,scadenza,importo,importo_num,contributo,"
+        "sommario,archiviato,riassunto,requisiti,aperto,origine_scadenza,analizzato_il,nota,"
+        "substr(testo,1,3000) AS estratto, length(testo) AS quanto_testo "
+        "FROM bandi ORDER BY pubblicato DESC, trovato_il DESC")]
+    per_bando = {}
+    for r in db.execute("SELECT * FROM abbinamenti"):
+        chiavi = r.keys()
+        per_bando.setdefault(r["bando_id"], {})[str(r["profilo_id"])] = {
+            "punteggio": r["punteggio"], "motivi": json.loads(r["motivi"] or "[]"),
+            "llm_verdetto": r["llm_verdetto"] if "llm_verdetto" in chiavi else None,
+            "llm_motivo": r["llm_motivo"] if "llm_motivo" in chiavi else None}
+    for b in bandi:
+        b["punteggi"] = per_bando.get(b["id"], {})
+
+    elenco_profili = profili.leggi_profili(db)
+    for p in elenco_profili:
+        p["quanti"] = sum(1 for b in bandi if not b["archiviato"] and str(p["id"]) in b["punteggi"])
+
+    fonti = [dict(r) for r in db.execute("SELECT * FROM fonti_stato ORDER BY esito='ok' DESC, nome")]
+    try:
+        elenco_siti = [dict(r) for r in db.execute("SELECT * FROM siti ORDER BY id")]
+    except sqlite3.OperationalError:
+        elenco_siti = []
+    try:
+        notifiche = [dict(r) for r in db.execute(
+            "SELECT n.quando, n.canale, n.esito, p.nome AS profilo, b.titolo, b.link "
+            "FROM notifiche n LEFT JOIN bandi b ON b.id=n.bando_id "
+            "LEFT JOIN profili p ON p.id=n.profilo_id ORDER BY n.quando DESC LIMIT 100")]
+    except sqlite3.OperationalError:
+        notifiche = []
+    db.close()
+
+    dati = {
+        "bandi": bandi,
+        "profili": elenco_profili,
+        "fonti": fonti,
+        "siti": elenco_siti,
+        "notifiche": notifiche,
+        "vocabolario": {"settori": list(profili.SETTORI), "regioni": list(profili.REGIONI),
+                        "tipi_ente": profili.TIPI_ENTE},
+    }
+
+    pagina = (BASE / "pagina" / "index.html").read_text(encoding="utf-8")
+    stile = (BASE / "pagina" / "stile.css").read_text(encoding="utf-8")
+    pagina = pagina.replace('<link rel="stylesheet" href="/stile.css">', "<style>\n" + stile + "\n</style>")
+    pagina = pagina.replace("<title>Monitor Bandi</title>", "<title>Monitor Bandi - anteprima</title>")
+
+    finto = """
+<script>
+// Copia da guardare: al posto del server risponde questo, con i dati gia' in pagina.
+const DATI = %s;
+window.fetch = async (url, opzioni) => {
+  const u = new URL(url, "http://x/");
+  if (opzioni && opzioni.method === "POST") return { json: async () => ({ ok: true, id: 1 }) };
+  const oggi = new Date().toISOString().slice(0, 10);
+  let out = [];
+  if (u.pathname === "/api/fonti") out = DATI.fonti;
+  else if (u.pathname === "/api/siti") out = DATI.siti;
+  else if (u.pathname === "/api/vocabolario") out = DATI.vocabolario;
+  else if (u.pathname === "/api/profili") out = DATI.profili;
+  else if (u.pathname === "/api/notifiche") out = DATI.notifiche;
+  else if (u.pathname === "/api/bandi" || u.pathname === "/api/riepilogo") {
+    const prof = u.searchParams.get("profilo") || "";
+    const q = (u.searchParams.get("q") || "").toLowerCase();
+    const fonte = u.searchParams.get("fonte") || "";
+    const arch = u.searchParams.get("archiviati") === "1";
+    const chiusi = u.searchParams.get("chiusi") === "1";
+    const aperto = (b) => (b.aperto === null || b.aperto === 1) && (!b.scadenza || b.scadenza >= oggi);
+    let lista = DATI.bandi
+      .filter((b) => (arch ? b.archiviato : !b.archiviato))
+      .filter((b) => !prof || b.punteggi[prof])
+      .map((b) => Object.assign({}, b, prof ? b.punteggi[prof] : { punteggio: null, motivi: [] }));
+    if (u.pathname === "/api/riepilogo") {
+      out = {
+        totale: lista.length,
+        aperti: lista.filter(aperto).length,
+        archiviati: DATI.bandi.filter((b) => b.archiviato).length,
+        in_scadenza: lista.filter((b) => aperto(b) && b.scadenza && b.scadenza >= oggi).length,
+        letti: DATI.bandi.filter((b) => b.analizzato_il).length,
+        da_leggere: DATI.bandi.filter((b) => !b.analizzato_il && b.testo).length,
+        fonti_ok: DATI.fonti.filter((f) => f.esito === "ok").length,
+        fonti_totali: DATI.fonti.length,
+      };
+    } else {
+      out = lista
+        .filter((b) => !fonte || b.fonte === fonte)
+        .filter((b) => chiusi || aperto(b))
+        .filter((b) => !q || (b.titolo + " " + (b.sommario || "") + " " + (b.ente || "")).toLowerCase().includes(q))
+        .sort((a, b) => (b.punteggio || 0) - (a.punteggio || 0));
+    }
+  }
+  return { json: async () => out };
+};
+</script>
+""" % json.dumps(dati, ensure_ascii=False)
+
+    pagina = pagina.replace("<script>", finto + "<script>", 1)
+    (BASE / "anteprima.html").write_text(pagina, encoding="utf-8")
+    return len(bandi), len(elenco_profili)
+
+
+if __name__ == "__main__":
+    n, p = costruisci()
+    print("anteprima.html rigenerata: %d bandi, %d profili" % (n, p))

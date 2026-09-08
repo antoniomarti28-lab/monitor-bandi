@@ -1,0 +1,20 @@
+{
+  "_nota": "Fonti controllate a ogni giro. Aggiungerne una = aggiungere un blocco qui sotto. Se 'attiva' e' false la fonte viene saltata.",
+  "fonti": [
+    {"nome": "Calabria Europa",         "tipo": "rss", "url": "https://calabriaeuropa.regione.calabria.it/feed/",                "ente": "Regione Calabria",        "attiva": true},
+    {"nome": "Fondazione Con il Sud",   "tipo": "rss", "url": "https://www.fondazioneconilsud.it/feed/",                         "ente": "Fondazione Con il Sud",   "attiva": true},
+    {"nome": "Compagnia di San Paolo",  "tipo": "rss", "url": "https://www.compagniadisanpaolo.it/it/feed/",                     "ente": "Compagnia di San Paolo",  "attiva": true},
+    {"nome": "Forum Terzo Settore",     "tipo": "rss", "url": "https://www.forumterzosettore.it/feed/",                          "ente": "Forum Terzo Settore",     "attiva": true},
+    {"nome": "Cantiere Terzo Settore",  "tipo": "rss", "url": "https://www.cantiereterzosettore.it/feed/",                       "ente": "Cantiere Terzo Settore",  "attiva": true},
+    {"nome": "Regione Sicilia",         "tipo": "rss", "url": "https://www.regione.sicilia.it/rss.xml",                          "ente": "Regione Siciliana",       "attiva": true},
+    {"nome": "Fondazione Carical",      "tipo": "rss", "url": "https://www.fondazionecarical.it/feed/",                          "ente": "Fondazione Carical",      "attiva": true},
+    {"nome": "MIMIT - Incentivi",       "tipo": "rss", "url": "https://www.mimit.gov.it/index.php?format=feed&type=rss",         "ente": "MIMIT",                   "attiva": true},
+    {"nome": "Fondazione Cariplo",      "tipo": "rss", "url": "https://www.fondazionecariplo.it/feed/",                          "ente": "Fondazione Cariplo",      "attiva": true},
+
+    {"nome": "Regione Calabria",        "tipo": "rss", "url": "",  "ente": "Regione Calabria",         "attiva": false, "_stato": "il sito non pubblica un feed: da leggere con lo scraping nella Fase 4"},
+    {"nome": "MIC - Ministero Cultura", "tipo": "rss", "url": "",  "ente": "Ministero della Cultura",  "attiva": false, "_stato": "feed non trovato: da cercare o scraping in Fase 4"},
+    {"nome": "Regione Puglia",          "tipo": "rss", "url": "",  "ente": "Regione Puglia",           "attiva": false, "_stato": "feed non trovato: da cercare o scraping in Fase 4"},
+    {"nome": "CSVnet",                  "tipo": "rss", "url": "",  "ente": "CSVnet",                   "attiva": false, "_stato": "risponde HTML al posto del feed: da verificare"},
+    {"nome": "Agenzia Coesione",        "tipo": "rss", "url": "",  "ente": "Agenzia per la Coesione",  "attiva": false, "_stato": "certificato del sito non verificabile da Python: da riprendere"}
+  ]
+}

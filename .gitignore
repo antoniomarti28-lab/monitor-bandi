@@ -1,0 +1,7 @@
+# I codici segreti restano solo sul computer: su GitHub si usano le "Secrets".
+impostazioni.json
+
+# File di lavoro
+__pycache__/
+*.pyc
+anteprima-*.html
