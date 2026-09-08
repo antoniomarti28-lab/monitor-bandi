@@ -31,7 +31,12 @@ Utente: Antonio, non programmatore. Tutto in italiano, interfaccia compresa.
 - `server.py` — la pagina di consultazione su `http://localhost:8077`.
 - `pagina/` — interfaccia (HTML + CSS, nessun framework).
 - `anteprima.html` — copia della pagina con i dati dentro, da mandargli per farla guardare
-  senza avviare niente. Si rigenera quando serve.
+  senza avviare niente. Si rigenera quando serve. E' anche la pagina pubblicata su GitHub
+  Pages, e nasce in **sola lettura**: `SOLA_LETTURA` toglie i pulsanti che scrivono invece
+  di lasciarli fingere di funzionare.
+- `comandi.py` — i comandi Telegram (`/profilo`, `/sono`, `/fonte`, `/fonti`, `/aperti`).
+  Girano ogni quarto d'ora con `.github/workflows/comandi-telegram.yml`. Solo la chat
+  configurata puo' dare comandi. Il menu del bot si registra con `--registra`.
 
 ## Le sei fasi
 

@@ -1,0 +1,51 @@
+name: Comandi da Telegram
+
+on:
+  schedule:
+    # Ogni quarto d'ora. GitHub puo' farlo partire in ritardo se ha traffico:
+    # la risposta al comando arriva di solito entro 15-20 minuti.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: giro-bandi          # lo stesso del giro quotidiano: mai due sullo stesso archivio
+  cancel-in-progress: false
+
+jobs:
+  comandi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Installa l'unica libreria che serve
+        run: pip install pypdf
+
+      - name: Leggi ed esegui i comandi
+        env:
+          MONITOR_TELEGRAM_TOKEN: ${{ secrets.MONITOR_TELEGRAM_TOKEN }}
+          MONITOR_TELEGRAM_CHAT: ${{ secrets.MONITOR_TELEGRAM_CHAT }}
+          MONITOR_GROQ_CHIAVE: ${{ secrets.MONITOR_GROQ_CHIAVE }}
+          PYTHONIOENCODING: utf-8
+        run: python comandi.py
+
+      - name: Risalva l'archivio se e' cambiato
+        run: |
+          git config user.name "Monitor Bandi"
+          git config user.email "noreply@github.com"
+          git add dati.db
+          if git diff --staged --quiet; then
+            echo "niente da salvare"
+          else
+            python anteprima.py
+            git add anteprima.html
+            git commit -m "Comandi da Telegram del $(date +%d/%m/%Y\ %H:%M)"
+            git pull --rebase --autostash
+            git push
+          fi
