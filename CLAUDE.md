@@ -11,8 +11,9 @@ Utente: Antonio, non programmatore. Tutto in italiano, interfaccia compresa.
   Limite vero del piano gratuito: **~100k gettoni al giorno per modello** (non le 14.400 richieste).
   Quindi: all'LLM non si manda mai il bando intero, solo i paragrafi che servono; modello piccolo
   per la scrematura, modello grande solo sui finalisti.
-- **Dove gira: GitHub Actions** (`.github/workflows/giro-quotidiano.yml`), un giro alle 7 del
-  mattino. Oracle e' stato scartato: non riusciva a creare l'account. Conseguenza da ricordare:
+- **Dove gira: GitHub Actions**, repository PUBBLICO `antoniomarti28-lab/monitor-bandi`,
+  pagina su `https://antoniomarti28-lab.github.io/monitor-bandi/`. Un giro alle 7 del mattino.
+  Primo giro riuscito l'8 set 2026: 111 bandi, 8 avvisi Telegram partiti davvero. Oracle e' stato scartato: non riusciva a creare l'account. Conseguenza da ricordare:
   la pagina pubblicata su GitHub Pages e' **di sola lettura**; «Archivia» e la modifica dei
   profili funzionano solo nell'app locale, e le modifiche vanno rimesse nel repository.
   I codici segreti stanno nelle Secrets di GitHub e si leggono dalle variabili d'ambiente
@@ -126,3 +127,17 @@ Utente: Antonio, non programmatore. Tutto in italiano, interfaccia compresa.
   regola pescava la cifra della prima edizione elencata nella pagina.
 - **La pagina «Bandi» della Fondazione Con il Sud e' un archivio storico**: dei 15 bandi
   presi, 13 erano gia' scaduti. Il modello li ha riconosciuti tutti.
+
+
+## Regola di sincronizzazione (importante, ci si sbaglia facilmente)
+
+Da quando gira su GitHub, **l'archivio buono e' quello su GitHub**, non quello locale:
+ogni giro aggiunge bandi e riscrive `dati.db`. Quindi, prima di toccare qualcosa in locale:
+
+    git pull
+
+E dopo aver cambiato i profili con `Avvia Monitor Bandi.bat`:
+
+    git add dati.db && git commit -m "profili aggiornati" && git push
+
+Senza il `pull` prima, il push viene rifiutato e si rischia di sovrascrivere un giro intero.
