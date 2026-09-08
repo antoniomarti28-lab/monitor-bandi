@@ -18,6 +18,9 @@ concurrency:
 jobs:
   giro:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages       # richiesto da deploy-pages
+      url: ${{ steps.pubblica.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -55,3 +58,4 @@ jobs:
         with:
           path: sito
       - uses: actions/deploy-pages@v4
+        id: pubblica
