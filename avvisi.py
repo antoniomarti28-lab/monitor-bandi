@@ -221,9 +221,12 @@ def da_avvisare(db, soglia):
         "JOIN bandi b   ON b.id = a.bando_id "
         "JOIN profili p ON p.id = a.profilo_id "
         "WHERE a.avvisato = 0 AND a.punteggio >= ? AND b.archiviato = 0 "
-        # Mai avvisare di un bando che il modello ha dato per chiuso, ne' di uno
-        # che ha letto e giudicato non adatto a questo profilo.
-        "AND (b.aperto IS NULL OR b.aperto = 1) "
+        # Si avvisa SOLO di bandi che il modello ha letto e confermato aperti.
+        # Prima bastava «non risulta chiuso», e passavano articoli di giornale non
+        # ancora letti: il 9 set 2026, su tre avvisi, due erano di questo tipo e uno
+        # era una notizia sulle foto selezionate di un festival. Meglio un giorno di
+        # ritardo che un avviso sbagliato: chi non e' stato letto oggi lo sara' domani.
+        "AND b.aperto = 1 "
         "AND (a.llm_verdetto IS NULL OR a.llm_verdetto <> 'no') "
         "ORDER BY a.profilo_id, a.punteggio DESC", (soglia,)).fetchall()]
 

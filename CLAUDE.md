@@ -225,3 +225,27 @@ servira' una **priorita' di lettura**. Ordine sensato, dal piu' al meno promette
 4. tutto il resto, a scalare, nei giorni successivi.
 Il conto dei gettoni (`consumo`) c'e' gia' e si ferma da solo: manca solo l'ordinamento
 in `intelligenza.da_leggere`, che oggi ordina per `trovato_il DESC`.
+
+
+## Collaudo del 9 set 2026 (giro forzato dalla pagina)
+
+Il meccanismo del «Cerca adesso» funziona: scrivere `richiesta_giro` in
+`configurazione.json` fa partire il lavoro, che esegue il giro intero.
+Risultato: 143 bandi (32 nuovi), 118 letti, 14 aperti, 3 avvisi partiti.
+
+**Due difetti trovati proprio grazie al collaudo:**
+
+1. **Il salvataggio finale falliva in silenzio** (il giro riusciva, ma l'archivio non
+   tornava su GitHub). Causa: `configurazione.json` veniva riscritto durante il giro
+   ma non messo fra i file da salvare, e `git pull --rebase` si rifiuta di partire con
+   modifiche non salvate. Ora tutti e tre i lavori usano **`salva.sh`**, che mette da
+   parte tutti i file generati, riprova il push tre volte e — se proprio non riesce —
+   **manda l'errore su Telegram**, invece di lasciarlo in un registro che l'utente non
+   puo' leggere (i log delle Actions richiedono permessi che il suo token non ha).
+2. **Si avvisava di bandi non ancora letti dal modello.** Su tre avvisi, due erano di
+   questo tipo e uno era un articolo («le foto selezionate di un festival»). Ora si
+   avvisa **solo** con `aperto = 1`, cioe' letto e confermato. Meglio un giorno di
+   ritardo che un avviso sbagliato.
+
+**Trappola Windows→Linux:** gli script `.sh` vanno committati con fini riga Unix, o
+bash su Ubuntu si ferma su ogni riga. Risolto con `.gitattributes` (`*.sh text eol=lf`).
