@@ -51,13 +51,10 @@ jobs:
           python anteprima.py
 
       - name: Risalva l'archivio
-        run: |
-          git config user.name "Monitor Bandi"
-          git config user.email "noreply@github.com"
-          git add dati.db anteprima.html
-          git diff --staged --quiet || git commit -m "Giro del $(date +%d/%m/%Y) — dopo modifica impostazioni"
-          git pull --rebase --autostash
-          git push
+        env:
+          MONITOR_TELEGRAM_TOKEN: ${{ secrets.MONITOR_TELEGRAM_TOKEN }}
+          MONITOR_TELEGRAM_CHAT: ${{ secrets.MONITOR_TELEGRAM_CHAT }}
+        run: bash salva.sh "Giro del $(date +%d/%m/%Y) - dopo modifica impostazioni"
 
       - name: Pubblica la pagina
         run: |

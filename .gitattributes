@@ -1,0 +1,5 @@
+# Gli script che girano su Linux devono avere le fini riga in stile Unix,
+# altrimenti bash si ferma con un errore incomprensibile su ogni riga.
+*.sh text eol=lf
+*.yml text eol=lf
+*.py text eol=lf
