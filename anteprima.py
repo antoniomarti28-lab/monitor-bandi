@@ -13,6 +13,19 @@ import profili
 BASE = Path(__file__).parent
 
 
+def repository():
+    """«utente/repo» letto dal remoto git: serve alla pagina per sapere dove scrivere."""
+    import re
+    import subprocess
+    try:
+        url = subprocess.run(["git", "-C", str(BASE), "config", "--get", "remote.origin.url"],
+                             capture_output=True, text=True, timeout=10).stdout.strip()
+    except Exception:
+        return ""
+    m = re.search(r"github\.com[:/](.+?)(?:\.git)?$", url)
+    return m.group(1) if m else ""
+
+
 def costruisci():
     db = sqlite3.connect(BASE / "dati.db")
     db.row_factory = sqlite3.Row
@@ -72,10 +85,16 @@ def costruisci():
 <script>
 // Copia da guardare: al posto del server risponde questo, con i dati gia' in pagina.
 // SOLA_LETTURA toglie i pulsanti che scrivono, invece di lasciarli fingere.
+// Con un codice di accesso a GitHub, pero', la pagina puo' riscrivere le impostazioni.
 window.SOLA_LETTURA = true;
+window.REPO = "%s";
 const DATI = %s;
+const reteVera = window.fetch.bind(window);
 window.fetch = async (url, opzioni) => {
   const u = new URL(url, "http://x/");
+  // Solo le chiamate all'app finta vengono intercettate: quelle a GitHub devono
+  // passare davvero, altrimenti il salvataggio delle impostazioni non funziona.
+  if (!u.pathname.startsWith("/api/")) return reteVera(url, opzioni);
   if (opzioni && opzioni.method === "POST") return { json: async () => ({ ok: true, id: 1 }) };
   const oggi = new Date().toISOString().slice(0, 10);
   let out = [];
@@ -117,7 +136,7 @@ window.fetch = async (url, opzioni) => {
   return { json: async () => out };
 };
 </script>
-""" % json.dumps(dati, ensure_ascii=False)
+""" % (repository(), json.dumps(dati, ensure_ascii=False))
 
     pagina = pagina.replace("<script>", finto + "<script>", 1)
     (BASE / "anteprima.html").write_text(pagina, encoding="utf-8")

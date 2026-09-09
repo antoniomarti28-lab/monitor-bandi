@@ -14,9 +14,25 @@
     <p class="sottotitolo" id="sottotitolo">Caricamento…</p>
   </header>
 
-  <p class="avviso-lettura" id="avviso-lettura" hidden>
-    Questa è la pagina pubblicata: si guarda, non si modifica. Si aggiorna da sola ogni mattina.
-  </p>
+  <div class="collegamento" id="collegamento" hidden>
+    <p id="collegamento-testo"></p>
+    <div class="collegamento-form" id="collegamento-form" hidden>
+      <p class="aiuto-blocco">
+        Incolla qui il codice di accesso che hai creato su GitHub. Resta salvato solo in
+        questo browser: non finisce nella pagina né in nessun altro posto.
+      </p>
+      <div class="aggiungi-sito">
+        <input type="password" id="codice-github" placeholder="Codice che comincia per github_pat_ o ghp_">
+        <button id="b-collega">Collega</button>
+      </div>
+    </div>
+    <div class="collegamento-azioni">
+      <button class="chip fantasma" id="b-apri-collega">Collega per modificare</button>
+      <button class="chip fantasma" id="b-scollega" hidden>Scollega</button>
+    </div>
+  </div>
+
+  <p class="avviso-salvato" id="avviso-salvato" hidden></p>
 
   <nav class="profili" id="barra-profili"></nav>
 
@@ -130,9 +146,118 @@ const $ = (id) => document.getElementById(id);
 let PROFILI = [], VOCE = { settori: [], regioni: [], tipi_ente: [] };
 let profiloAttivo = "", inModifica = null;
 
-// La copia pubblicata non ha un server dietro: i pulsanti che scrivono vanno tolti,
-// non lasciati lì a far finta di salvare.
-const SOLA_LETTURA = window.SOLA_LETTURA === true;
+// La copia pubblicata non ha un server dietro. Può però riscrivere il file delle
+// impostazioni dentro il repository, se le si dà un codice di accesso: quello resta
+// nel browser di chi lo incolla e non compare da nessuna parte nella pagina.
+const STATICA = window.SOLA_LETTURA === true;
+const REPO = window.REPO || "";
+const CHIAVE_CODICE = "monitor_bandi_codice";
+
+let codice = null;
+try { codice = localStorage.getItem(CHIAVE_CODICE); } catch (e) { codice = null; }
+
+let CONFIG = null, CONFIG_SHA = null;
+
+// Si può modificare se c'è il server locale, oppure se siamo collegati a GitHub.
+const scrivibile = () => !STATICA || Boolean(codice && REPO);
+
+// ------------------------------------------------------------------ GitHub
+
+const API_GH = (percorso) => `https://api.github.com/repos/${REPO}/contents/${percorso}`;
+
+async function leggiConfigDaGitHub() {
+  const r = await fetch(API_GH("configurazione.json") + "?ref=main", {
+    headers: { Authorization: "Bearer " + codice, Accept: "application/vnd.github+json" },
+  });
+  if (!r.ok) throw new Error("non riesco a leggere le impostazioni (" + r.status + ")");
+  const d = await r.json();
+  CONFIG_SHA = d.sha;
+  return JSON.parse(new TextDecoder().decode(
+    Uint8Array.from(atob(d.content.replace(/\n/g, "")), (c) => c.charCodeAt(0))));
+}
+
+async function scriviConfigSuGitHub(messaggio) {
+  const testo = JSON.stringify(CONFIG, null, 2);
+  const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(testo)));
+  const r = await fetch(API_GH("configurazione.json"), {
+    method: "PUT",
+    headers: { Authorization: "Bearer " + codice, Accept: "application/vnd.github+json" },
+    body: JSON.stringify({ message: messaggio + " (dalla pagina)", content: b64, sha: CONFIG_SHA, branch: "main" }),
+  });
+  if (!r.ok) {
+    const errore = await r.json().catch(() => ({}));
+    throw new Error(errore.message || "salvataggio rifiutato (" + r.status + ")");
+  }
+  CONFIG_SHA = (await r.json()).content.sha;
+}
+
+function avvisa(testo, brutto = false) {
+  const box = $("avviso-salvato");
+  box.textContent = testo;
+  box.className = "avviso-salvato" + (brutto ? " brutto" : "");
+  box.hidden = false;
+  if (!brutto) setTimeout(() => { box.hidden = true; }, 12000);
+}
+
+/**
+ * Unico punto da cui passano tutte le modifiche.
+ * Con il server locale chiama l'app; da GitHub riscrive il file delle impostazioni.
+ */
+async function azione(nome, dati) {
+  if (!STATICA) return chiedi("/api/" + nome, dati);
+
+  if (!CONFIG) CONFIG = await leggiConfigDaGitHub();
+  const P = CONFIG.profili, S = CONFIG.siti, A = CONFIG.archiviati;
+
+  if (nome === "profili/salva") {
+    const id = dati.id || (P.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1);
+    const nuovo = { ...dati, id };
+    const i = P.findIndex((p) => p.id === id);
+    if (i >= 0) P[i] = nuovo; else P.push(nuovo);
+    await scriviConfigSuGitHub("Profilo «" + nuovo.nome + "»");
+    return { ok: true, id };
+  }
+  if (nome === "profili/elimina") {
+    CONFIG.profili = P.filter((p) => p.id !== dati.id);
+    await scriviConfigSuGitHub("Profilo eliminato");
+    return { ok: true };
+  }
+  if (nome === "siti/aggiungi") {
+    let url = dati.url.trim();
+    if (!url.startsWith("http")) url = "https://" + url;
+    if (!S.some((s) => s.url === url)) {
+      S.push({ nome: dati.nome || url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0],
+               url, ente: "", attivo: true });
+    }
+    await scriviConfigSuGitHub("Sito aggiunto");
+    return { ok: true };
+  }
+  if (nome === "siti/rimuovi") {
+    CONFIG.siti = S.filter((s) => s.url !== dati.url);
+    await scriviConfigSuGitHub("Sito tolto");
+    return { ok: true };
+  }
+  if (nome === "archivia") {
+    CONFIG.archiviati = dati.archivia
+      ? [...new Set([...A, dati.id])] : A.filter((x) => x !== dati.id);
+    await scriviConfigSuGitHub("Archivio aggiornato");
+    return { ok: true };
+  }
+  throw new Error("azione sconosciuta: " + nome);
+}
+
+/** Come azione(), ma se qualcosa va storto lo dice a schermo invece di tacere. */
+async function prova(nome, dati) {
+  try {
+    return await azione(nome, dati);
+  } catch (e) {
+    avvisa("Non sono riuscito a salvare: " + e.message, true);
+    return null;
+  }
+}
+
+const DOPO_SALVATAGGIO =
+  "Salvato. GitHub sta ricalcolando: fra qualche minuto ricarica la pagina e vedrai l'elenco aggiornato.";
 
 const chiedi = (url, dati) =>
   fetch(url, dati ? {
@@ -173,8 +298,8 @@ function disegnaBarraProfili() {
       `${p.nome} <span class="conta">${p.quanti}</span>`,
       String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
     (attivo ? `<button class="chip fantasma" data-modifica="${attivo.id}">${
-      SOLA_LETTURA ? "Vedi le impostazioni" : "Modifica"}</button>` : "") +
-    (SOLA_LETTURA ? "" : `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>`);
+      scrivibile() ? "Modifica" : "Vedi le impostazioni"}</button>` : "") +
+    (scrivibile() ? `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>` : "");
 
   $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
     b.onclick = () => {
@@ -193,8 +318,8 @@ function disegnaBarraProfili() {
   if (mod) {
     mod.onclick = () => {
       const p = PROFILI.find((x) => String(x.id) === mod.dataset.modifica);
-      if (SOLA_LETTURA) mostraScheda(p);
-      else apriEditor(p);
+      if (scrivibile()) apriEditor(p);
+      else mostraScheda(p);
     };
   }
 }
@@ -219,7 +344,7 @@ function mostraScheda(p) {
       ${riga("Parole tue", p.parole.join(", "))}
       ${riga("Parole che escludono", p.escluse.join(", "))}
       ${riga("Bandi compatibili adesso", p.quanti)}
-    </dl>${SOLA_LETTURA ? '<p class="fioco">Per cambiarle si apre l\'app sul computer.</p>' : ""}`;
+    </dl>${scrivibile() ? "" : '<p class="fioco">Collegati qui sopra per poter cambiare le impostazioni.</p>'}`;
   box.hidden = false;
 }
 
@@ -249,7 +374,7 @@ const spuntate = (id) =>
   [...$(id).querySelectorAll("input:checked")].map((i) => i.value);
 
 $("b-salva").onclick = async () => {
-  const r = await chiedi("/api/profili/salva", {
+  const r = await prova("profili/salva", {
     id: inModifica ? inModifica.id : null,
     nome: $("p-nome").value,
     tipo_ente: $("p-tipo").value,
@@ -260,8 +385,10 @@ $("b-salva").onclick = async () => {
     importo_min: $("p-min").value ? Number($("p-min").value) : null,
     importo_max: $("p-max").value ? Number($("p-max").value) : null,
   });
+  if (!r) return;
   $("editor").hidden = true;
   profiloAttivo = String(r.id);
+  if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
   await caricaProfili();
   aggiorna();
 };
@@ -270,9 +397,10 @@ $("b-annulla").onclick = () => { $("editor").hidden = true; };
 
 $("b-elimina").onclick = async () => {
   if (!inModifica) return;
-  await chiedi("/api/profili/elimina", { id: inModifica.id });
+  if (!await prova("profili/elimina", { id: inModifica.id })) return;
   $("editor").hidden = true;
   profiloAttivo = "";
+  if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
   await caricaProfili();
   aggiorna();
 };
@@ -357,7 +485,7 @@ function disegnaBandi(bandi) {
       ${chiPuo}
       <div class="riga-dati">${dati.join("")}
         <button class="apri" data-apri="${b.id}">Leggi di più</button>
-        ${SOLA_LETTURA ? "" : `<button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>`}
+        ${scrivibile() ? `<button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
       </div>
       ${dettaglio}
     </article>`;
@@ -373,7 +501,8 @@ function disegnaBandi(bandi) {
 
   box.querySelectorAll("button.archivia").forEach((b) => {
     b.onclick = async () => {
-      await chiedi("/api/archivia", { id: b.dataset.id, archivia: b.dataset.stato === "0" });
+      if (!await prova("archivia", { id: b.dataset.id, archivia: b.dataset.stato === "0" })) return;
+      if (STATICA) { b.closest("article").style.opacity = 0.4; avvisa(DOPO_SALVATAGGIO); return; }
       caricaProfili();
       aggiorna();
     };
@@ -440,17 +569,14 @@ async function caricaSiti() {
       <td><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.nome}</a></td>
       <td class="${!s.esito || s.esito === "ok" ? "" : "ko"}">${s.esito || "mai controllato"}</td>
       <td>${s.trovati || 0}</td>
-      <td><button class="archivia" data-rimuovi="${s.id}">Togli</button></td>
+      <td>${scrivibile() ? `<button class="archivia" data-rimuovi="${s.id}" data-url="${s.url}">Togli</button>` : ""}</td>
     </tr>`).join("")
     : '<tr><td colspan="4" class="vuoto-riga">Nessun sito aggiunto.</td></tr>';
 
-  if (SOLA_LETTURA) {
-    $("tabella-siti").querySelectorAll("[data-rimuovi]").forEach((b) => b.remove());
-    return;
-  }
   $("tabella-siti").querySelectorAll("[data-rimuovi]").forEach((b) => {
     b.onclick = async () => {
-      await chiedi("/api/siti/rimuovi", { id: Number(b.dataset.rimuovi) });
+      if (!await prova("siti/rimuovi", { id: Number(b.dataset.rimuovi), url: b.dataset.url })) return;
+      if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
       caricaSiti();
     };
   });
@@ -459,9 +585,58 @@ async function caricaSiti() {
 $("b-aggiungi-sito").onclick = async () => {
   const url = $("s-url").value.trim();
   if (!url) return;
-  await chiedi("/api/siti/aggiungi", { url, nome: $("s-nome").value.trim() });
+  if (!await prova("siti/aggiungi", { url, nome: $("s-nome").value.trim() })) return;
   $("s-url").value = ""; $("s-nome").value = "";
+  if (STATICA) { avvisa("Sito aggiunto. " + DOPO_SALVATAGGIO); return; }
   caricaSiti();
+};
+
+// ------------------------------------------------------------------ collegamento
+
+function disegnaCollegamento() {
+  $("collegamento").hidden = false;
+  const collegato = Boolean(codice);
+  $("collegamento-testo").textContent = collegato
+    ? "Collegato a GitHub: da qui puoi creare e modificare profili, aggiungere fonti e archiviare."
+    : "Questa è la pagina pubblicata: si guarda e basta. Si aggiorna da sola ogni mattina. Per poterla modificare serve un codice di accesso a GitHub.";
+  $("b-apri-collega").hidden = collegato;
+  $("b-scollega").hidden = !collegato;
+  $("collegamento-form").hidden = true;
+}
+
+async function ridisegnaTutto() {
+  await caricaProfili();
+  await caricaSiti();
+  aggiorna();
+}
+
+$("b-apri-collega").onclick = () => {
+  $("collegamento-form").hidden = !$("collegamento-form").hidden;
+};
+
+$("b-collega").onclick = async () => {
+  const valore = $("codice-github").value.trim();
+  if (!valore) return;
+  codice = valore;
+  try {
+    CONFIG = await leggiConfigDaGitHub();       // prova subito: se il codice è sbagliato lo scopriamo ora
+  } catch (e) {
+    codice = null;
+    avvisa("Il codice non funziona: " + e.message, true);
+    return;
+  }
+  try { localStorage.setItem(CHIAVE_CODICE, valore); } catch (e) { /* va bene lo stesso */ }
+  $("codice-github").value = "";
+  disegnaCollegamento();
+  await ridisegnaTutto();
+  avvisa("Collegato. Ora i pulsanti salvano davvero.");
+};
+
+$("b-scollega").onclick = async () => {
+  codice = null; CONFIG = null; CONFIG_SHA = null;
+  try { localStorage.removeItem(CHIAVE_CODICE); } catch (e) { /* niente */ }
+  disegnaCollegamento();
+  await ridisegnaTutto();
 };
 
 let attesa;
@@ -469,11 +644,7 @@ $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna,
 ["fonte", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
 
 (async () => {
-  if (SOLA_LETTURA) {
-    $("avviso-lettura").hidden = false;
-    document.querySelector(".aggiungi-sito").hidden = true;
-    $("archiviati").closest("label").hidden = true;
-  }
+  if (STATICA) disegnaCollegamento();
   VOCE = await chiedi("/api/vocabolario");
   await caricaProfili();
   await caricaFonti();

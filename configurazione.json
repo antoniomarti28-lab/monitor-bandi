@@ -1,0 +1,39 @@
+{
+  "profili": [
+    {
+      "id": 1,
+      "nome": "Associazione culturale",
+      "tipo_ente": "Associazione non riconosciuta",
+      "settori": [
+        "Cultura e arte",
+        "Teatro e spettacolo",
+        "Musica",
+        "Sociale e terzo settore"
+      ],
+      "regioni": [
+        "Calabria",
+        "Tutta Italia",
+        "Europa"
+      ],
+      "parole": [],
+      "escluse": [],
+      "importo_min": null,
+      "importo_max": null
+    }
+  ],
+  "siti": [
+    {
+      "nome": "Con il Sud - pagina bandi",
+      "url": "https://www.fondazioneconilsud.it/bandi/",
+      "ente": "Fondazione Con il Sud",
+      "attivo": true
+    },
+    {
+      "nome": "Comune di Tropea - albo",
+      "url": "https://www.comune.tropea.vv.it/albo-pretorio/",
+      "ente": "Comune di Tropea",
+      "attivo": true
+    }
+  ],
+  "archiviati": []
+}

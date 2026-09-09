@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import configurazione
 import profili
 import siti
 
@@ -67,6 +68,13 @@ class Gestore(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(corpo)))
         self.end_headers()
         self.wfile.write(corpo)
+
+    def _fine_scrittura(self, c):
+        """Dopo ogni modifica il file delle impostazioni torna allineato al database:
+        e' lui la fonte di verita' per la pagina pubblicata e per i giri su GitHub."""
+        c.commit()
+        configurazione.esporta(c)
+        c.close()
 
     def _corpo_richiesta(self):
         lunghezza = int(self.headers.get("Content-Length", 0))
@@ -199,8 +207,7 @@ class Gestore(BaseHTTPRequestHandler):
             c = connetti()
             c.execute("UPDATE bandi SET archiviato=? WHERE id=?",
                       (1 if corpo.get("archivia", True) else 0, corpo.get("id", "")))
-            c.commit()
-            c.close()
+            self._fine_scrittura(c)
             return self._json({"ok": True})
 
         if u.path == "/api/profili/salva":
@@ -223,9 +230,8 @@ class Gestore(BaseHTTPRequestHandler):
                                 "escluse,importo_min,importo_max,creato_il) VALUES (?,?,?,?,?,?,?,?,?)",
                                 campi + (datetime.now(timezone.utc).isoformat(timespec="seconds"),))
                 ident = cur.lastrowid
-            c.commit()
             trovati = profili.riabbina(c, ident)
-            c.close()
+            self._fine_scrittura(c)
             return self._json({"ok": True, "id": ident, "trovati": trovati})
 
         if u.path == "/api/siti/aggiungi":
@@ -239,15 +245,13 @@ class Gestore(BaseHTTPRequestHandler):
                       "VALUES (?,?,?,1,?)",
                       (nome, url, (d.get("ente") or "").strip(),
                        datetime.now(timezone.utc).isoformat(timespec="seconds")))
-            c.commit()
-            c.close()
+            self._fine_scrittura(c)
             return self._json({"ok": True})
 
         if u.path == "/api/siti/rimuovi":
             c = connetti()
             c.execute("DELETE FROM siti WHERE id=?", (int(self._corpo_richiesta().get("id", 0)),))
-            c.commit()
-            c.close()
+            self._fine_scrittura(c)
             return self._json({"ok": True})
 
         if u.path == "/api/profili/elimina":
@@ -255,8 +259,7 @@ class Gestore(BaseHTTPRequestHandler):
             c = connetti()
             c.execute("DELETE FROM abbinamenti WHERE profilo_id=?", (ident,))
             c.execute("DELETE FROM profili WHERE id=?", (ident,))
-            c.commit()
-            c.close()
+            self._fine_scrittura(c)
             return self._json({"ok": True})
 
         self.send_error(404)

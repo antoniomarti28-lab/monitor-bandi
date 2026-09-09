@@ -253,6 +253,8 @@ def giro():
     db = sqlite3.connect(DB)
     profili.prepara(db)
     db.executescript(SCHEMA)
+    import configurazione
+    configurazione.importa(db)   # il file comanda anche qui
 
     ultimo = int(leggi_stato(db, "ultimo_update", 0))
     try:
@@ -291,6 +293,9 @@ def giro():
             print("  non sono riuscito a rispondere:", type(e).__name__)
         fatti += 1
 
+    if fatti:
+        import configurazione
+        configurazione.esporta(db)
     db.close()
     print("Comandi eseguiti: %d" % fatti)
     return fatti

@@ -1,0 +1,68 @@
+name: Impostazioni cambiate dalla pagina
+
+# Parte quando modifichi profili, siti o archivio dalla pagina online.
+# Non rifà la raccolta: ricalcola solo la compatibilità e ripubblica, così
+# il risultato si vede in un paio di minuti invece che al giorno dopo.
+on:
+  push:
+    paths:
+      - configurazione.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: giro-bandi
+  cancel-in-progress: false
+
+jobs:
+  ricalcola:
+    # I giri automatici riscrivono anch'essi il file: senza questo filtro
+    # si richiamerebbero a vicenda all'infinito.
+    if: "!startsWith(github.event.head_commit.message, 'Giro del') && !startsWith(github.event.head_commit.message, 'Comandi da Telegram del')"
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblica.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Installa l'unica libreria che serve
+        run: pip install pypdf
+
+      - name: Applica le impostazioni e ricalcola
+        env:
+          MONITOR_TELEGRAM_TOKEN: ${{ secrets.MONITOR_TELEGRAM_TOKEN }}
+          MONITOR_TELEGRAM_CHAT: ${{ secrets.MONITOR_TELEGRAM_CHAT }}
+          MONITOR_GROQ_CHIAVE: ${{ secrets.MONITOR_GROQ_CHIAVE }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python configurazione.py --importa
+          python intelligenza.py --solo-giudizi
+          python anteprima.py
+
+      - name: Risalva l'archivio
+        run: |
+          git config user.name "Monitor Bandi"
+          git config user.email "noreply@github.com"
+          git add dati.db anteprima.html
+          git diff --staged --quiet || git commit -m "Giro del $(date +%d/%m/%Y) — dopo modifica impostazioni"
+          git pull --rebase --autostash
+          git push
+
+      - name: Pubblica la pagina
+        run: |
+          mkdir -p sito
+          cp anteprima.html sito/index.html
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: sito
+      - uses: actions/deploy-pages@v5
+        id: pubblica

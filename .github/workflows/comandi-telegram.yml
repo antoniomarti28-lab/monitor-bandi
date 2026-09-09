@@ -39,12 +39,12 @@ jobs:
         run: |
           git config user.name "Monitor Bandi"
           git config user.email "noreply@github.com"
-          git add dati.db
+          git add dati.db configurazione.json
           if git diff --staged --quiet; then
             echo "niente da salvare"
           else
             python anteprima.py
-            git add anteprima.html
+            git add anteprima.html configurazione.json
             git commit -m "Comandi da Telegram del $(date +%d/%m/%Y\ %H:%M)"
             git pull --rebase --autostash
             git push

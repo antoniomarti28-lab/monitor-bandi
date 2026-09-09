@@ -227,6 +227,32 @@ def registra(db, canale, b, esito, testo):
                 b.get("profilo_id"), b.get("id"), esito, testo))
 
 
+def manda_riepilogo(db, imp):
+    """Due righe il lunedi', per far sapere che il programma e' vivo."""
+    token = imp["telegram"]["token"].strip()
+    chat = str(imp["telegram"]["chat_id"]).strip()
+    if not token or not chat:
+        return
+    uno = lambda sql: db.execute(sql).fetchone()[0]
+    nuovi = uno("SELECT COUNT(*) FROM bandi WHERE trovato_il >= date('now','-7 day')")
+    aperti = uno("SELECT COUNT(*) FROM bandi WHERE archiviato=0 AND aperto=1 "
+                 "AND (scadenza IS NULL OR scadenza >= date('now'))")
+    scartati = uno("SELECT COUNT(*) FROM abbinamenti WHERE llm_verdetto='no'")
+    testo = ("<b>Riepilogo della settimana</b>\n\n"
+             "Bandi nuovi trovati: %d\nBandi aperti in questo momento: %d\n"
+             "Scartati perche' non adatti al tuo profilo: %d\n\n"
+             "Non ti ho avvisato perche' non c'era niente che ti riguardasse.\n"
+             "Con /aperti li vedi tutti, con /profilo controlli come sei impostato."
+             % (nuovi, aperti, scartati))
+    try:
+        manda_telegram(token, chat, testo)
+        registra(db, "telegram", {}, "ok", "riepilogo settimanale")
+        db.commit()
+        print("Mandato il riepilogo settimanale.")
+    except Exception as e:
+        print("Riepilogo non inviato:", type(e).__name__)
+
+
 def invia(prova=False):
     imp = carica()
     db = sqlite3.connect(DB)
@@ -235,6 +261,10 @@ def invia(prova=False):
     nuovi = da_avvisare(db, imp["soglia_avviso"])
     if not nuovi:
         print("Nessun bando nuovo da segnalare.")
+        # Il silenzio e' ambiguo: non si distingue «niente per te» da «e' rotto».
+        # Il lunedi' si manda comunque due righe di riepilogo.
+        if datetime.now().weekday() == 0 and not prova:
+            manda_riepilogo(db, imp)
         db.close()
         return 0
 

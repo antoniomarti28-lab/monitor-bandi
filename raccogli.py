@@ -216,6 +216,12 @@ def normalizza_data(grezza):
 def giro():
     cfg = json.loads(FONTI.read_text(encoding="utf-8"))
     db = apri_db()
+
+    # Le impostazioni stanno nel file, non nel database: il file comanda.
+    import configurazione
+    cambiati = configurazione.importa(db)
+    if cambiati:
+        print("Profili modificati dalla pagina: %s\n" % cambiati)
     oggi = datetime.now(timezone.utc).isoformat(timespec="seconds")
     report = []
 
@@ -294,6 +300,9 @@ def giro():
     # Solo sui pochi promossi, il modello grande dice se puoi davvero parteciparci.
     print()
     intelligenza.giudica_finalisti(db)
+
+    # Il file torna allineato al database (siti nuovi, bandi archiviati).
+    configurazione.esporta(db)
     db.close()
 
     # ...e avvisiamo su Telegram solo i bandi nuovi mai segnalati prima.
