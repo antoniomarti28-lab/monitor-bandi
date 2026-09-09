@@ -166,10 +166,40 @@ def importa(db):
     return cambiati
 
 
+def giro_richiesto(db):
+    """Il «cerca adesso» della pagina.
+
+    La pagina non puo' far partire un lavoro su GitHub (servirebbe un permesso in piu'
+    sul codice di accesso). Puo' pero' scrivere una data dentro configurazione.json:
+    qui la si confronta con l'ultima gia' eseguita e, se e' nuova, si fa il giro intero.
+    """
+    dati = leggi_file()
+    richiesta = dati.get("richiesta_giro")
+    if not richiesta:
+        return False
+    db.executescript("CREATE TABLE IF NOT EXISTS telegram_stato "
+                     "(chiave TEXT PRIMARY KEY, valore TEXT);")
+    r = db.execute("SELECT valore FROM telegram_stato WHERE chiave='ultimo_giro_forzato'").fetchone()
+    if r and r[0] == str(richiesta):
+        return False
+    db.execute("INSERT INTO telegram_stato (chiave,valore) VALUES ('ultimo_giro_forzato',?) "
+               "ON CONFLICT(chiave) DO UPDATE SET valore=?", (str(richiesta), str(richiesta)))
+    db.commit()
+    return True
+
+
 if __name__ == "__main__":
     import sys
     con = sqlite3.connect(BASE / "dati.db")
-    if "--importa" in sys.argv:
+    if "--se-richiesto" in sys.argv:
+        # Usato dal lavoro automatico: fa il giro intero solo se l'hai chiesto tu.
+        if giro_richiesto(con):
+            print("Giro completo richiesto dalla pagina: lo eseguo.")
+            import raccogli
+            raccogli.giro()
+        else:
+            print("Nessun giro richiesto: faccio solo il ricalcolo.")
+    elif "--importa" in sys.argv:
         cambiati = importa(con)
         import profili
         print("Profili cambiati: %s" % (cambiati or "nessuno"))

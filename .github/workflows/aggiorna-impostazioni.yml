@@ -45,6 +45,7 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: |
           python configurazione.py --importa
+          python configurazione.py --se-richiesto   # «Cerca adesso» premuto sulla pagina
           python siti.py            # controlla subito le fonti appena aggiunte
           python intelligenza.py --solo-giudizi
           python anteprima.py

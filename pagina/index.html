@@ -34,6 +34,8 @@
 
   <p class="avviso-salvato" id="avviso-salvato" hidden></p>
 
+  <button class="torna-su" id="torna-su" hidden aria-label="Torna in cima">↑</button>
+
   <nav class="profili" id="barra-profili"></nav>
 
   <section class="scheda-profilo" id="scheda-profilo" hidden></section>
@@ -101,6 +103,7 @@
     <select id="fonte"><option value="">Tutte le fonti</option></select>
     <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
     <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
+    <button class="chip fantasma" id="b-cerca-adesso" hidden>Cerca adesso</button>
   </div>
 
   <div id="elenco"></div>
@@ -270,6 +273,10 @@ async function azione(nome, dati) {
   } else if (nome === "impostazioni") {
     C.impostazioni = { ...C.impostazioni, ...dati };
     messaggio = "Soglie aggiornate";
+
+  } else if (nome === "giro") {
+    C.richiesta_giro = dati.quando;
+    messaggio = "Scansione richiesta";
 
   } else if (nome === "archivia") {
     C.archiviati = dati.archivia
@@ -631,6 +638,7 @@ async function caricaFonti() {
   $("i-soglia").disabled = $("i-massimo").disabled = !scrivibile();
   $("b-salva-impostazioni").hidden = !scrivibile();
   $("form-aggiungi-fonte").hidden = !scrivibile();
+  $("b-cerca-adesso").hidden = !scrivibile();
 }
 
 $("b-salva-impostazioni").onclick = async () => {
@@ -710,6 +718,24 @@ $("b-scollega").onclick = async () => {
   try { localStorage.removeItem(CHIAVE_CODICE); } catch (e) { /* niente */ }
   disegnaCollegamento();
   await ridisegnaTutto();
+};
+
+// ------------------------------------------------------------------ torna su
+
+const tornaSu = $("torna-su");
+tornaSu.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+window.addEventListener("scroll", () => { tornaSu.hidden = window.scrollY < 400; }, { passive: true });
+
+// ------------------------------------------------------------------ cerca adesso
+
+$("b-cerca-adesso").onclick = async () => {
+  const b = $("b-cerca-adesso");
+  b.disabled = true;
+  const fatto = await prova("giro", { quando: new Date().toISOString() });
+  b.disabled = false;
+  if (!fatto) return;
+  avvisa("Ho chiesto una scansione completa: guardo tutte le fonti, leggo i bandi nuovi "
+       + "e ti avviso su Telegram se trovo qualcosa. Ci vogliono cinque o dieci minuti.");
 };
 
 let attesa;
