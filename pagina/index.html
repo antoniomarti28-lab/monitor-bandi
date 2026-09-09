@@ -13,6 +13,7 @@
 <div class="involucro">
 
   <header>
+    <button class="tema" id="b-tema" title="Chiaro, scuro o come il telefono"></button>
     <h1>Monitor Bandi</h1>
     <p class="sottotitolo" id="sottotitolo">Caricamento…</p>
   </header>
@@ -185,6 +186,12 @@ const scrivibile = () => !STATICA || Boolean(codice && REPO);
 
 // ------------------------------------------------------------------ GitHub
 
+/** Indirizzo ridotto all'osso, per riconoscere che due scritture sono lo stesso sito. */
+function normalizza(url) {
+  return (url || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+}
+
 const API_GH = (percorso) => `https://api.github.com/repos/${REPO}/contents/${percorso}`;
 
 async function leggiConfigDaGitHub() {
@@ -255,11 +262,15 @@ async function azione(nome, dati) {
   } else if (nome === "fonte/aggiungi") {
     let url = dati.url.trim();
     if (!url.startsWith("http")) url = "https://" + url;
+    // Doppioni: si confronta l'indirizzo normalizzato, e su TUTTE le fonti, non solo
+    // su quelle dello stesso tipo. Altrimenti lo stesso sito entrava due volte solo
+    // perche' scritto con o senza «www», o con la barra finale.
+    const uguale = (a, b) => normalizza(a) === normalizza(b);
+    const gia = [...C.feed, ...C.siti].find((x) => uguale(x.url, url));
+    if (gia) throw new Error("questa fonte c'è già, si chiama «" + gia.nome + "»");
     const dove = dati.tipo === "feed" ? C.feed : C.siti;
-    if (!dove.some((x) => x.url === url)) {
-      dove.push({ nome: dati.nome || url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0],
-                  url, ente: "", attivo: true });
-    }
+    dove.push({ nome: dati.nome || normalizza(url).split("/")[0],
+                url, ente: "", attivo: true });
     messaggio = "Fonte aggiunta";
 
   } else if (nome === "fonte/attiva") {
@@ -590,6 +601,20 @@ async function aggiorna() {
     `${bandi.length} mostrati${restano}`;
 }
 
+/** Traduce l'errore tecnico in cosa puoi fare tu. */
+function spiegaErrore(esito) {
+  const e = (esito || "").toLowerCase();
+  if (e.includes("404")) return "indirizzo sbagliato o pagina spostata: aprila nel browser e ricopia l'indirizzo";
+  if (e.includes("403")) return "il sito blocca i programmi automatici: non c'è rimedio, conviene toglierla";
+  if (e.includes("500") || e.includes("502") || e.includes("503")) return "il sito era in avaria: riprovo domani da solo";
+  if (e.includes("certificat")) return "certificato del sito non valido: da riprendere più avanti";
+  if (e.includes("irraggiungibile")) return "il sito non ha risposto: se dura, l'indirizzo non esiste più";
+  if (e.includes("robots")) return "il sito vieta la lettura automatica: va tolta";
+  if (e.includes("nessun collegamento")) return "pagina raggiunta ma senza link a bandi: prova la sottosezione giusta";
+  if (e.includes("non e") && e.includes("feed")) return "non è un feed: riaggiungila scegliendo «pagina di elenco»";
+  return "";
+}
+
 async function caricaFonti() {
   if (!CONFIG) {
     try { CONFIG = await caricaConfig(); }
@@ -611,11 +636,13 @@ async function caricaFonti() {
   $("tabella-fonti").innerHTML = elenco.length ? elenco.map((f) => {
     const st = f.stato || {};
     const esito = st.esito || "mai letta";
+    const spiega = spiegaErrore(esito);
     const quando = st.ultimo_giro ? st.ultimo_giro.replace("T", " ").slice(0, 16) : "";
     return `<tr class="${f.attivo ? "" : "spenta"}">
       <td>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener noreferrer">${f.nome}</a>` : f.nome}</td>
       <td>${f.tipo === "feed" ? "feed" : "pagina"}</td>
-      <td class="${esito === "ok" ? "" : "ko"}">${esito}${esito === "ok" && quando ? " · " + quando : ""}</td>
+      <td class="${esito === "ok" ? "" : "ko"}">${esito}${esito === "ok" && quando ? " · " + quando : ""}${
+        spiega ? `<br><span class="spiega">${spiega}</span>` : ""}</td>
       <td>${scrivibile()
         ? `<input type="checkbox" data-accendi="${f.url}" data-tipo="${f.tipo}"${f.attivo ? " checked" : ""}>`
         : (f.attivo ? "sì" : "no")}</td>
@@ -663,8 +690,10 @@ $("b-aggiungi-sito").onclick = async () => {
   if (!await prova("fonte/aggiungi", {
     url, nome: $("s-nome").value.trim(), tipo: $("s-tipo").value })) return;
   $("s-url").value = ""; $("s-nome").value = "";
-  if (STATICA) { avvisa("Fonte aggiunta. " + DOPO_SALVATAGGIO); return; }
-  caricaFonti();
+  // Si ridisegna comunque: la fonte e' gia' dentro CONFIG, quindi compare subito
+  // nell'elenco anche prima che GitHub abbia finito di ricalcolare.
+  await caricaFonti();
+  if (STATICA) avvisa("Fonte aggiunta: la vedi in elenco qui sotto. " + DOPO_SALVATAGGIO);
 };
 
 // ------------------------------------------------------------------ storico notifiche
@@ -727,6 +756,25 @@ $("b-scollega").onclick = async () => {
   disegnaCollegamento();
   await ridisegnaTutto();
 };
+
+// ------------------------------------------------------------------ giorno e notte
+
+const TEMI = ["automatico", "chiaro", "scuro"];
+const SIMBOLI = { automatico: "◑", chiaro: "☀", scuro: "☾" };
+let tema = "automatico";
+try { tema = localStorage.getItem("monitor_bandi_tema") || "automatico"; } catch (e) { /* niente */ }
+
+function applicaTema() {
+  document.documentElement.dataset.tema = tema;
+  $("b-tema").textContent = SIMBOLI[tema];
+  $("b-tema").title = { automatico: "Come il telefono", chiaro: "Sempre chiaro", scuro: "Sempre scuro" }[tema];
+}
+$("b-tema").onclick = () => {
+  tema = TEMI[(TEMI.indexOf(tema) + 1) % TEMI.length];
+  try { localStorage.setItem("monitor_bandi_tema", tema); } catch (e) { /* niente */ }
+  applicaTema();
+};
+applicaTema();
 
 // ------------------------------------------------------------------ torna su
 

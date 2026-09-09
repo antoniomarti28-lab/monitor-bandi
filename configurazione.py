@@ -22,6 +22,30 @@ CAMPI_PROFILO = ("nome", "tipo_ente", "settori", "regioni", "parole", "escluse",
 LISTE = ("settori", "regioni", "parole", "escluse")
 
 
+def normalizza(url):
+    """Indirizzo ridotto all'osso: serve a riconoscere i doppioni scritti in modi diversi
+    (con o senza «www», con o senza la barra finale, http oppure https)."""
+    u = (url or "").strip().lower()
+    for pezzo in ("https://", "http://"):
+        if u.startswith(pezzo):
+            u = u[len(pezzo):]
+    if u.startswith("www."):
+        u = u[4:]
+    return u.rstrip("/")
+
+
+def togli_doppioni(elenco):
+    """Tiene la prima di ogni fonte ripetuta. Restituisce (elenco pulito, quante tolte)."""
+    viste, fuori = set(), []
+    for x in elenco:
+        chiave = normalizza(x.get("url"))
+        if not chiave or chiave in viste:
+            continue
+        viste.add(chiave)
+        fuori.append(x)
+    return fuori, len(elenco) - len(fuori)
+
+
 def _profilo_da_riga(r):
     p = {"id": r["id"]}
     for c in CAMPI_PROFILO:
@@ -97,6 +121,14 @@ def importa(db):
         return []
 
     dati = leggi_file()
+    # Un doppione fra feed e siti farebbe leggere due volte lo stesso sito ogni giorno.
+    tutte, tolte = togli_doppioni(dati["feed"] + dati["siti"])
+    if tolte:
+        url_feed = {normalizza(f["url"]) for f in dati["feed"]}
+        dati["feed"] = [x for x in tutte if normalizza(x["url"]) in url_feed]
+        dati["siti"] = [x for x in tutte if normalizza(x["url"]) not in url_feed]
+        FILE.write_text(json.dumps(dati, indent=2, ensure_ascii=False), encoding="utf-8")
+        print("Fonti doppie tolte: %d" % tolte)
     db.row_factory = sqlite3.Row
     mod_profili.prepara(db)
 

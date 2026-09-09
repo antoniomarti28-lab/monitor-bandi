@@ -18,8 +18,10 @@
   --ombra: 0 1px 2px rgba(20,20,15,.04), 0 8px 24px rgba(20,20,15,.05);
 }
 
+/* Scuro: quando lo chiede il sistema (se non hai scelto «chiaro»)
+   oppure quando lo scegli tu col pulsante in alto. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema="chiaro"]) {
     --sfondo: #12120f;
     --sfondo-tenue: #171713;
     --carta: #1c1c18;
@@ -33,6 +35,21 @@
     --allarme: #e08b74;
     --ombra: none;
   }
+}
+
+:root[data-tema="scuro"] {
+  --sfondo: #12120f;
+  --sfondo-tenue: #171713;
+  --carta: #1c1c18;
+  --bordo: #2f2e28;
+  --testo: #f0eee6;
+  --tenue: #9a9a8e;
+  --accento: #e2743f;
+  --accento-tenue: #2a1a12;
+  --positivo: #5fbf82;
+  --positivo-tenue: #14251a;
+  --allarme: #e08b74;
+  --ombra: none;
 }
 
 * { box-sizing: border-box; }
@@ -49,7 +66,15 @@ h1, h2, h3 { font-family: Sora, system-ui, -apple-system, "Segoe UI", sans-serif
 
 .involucro { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
 
-header { margin-bottom: 12px; }
+header { margin-bottom: 12px; position: relative; }
+
+.tema {
+  position: absolute; top: 4px; right: 0;
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--bordo); background: var(--carta);
+  color: var(--tenue); font-size: 17px; line-height: 1; cursor: pointer;
+}
+.tema:hover { border-color: var(--accento); color: var(--accento); }
 h1 { font-size: 40px; font-weight: 700; margin: 0 0 6px; line-height: 1.1; }
 .sottotitolo { color: var(--tenue); font-size: 15px; margin: 0; }
 a { color: var(--accento); }
@@ -249,6 +274,9 @@ table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14p
 th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--bordo); }
 th { color: var(--tenue); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
 td.ko { color: var(--allarme); }
+td a { color: var(--testo); text-decoration: underline; text-decoration-color: var(--bordo); }
+td a:hover { color: var(--accento); text-decoration-color: var(--accento); }
+.spiega { color: var(--tenue); font-size: 12px; font-style: italic; }
 tr.spenta { opacity: .45; }
 
 /* ---- torna in cima ---- */

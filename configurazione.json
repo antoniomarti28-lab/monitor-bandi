@@ -83,36 +83,6 @@
       "url": "https://www.fondazionecariplo.it/feed/",
       "ente": "Fondazione Cariplo",
       "attivo": true
-    },
-    {
-      "nome": "Regione Calabria",
-      "url": "",
-      "ente": "Regione Calabria",
-      "attivo": true
-    },
-    {
-      "nome": "MIC - Ministero Cultura",
-      "url": "",
-      "ente": "Ministero della Cultura",
-      "attivo": false
-    },
-    {
-      "nome": "Regione Puglia",
-      "url": "",
-      "ente": "Regione Puglia",
-      "attivo": false
-    },
-    {
-      "nome": "CSVnet",
-      "url": "",
-      "ente": "CSVnet",
-      "attivo": false
-    },
-    {
-      "nome": "Agenzia Coesione",
-      "url": "",
-      "ente": "Agenzia per la Coesione",
-      "attivo": false
     }
   ],
   "siti": [

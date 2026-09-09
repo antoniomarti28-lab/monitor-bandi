@@ -129,9 +129,13 @@ def giro_siti(db):
         return 0
 
     totale = 0
+    primo_giro = []   # le fonti mai lette prima: su quelle si risponde su Telegram
     for s in elenco:
+        mai_letta = not s.get("ultimo_giro")
         esito, nuovi = controlla_sito(db, s)
         totale += nuovi
+        if mai_letta:
+            primo_giro.append((s["nome"], s["url"], esito, nuovi))
         db.execute("UPDATE siti SET ultimo_giro=?, esito=?, trovati=? WHERE id=?",
                    (datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     esito, nuovi, s["id"]))
@@ -140,7 +144,43 @@ def giro_siti(db):
         print("  %s %-30s %3d nuovi   %s" % (segno, s["nome"][:30], nuovi,
                                              "" if esito == "ok" else esito))
         time.sleep(PAUSA)
+
+    if primo_giro:
+        racconta_fonti_nuove(db, primo_giro)
     return totale
+
+
+def racconta_fonti_nuove(db, elenco):
+    """Dice su Telegram com'e' andata la PRIMA lettura di una fonte appena aggiunta.
+
+    Serve a rispondere alla domanda «ho dato la pagina giusta?»: se la risposta e'
+    zero bandi, quasi sempre l'indirizzo punta troppo in alto e i bandi stanno in
+    una sottosezione.
+    """
+    import avvisi
+    imp = avvisi.carica()
+    token = imp["telegram"]["token"].strip()
+    chat = str(imp["telegram"]["chat_id"]).strip()
+    if not token or not chat:
+        return
+    from html import escape
+    a_capo = chr(10)
+    righe = ["<b>Fonti nuove: com'e' andata</b>"]
+    for nome, url, esito, nuovi in elenco:
+        if esito == "ok" and nuovi:
+            coda = "%d bandi trovati: pagina giusta." % nuovi
+        elif esito == "ok":
+            coda = ("raggiunta, ma nessun bando. Se e' la prima volta, di solito "
+                    "l'indirizzo punta troppo in alto: cerca la sottosezione dove "
+                    "stanno davvero gli avvisi.")
+        else:
+            coda = "non ha funzionato: " + escape(esito)
+        righe.append("<b>%s</b>%s   %s" % (escape(nome), a_capo, coda))
+    try:
+        avvisi.manda_telegram(token, chat, (a_capo * 2).join(righe))
+        print("Mandato il resoconto delle fonti nuove.")
+    except Exception as e:
+        print("Resoconto non inviato:", type(e).__name__)
 
 
 # ---------------------------------------------------------------- testo completo
