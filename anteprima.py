@@ -34,7 +34,7 @@ def costruisci():
     # Come nel server: nell'elenco va un estratto, non il testo intero, o il file
     # diventa di parecchi megabyte.
     bandi = [dict(r) for r in db.execute(
-        "SELECT id,titolo,link,ente,fonte,pubblicato,scadenza,importo,importo_num,contributo,"
+        "SELECT id,titolo,link,ente,fonte,pubblicato,scadenza,importo,importo_num,contributo,tipo_aiuto,"
         "sommario,archiviato,riassunto,requisiti,aperto,origine_scadenza,analizzato_il,nota,"
         "substr(testo,1,3000) AS estratto, length(testo) AS quanto_testo "
         "FROM bandi ORDER BY pubblicato DESC, trovato_il DESC")]

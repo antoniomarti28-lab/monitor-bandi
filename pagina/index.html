@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Monitor Bandi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap">
 <link rel="stylesheet" href="/stile.css">
 </head>
 <body>
@@ -524,7 +527,11 @@ function disegnaBandi(bandi) {
       <p><a href="${b.link}" target="_blank" rel="noopener noreferrer">Apri il bando sul sito dell'ente →</a></p>
     </div>`;
 
+    const tipo = b.tipo_aiuto
+      ? `<span class="tipo-aiuto">${b.tipo_aiuto}</span><br>` : "";
+
     return `<article class="bando">
+      ${tipo}
       <h2>${punteggio}<a href="${b.link}" target="_blank" rel="noopener noreferrer">${b.titolo}</a></h2>
       ${verdetto}
       ${motivi}
@@ -534,6 +541,7 @@ function disegnaBandi(bandi) {
         <button class="apri" data-apri="${b.id}">Leggi di più</button>
         ${scrivibile() ? `<button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
       </div>
+      <a class="vai" href="${b.link}" target="_blank" rel="noopener noreferrer">Vai al bando &rarr;</a>
       ${dettaglio}
     </article>`;
   }).join("");

@@ -179,3 +179,21 @@ Le pianificazioni gratuite partono MOLTO in ritardo: il giro delle 7 e' partito 
 e i comandi Telegram «ogni 15 minuti» sono partiti ogni 4-5 ore. Non e' aggirabile.
 Se un giorno diventa un problema, l'unica cura e' un server vero (~5 €/mese): gliel'ho
 proposto tre volte e ha sempre scelto il gratis.
+
+
+## Aspetto (9 set 2026) — riferimento: incentivicalabria.it
+
+Lui ha indicato quel sito. Preso per la FORMA, non copiato: caratteri **Sora** (titoli)
+e **Inter** (testo, 17px) da Google Fonts, sfondo bianco, nero caldo `#14140f`,
+accento **terracotta** `#c1440e`, **verde** `#1c7a3a` per aperto e per «puoi
+parteciparci», righe **beige** `#e9e7dc`. Il tema scuro e' derivato dagli stessi colori.
+
+L'idea rubata che vale: **l'etichetta del tipo di aiuto** sopra il titolo
+(«fondo perduto», «prestito agevolato», «voucher», «premio», «servizi»). La ricava
+Groq insieme al resto: campo `tipo_aiuto`, null quando non si capisce dal testo.
+
+**Groq, terza trappola sui gettoni:** aggiungendo un campo alla risposta il JSON ha
+ricominciato a troncarsi (400 `json_validate_failed`) con `max_completion_tokens` a
+2500. Alzato a 4000: non costa nulla, si paga solo quello che il modello scrive.
+Il budget giornaliero autoimposto e' passato da 90.000 a 140.000 gettoni; se il limite
+vero arriva prima, il 429 ferma il giro da solo senza rompere niente.

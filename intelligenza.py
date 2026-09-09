@@ -46,7 +46,7 @@ PREDEFINITE = {
     "chiave": "",
     "modello_piccolo": "openai/gpt-oss-20b",
     "modello_grande": "openai/gpt-oss-120b",
-    "gettoni_al_giorno": 90000,    # sotto i 100.000 dichiarati, per stare larghi
+    "gettoni_al_giorno": 140000,   # se il vero limite arriva prima, il 429 ci ferma da solo
     "gettoni_al_minuto": 7000,     # il limite vero e' 8.000: si tiene un margine
     "letture_per_giro": 40,
 }
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS consumo (
 """
 
 COLONNE_NUOVE = {
+    "tipo_aiuto": "TEXT",
     "contributo": "TEXT",
     "riassunto": "TEXT",
     "requisiti": "TEXT",
@@ -211,9 +212,11 @@ def chiedi(chiave, modello, sistema, domanda, gettoni_max=700):
         # I modelli gpt-oss "ragionano" prima di rispondere. Due cose imparate a caro prezzo:
         # 1) con lo sforzo basso il costo scende da 1853 a 1162 gettoni, stessa risposta;
         # 2) il tetto dei gettoni deve essere LARGO: se taglia il ragionamento, il JSON
-        #    resta a meta' e Groq risponde 400 "json_validate_failed".
+        #    resta a meta' e Groq risponde 400 "json_validate_failed". Successo di nuovo
+        #    con 2500 quando ho aggiunto un campo alla risposta: alzato a 4000. Non costa
+        #    nulla tenerlo alto, si paga solo quello che il modello scrive davvero.
         "reasoning_effort": "low",
-        "max_completion_tokens": max(gettoni_max, 2500),
+        "max_completion_tokens": max(gettoni_max, 4000),
         "response_format": {"type": "json_object"},
     }).encode("utf-8")
     req = Request(API + "/chat/completions", data=corpo, headers=dict(
@@ -262,6 +265,10 @@ Campi richiesti:
                   progetto, come testo (es. "fino a 50.000 €", "80% delle spese fino a
                   30.000 €"), oppure null se il bando non lo dice. Non ripetere qui la
                   dotazione complessiva: se c'e' solo quella, metti null.
+  "tipo_aiuto"  : che forma ha l'aiuto, UNA sola fra queste parole esatte:
+                  "fondo perduto" (non si restituisce), "prestito agevolato",
+                  "voucher", "premio", "servizi" (consulenza, spazi, formazione),
+                  "misto". Se dal testo non si capisce, metti null.
   "settori"     : da 1 a 4 parole sull'ambito (es. ["cultura", "teatro"]).
   "destinatari" : elenco breve di chi puo' partecipare, come scritto nel testo
                   (es. ["associazioni di promozione sociale", "ODV iscritte al RUNTS"]).
@@ -375,10 +382,10 @@ def salva_lettura(db, ident, r):
         # L'importo del modello SOSTITUISCE quello trovato dalle regole: la regola
         # pescava la cifra della prima edizione elencata nella pagina, non di questa.
         "importo=COALESCE(?,importo), importo_num=CASE WHEN ? IS NULL THEN importo_num END, "
-        "contributo=?, requisiti=?, riassunto=?, analizzato_il=? WHERE id=?",
+        "contributo=?, tipo_aiuto=?, requisiti=?, riassunto=?, analizzato_il=? WHERE id=?",
         (1 if r.get("aperto") and r.get("e_un_bando") else 0,
          scadenza, "letto dal modello" if scadenza else None,
-         r.get("importo"), r.get("importo"), r.get("contributo"),
+         r.get("importo"), r.get("importo"), r.get("contributo"), r.get("tipo_aiuto"),
          json.dumps(r.get("destinatari") or [], ensure_ascii=False),
          (r.get("riassunto") or "").strip() or None,
          datetime.now(timezone.utc).isoformat(timespec="seconds"), ident))

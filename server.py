@@ -92,7 +92,7 @@ class Gestore(BaseHTTPRequestHandler):
         # Il testo intero puo' essere di 60.000 caratteri: non serve nell'elenco.
         # Ne mandiamo un estratto, che basta per il «Leggi di piu'».
         CAMPI = ("b.id, b.titolo, b.link, b.ente, b.fonte, b.pubblicato, b.scadenza, "
-                 "b.importo, b.importo_num, b.contributo, b.sommario, b.archiviato, "
+                 "b.importo, b.importo_num, b.contributo, b.tipo_aiuto, b.sommario, b.archiviato, "
                  "b.riassunto, b.requisiti, b.aperto, b.origine_scadenza, b.analizzato_il, "
                  "b.nota, substr(b.testo, 1, 3000) AS estratto, length(b.testo) AS quanto_testo")
         if profilo:
