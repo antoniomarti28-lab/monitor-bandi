@@ -53,6 +53,8 @@ def migra(db):
         db.execute("ALTER TABLE bandi ADD COLUMN testo TEXT")
     if "nota" not in colonne:
         db.execute("ALTER TABLE bandi ADD COLUMN nota TEXT")
+    if "immagine" not in colonne:
+        db.execute("ALTER TABLE bandi ADD COLUMN immagine TEXT")
     db.commit()
 
 
@@ -110,10 +112,11 @@ def controlla_sito(db, sito):
 
         db.execute(
             "INSERT OR IGNORE INTO bandi (id,titolo,link,ente,fonte,pubblicato,scadenza,"
-            "importo,importo_num,sommario,testo,nota,trovato_il) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "importo,importo_num,sommario,testo,nota,immagine,trovato_il) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (ident, titolo, link, sito["ente"] or "", sito["nome"], None, None,
-             importo, importo_num, sommario, doc["testo"], doc["nota"], oggi))
+             importo, importo_num, sommario, doc["testo"], doc["nota"],
+             doc.get("immagine") or None, oggi))
         nuovi += 1
 
     db.commit()
@@ -212,8 +215,10 @@ def approfondisci(db, limite=MAX_APPROFONDIMENTI):
             importo, importo_num = (estrai_importo(doc["testo"][:6000])
                                     if not b["importo"] else (b["importo"], None))
             db.execute("UPDATE bandi SET testo=?, nota=?, importo=COALESCE(?,importo), "
-                       "importo_num=COALESCE(?,importo_num) WHERE id=?",
-                       (doc["testo"], doc["nota"], importo, importo_num, b["id"]))
+                       "importo_num=COALESCE(?,importo_num), "
+                       "immagine=COALESCE(immagine,?) WHERE id=?",
+                       (doc["testo"], doc["nota"], importo, importo_num,
+                        doc.get("immagine") or None, b["id"]))
             fatti += 1
         else:
             db.execute("UPDATE bandi SET nota=? WHERE id=?", (doc["nota"], b["id"]))

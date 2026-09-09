@@ -27,6 +27,10 @@ SPAZI = re.compile(r"[ \t\r\f\v]+")
 RIGHE = re.compile(r"\n{3,}")
 
 
+# Le immagini di anteprima: quelle che i siti dichiarano per la condivisione.
+META_IMMAGINE = ("og:image", "twitter:image", "og:image:secure_url")
+
+
 class LettoreHTML(HTMLParser):
     """Tiene il testo che conta e i collegamenti, buttando via menu e script."""
 
@@ -40,8 +44,14 @@ class LettoreHTML(HTMLParser):
         self._in_titolo = False
         self._href = None
         self._testo_link = []
+        self.immagine = ""
 
     def handle_starttag(self, tag, attrs):
+        if tag == "meta" and not self.immagine:
+            a = dict(attrs)
+            chiave = (a.get("property") or a.get("name") or "").lower()
+            if chiave in META_IMMAGINE and a.get("content"):
+                self.immagine = urljoin(self.base, a["content"])
         if tag in IGNORA:
             self._salta += 1
             return
@@ -134,7 +144,8 @@ def leggi(url):
             nota = "errore HTTP %s" % codice
         else:
             nota = "irraggiungibile (%s)" % type(e).__name__
-        return {"tipo": None, "titolo": "", "testo": "", "link": [], "nota": nota}
+        return {"tipo": None, "titolo": "", "testo": "", "link": [],
+                "immagine": "", "nota": nota}
 
     tipo = intestazioni.get("Content-Type", "").lower()
     if "pdf" in tipo or url_finale.lower().endswith(".pdf"):
@@ -144,7 +155,8 @@ def leggi(url):
             if len(riga.strip()) > 15:
                 titolo = riga.strip()[:200]
                 break
-        return {"tipo": "pdf", "titolo": titolo, "testo": testo, "link": [], "nota": nota}
+        return {"tipo": "pdf", "titolo": titolo, "testo": testo, "link": [],
+                "immagine": "", "nota": nota}
 
     testo_html = corpo.decode(_codifica(intestazioni, corpo), "replace")
     lettore = LettoreHTML(url_finale)
@@ -153,7 +165,8 @@ def leggi(url):
     except Exception:
         pass  # HTML malfatto: teniamo quello che siamo riusciti a leggere
     return {"tipo": "html", "titolo": unescape(lettore.titolo).strip()[:300],
-            "testo": lettore.testo(), "link": lettore.link, "nota": None}
+            "testo": lettore.testo(), "link": lettore.link,
+            "immagine": lettore.immagine, "nota": None}
 
 
 # ---------------------------------------------------------------- scelta dei link

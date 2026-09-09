@@ -188,13 +188,25 @@ label.spunta { display: inline-flex; align-items: center; gap: 7px; font-size: 1
 .bando h2 a:hover { color: var(--accento); }
 .bando p { margin: 10px 0 0; color: var(--tenue); font-size: 16px; }
 
+.anteprima {
+  float: right;
+  width: 150px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--bordo);
+  margin: 0 0 12px 18px;
+  background: var(--sfondo-tenue);
+}
+@media (max-width: 620px) { .anteprima { width: 96px; height: 68px; margin-left: 12px; } }
+
 .tipo-aiuto {
   display: inline-block; font-size: 11px; font-weight: 600; text-transform: uppercase;
   letter-spacing: .07em; color: var(--accento); background: var(--accento-tenue);
   border-radius: 5px; padding: 4px 9px; margin-bottom: 10px;
 }
 
-.riga-dati { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+.riga-dati { clear: both; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
 .etichetta-dato { font-size: 13px; border: 1px solid var(--bordo); border-radius: 999px; padding: 4px 12px; color: var(--tenue); }
 .etichetta-dato.scade { border-color: var(--allarme); color: var(--allarme); }
 .etichetta-dato.soldi {

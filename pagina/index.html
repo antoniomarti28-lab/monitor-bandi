@@ -556,7 +556,12 @@ function disegnaBandi(bandi) {
     const tipo = b.tipo_aiuto
       ? `<span class="tipo-aiuto">${b.tipo_aiuto}</span><br>` : "";
 
+    const anteprima = b.immagine
+      ? `<img class="anteprima" src="${b.immagine}" alt="" loading="lazy"
+             referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+
     return `<article class="bando">
+      ${anteprima}
       ${tipo}
       <h2>${punteggio}<a href="${b.link}" target="_blank" rel="noopener noreferrer">${b.titolo}</a></h2>
       ${verdetto}
