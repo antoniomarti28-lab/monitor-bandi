@@ -119,6 +119,12 @@
       "url": "https://www.comune.tropea.vv.it/albo-pretorio/",
       "ente": "Comune di Tropea",
       "attivo": true
+    },
+    {
+      "nome": "calabriafilmcommission.it",
+      "url": "https://www.calabriafilmcommission.it/bandi-avvisi/",
+      "ente": "",
+      "attivo": true
     }
   ],
   "impostazioni": {
