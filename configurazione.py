@@ -17,7 +17,7 @@ from pathlib import Path
 BASE = Path(__file__).parent
 FILE = BASE / "configurazione.json"
 
-CAMPI_PROFILO = ("nome", "tipo_ente", "settori", "regioni", "parole", "escluse",
+CAMPI_PROFILO = ("nome", "tipo_ente", "racconto", "settori", "regioni", "parole", "escluse",
                  "importo_min", "importo_max")
 LISTE = ("settori", "regioni", "parole", "escluse")
 
@@ -143,13 +143,13 @@ def importa(db):
             visti.add(ident)
             if prima[ident] != {**p, "id": ident}:
                 cambiati.append(ident)
-                db.execute("UPDATE profili SET nome=?,tipo_ente=?,settori=?,regioni=?,"
+                db.execute("UPDATE profili SET nome=?,tipo_ente=?,racconto=?,settori=?,regioni=?,"
                            "parole=?,escluse=?,importo_min=?,importo_max=? WHERE id=?",
                            valori + (ident,))
         else:
             cur = db.execute(
-                "INSERT INTO profili (nome,tipo_ente,settori,regioni,parole,escluse,"
-                "importo_min,importo_max,creato_il) VALUES (?,?,?,?,?,?,?,?,datetime('now'))",
+                "INSERT INTO profili (nome,tipo_ente,racconto,settori,regioni,parole,escluse,"
+                "importo_min,importo_max,creato_il) VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))",
                 valori)
             nuovo = cur.lastrowid
             visti.add(nuovo)

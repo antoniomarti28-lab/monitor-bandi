@@ -108,7 +108,30 @@ def contiene(testo, chiave):
 
 PESI = {"bando": 25, "settore": 10, "settore_max": 30, "regione": 20,
         "regione_generica": 8, "parola": 10, "parola_max": 20, "importo": 5,
-        "forse_notizia": 20, "confermato": 15}
+        "forse_notizia": 20, "confermato": 15, "racconto": 4, "racconto_max": 12}
+
+# Parole troppo comuni per dire qualcosa: nel racconto ci sono di sicuro.
+BANALI = {"associazione", "attivita", "progetto", "progetti", "nostro", "nostra", "nostre",
+          "nostri", "siamo", "facciamo", "abbiamo", "anche", "sono", "essere", "molto",
+          "persone", "gruppo", "insieme", "quando", "questo", "questa", "tutti", "tutte",
+          "della", "delle", "degli", "dalla", "nella", "come", "perche", "oltre", "ogni"}
+
+
+def parole_del_racconto(racconto):
+    """Le parole con un peso specifico dentro il racconto libero del profilo.
+
+    Serve ad allargare la rete: un bando che parla di «residenze artistiche» deve
+    poter emergere anche se nessuna casella spuntata dice esattamente quello.
+    """
+    if not racconto:
+        return []
+    viste, fuori = set(), []
+    for parola in re.findall(r"[a-zA-ZÀ-ü]{5,}", _norm(racconto)):
+        if parola in BANALI or parola in viste:
+            continue
+        viste.add(parola)
+        fuori.append(parola[:8])   # troncata: cosi' «teatrale» trova «teatralita'»
+    return fuori[:40]
 
 SOGLIA = 40  # sotto questo punteggio il bando non viene mostrato nel profilo
 
@@ -178,7 +201,14 @@ def valuta(bando, profilo):
             punti += PESI["regione_generica"]
             motivi.append("nessuna zona indicata")
 
-    # 5. Parole chiave scritte da te.
+    # 5. Il racconto libero: le sue parole valgono poco ciascuna, ma allargano la rete.
+    dal_racconto = [p for p in parole_del_racconto(profilo.get("racconto"))
+                    if contiene(testo, p)]
+    if dal_racconto:
+        punti += min(len(dal_racconto) * PESI["racconto"], PESI["racconto_max"])
+        motivi.append("dal tuo racconto: " + ", ".join(dal_racconto[:4]))
+
+    # 6. Parole chiave scritte da te.
     tue = [p for p in profilo.get("parole", []) if p and contiene(testo, p)]
     if tue:
         punti += min(len(tue) * PESI["parola"], PESI["parola_max"])
@@ -224,10 +254,15 @@ CREATE INDEX IF NOT EXISTS idx_abb_profilo ON abbinamenti(profilo_id, punteggio 
 """
 
 LISTE = ("settori", "regioni", "parole", "escluse")
+CAMPI_TESTO = ("nome", "tipo_ente", "racconto")
 
 
 def prepara(db):
     db.executescript(SCHEMA)
+    # Il racconto libero e' arrivato dopo: si aggiunge senza toccare i dati esistenti.
+    if "racconto" not in {r[1] for r in db.execute("PRAGMA table_info(profili)")}:
+        db.execute("ALTER TABLE profili ADD COLUMN racconto TEXT")
+        db.commit()
 
 
 def leggi_profili(db):
@@ -237,6 +272,7 @@ def leggi_profili(db):
         p = dict(r)
         for campo in LISTE:
             p[campo] = json.loads(p[campo] or "[]")
+        p.setdefault("racconto", None)
         fuori.append(p)
     return fuori
 

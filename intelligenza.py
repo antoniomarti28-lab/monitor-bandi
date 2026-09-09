@@ -277,6 +277,9 @@ Campi richiesti:
 SISTEMA_GIUDIZIO = """Valuti se un soggetto puo' partecipare a un bando.
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
 
+Se il profilo racconta cosa fa a parole sue, tienine conto: un soggetto puo' rientrare
+per quello che fa davvero anche se la sua categoria formale non e' nominata nel bando.
+
   "verdetto" : "si" se il profilo rientra chiaramente tra i destinatari,
                "forse" se il testo non basta per escluderlo,
                "no" se il profilo e' escluso (tipo di ente sbagliato, territorio sbagliato).

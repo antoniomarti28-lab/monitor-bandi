@@ -56,6 +56,18 @@
     </div>
 
     <div class="campo">
+      <label for="p-racconto">Raccontami cosa fate davvero
+        <span class="aiuto">a parole tue: e la cosa che aiuta di piu</span></label>
+      <textarea id="p-racconto" rows="5" placeholder="Esempio: organizziamo rassegne di teatro di strada e residenze artistiche a Tropea, laboratori per adolescenti, concerti in spazi abbandonati. Collaboriamo con le scuole del posto e con altre associazioni della costa. Ci servono fondi per attrezzature audio e per pagare gli artisti."></textarea>
+      <p class="aiuto-blocco">
+        Piu sei concreto, piu occasioni trovo: nomi dei luoghi, con chi lavorate,
+        che tipo di attivita, cosa vi serve. Questo testo lo leggo io insieme a ogni
+        bando, e mi permette di riconoscere occasioni che le caselle qui sotto non
+        prevedono.
+      </p>
+    </div>
+
+    <div class="campo">
       <label>Di cosa ti occupi <span class="aiuto">spunta tutto quello che ti riguarda</span></label>
       <div class="caselle" id="p-settori"></div>
     </div>
@@ -399,6 +411,7 @@ function mostraScheda(p) {
   };
   box.innerHTML = `<h3>Impostazioni di «${p.nome}»</h3><dl>
       ${riga("Che cosa sei", p.tipo_ente)}
+      ${riga("Cosa fate", p.racconto)}
       ${riga("Di cosa ti occupi", p.settori.join(" · ") || "tutto")}
       ${riga("Dove", p.regioni.join(" · ") || "ovunque")}
       ${riga("Importo", fascia(p.importo_min, p.importo_max))}
@@ -420,6 +433,7 @@ function apriEditor(p) {
   $("p-nome").value = p ? p.nome : "";
   $("p-tipo").innerHTML = VOCE.tipi_ente
     .map((t) => `<option${p && p.tipo_ente === t ? " selected" : ""}>${t}</option>`).join("");
+  $("p-racconto").value = p && p.racconto ? p.racconto : "";
   caselle("p-settori", VOCE.settori, p ? p.settori : []);
   caselle("p-regioni", VOCE.regioni, p ? p.regioni : []);
   $("p-min").value = p && p.importo_min != null ? p.importo_min : "";
@@ -439,6 +453,7 @@ $("b-salva").onclick = async () => {
     id: inModifica ? inModifica.id : null,
     nome: $("p-nome").value,
     tipo_ente: $("p-tipo").value,
+    racconto: $("p-racconto").value.trim() || null,
     settori: spuntate("p-settori"),
     regioni: spuntate("p-regioni"),
     parole: virgole($("p-parole").value),
