@@ -89,6 +89,7 @@ def esporta(db):
         "feed": precedente["feed"],
         "siti": siti,
         "impostazioni": precedente["impostazioni"],
+        "proposte": precedente.get("proposte", []),
         "archiviati": archiviati,
     }, indent=2, ensure_ascii=False), encoding="utf-8")
     return len(profili), len(siti), len(archiviati)
@@ -96,12 +97,13 @@ def esporta(db):
 
 def leggi_file():
     if not FILE.exists():
-        return {"profili": [], "feed": feed_iniziali(), "siti": [],
+        return {"profili": [], "feed": feed_iniziali(), "siti": [], "proposte": [],
                 "impostazioni": dict(IMPOSTAZIONI_PREDEFINITE), "archiviati": []}
     d = json.loads(FILE.read_text(encoding="utf-8"))
     d.setdefault("profili", [])
     d.setdefault("siti", [])
     d.setdefault("archiviati", [])
+    d.setdefault("proposte", [])
     if not d.get("feed"):
         d["feed"] = feed_iniziali()
     imp = dict(IMPOSTAZIONI_PREDEFINITE)

@@ -39,6 +39,15 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: python raccogli.py
 
+      - name: Cerca fonti nuove (solo il lunedi)
+        env:
+          MONITOR_GROQ_CHIAVE: ${{ secrets.MONITOR_GROQ_CHIAVE }}
+          MONITOR_TELEGRAM_TOKEN: ${{ secrets.MONITOR_TELEGRAM_TOKEN }}
+          MONITOR_TELEGRAM_CHAT: ${{ secrets.MONITOR_TELEGRAM_CHAT }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          if [ "$(date +%u)" = "1" ]; then python scopri.py; else echo "non e' lunedi: salto"; fi
+
       - name: Rigenera la pagina da guardare
         run: python anteprima.py
 

@@ -122,5 +122,23 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "archiviati": []
+  "archiviati": [],
+  "proposte": [
+    {
+      "nome": "Call 7 Interreg Euro-MED",
+      "url": "https://interreg-euro-med.eu/en/call-7-mediterranean-multiprogramme-mechanism-coordinated-call",
+      "ente": "Interreg Euro-MED Programme",
+      "a_chi_serve": "Chiunque intende presentare progetti di turismo sostenibile nel Mediterraneo può trovare qui le modalità di candidatura e i requisiti del Call 7.",
+      "bandi_visti": 12,
+      "trovata_il": "2026-09-09"
+    },
+    {
+      "nome": "Bandi Fondazione Cariplo",
+      "url": "https://www.fondazionecariplo.it/bandi",
+      "ente": "Fondazione Cariplo",
+      "a_chi_serve": "Organizzazioni del Terzo Settore che cercano contributi a fondo perduto per progetti culturali, sociali, ambientali e di ricerca",
+      "bandi_visti": 7,
+      "trovata_il": "2026-09-09"
+    }
+  ]
 }

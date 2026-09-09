@@ -132,6 +132,20 @@
     </table>
   </details>
 
+  <details class="fonti" id="sezione-proposte" hidden>
+    <summary>Fonti che ti propongo <span class="conta-proposte" id="conta-proposte"></span></summary>
+    <p class="aiuto-blocco">
+      Le ho trovate seguendo i collegamenti dei bandi che gia' leggo e chiedendo al
+      modello quali portali conosce. <b>Le ho aperte tutte una per una</b> prima di
+      proportele: quelle che non rispondevano o non avevano bandi le ho gia' scartate.
+      Nessuna viene aggiunta senza che tu la accetti.
+    </p>
+    <table>
+      <thead><tr><th>Fonte</th><th>A chi serve</th><th>Bandi visti</th><th></th></tr></thead>
+      <tbody id="tabella-proposte"></tbody>
+    </table>
+  </details>
+
   <details class="fonti">
     <summary>Fonti che controllo</summary>
     <p class="aiuto-blocco">
@@ -299,6 +313,18 @@ async function azione(nome, dati) {
   } else if (nome === "impostazioni") {
     C.impostazioni = { ...C.impostazioni, ...dati };
     messaggio = "Soglie aggiornate";
+
+  } else if (nome === "proposta/accetta") {
+    const p = (C.proposte || []).find((x) => x.url === dati.url);
+    if (p) {
+      C.siti.push({ nome: p.nome, url: p.url, ente: p.ente || "", attivo: true });
+      C.proposte = C.proposte.filter((x) => x.url !== dati.url);
+    }
+    messaggio = "Fonte accettata";
+
+  } else if (nome === "proposta/scarta") {
+    C.proposte = (C.proposte || []).filter((x) => x.url !== dati.url);
+    messaggio = "Proposta scartata";
 
   } else if (nome === "giro") {
     C.richiesta_giro = dati.quando;
@@ -694,6 +720,37 @@ async function caricaFonti() {
   $("b-salva-impostazioni").hidden = !scrivibile();
   $("form-aggiungi-fonte").hidden = !scrivibile();
   $("b-cerca-adesso").hidden = !scrivibile();
+  disegnaProposte();
+}
+
+function disegnaProposte() {
+  const elenco = (CONFIG && CONFIG.proposte) || [];
+  $("sezione-proposte").hidden = elenco.length === 0;
+  $("conta-proposte").textContent = elenco.length ? elenco.length : "";
+  if (!elenco.length) return;
+
+  $("tabella-proposte").innerHTML = elenco.map((p) => `<tr>
+      <td><a href="${p.url}" target="_blank" rel="noopener noreferrer">${p.nome}</a>
+          <br><span class="spiega">${p.url.replace(/^https?:\/\//, "").slice(0, 60)}</span></td>
+      <td>${p.a_chi_serve || "&mdash;"}</td>
+      <td>${p.bandi_visti || "?"}</td>
+      <td>${scrivibile() ? `<button class="archivia" data-accetta="${p.url}">Accetta</button>
+           <button class="archivia" data-scarta="${p.url}">No</button>` : ""}</td>
+    </tr>`).join("");
+
+  $("tabella-proposte").querySelectorAll("[data-accetta]").forEach((b) => {
+    b.onclick = async () => {
+      if (!await prova("proposta/accetta", { url: b.dataset.accetta })) return;
+      await caricaFonti();
+      avvisa(STATICA ? "Accettata: la controllo al prossimo giro. " + DOPO_SALVATAGGIO : "Accettata.");
+    };
+  });
+  $("tabella-proposte").querySelectorAll("[data-scarta]").forEach((b) => {
+    b.onclick = async () => {
+      if (!await prova("proposta/scarta", { url: b.dataset.scarta })) return;
+      await caricaFonti();
+    };
+  });
 }
 
 $("b-salva-impostazioni").onclick = async () => {

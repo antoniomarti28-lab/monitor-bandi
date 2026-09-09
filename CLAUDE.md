@@ -197,3 +197,31 @@ ricominciato a troncarsi (400 `json_validate_failed`) con `max_completion_tokens
 2500. Alzato a 4000: non costa nulla, si paga solo quello che il modello scrive.
 Il budget giornaliero autoimposto e' passato da 90.000 a 140.000 gettoni; se il limite
 vero arriva prima, il 429 ferma il giro da solo senza rompere niente.
+
+
+## Ricerca di fonti nuove (`scopri.py`, 9 set 2026)
+
+Tre passi: raccolta, verifica, giudizio. **Le fonti non vengono mai aggiunte da sole**:
+finiscono in `configurazione.json` sotto `proposte` e compaiono sulla pagina con
+«Accetta» / «No». Gira il lunedi', dentro il giro quotidiano.
+
+**Il dato che giustifica tutta l'architettura:** alla prima prova vera il modello ha
+proposto 13 portali e **11 erano inventati** (404 o domini inesistenti come
+`fondazionecarica.it`, `mintern.gov.it`). La verifica — aprire davvero ogni indirizzo e
+contare i collegamenti a bandi — li ha scartati tutti. Senza quel passo, l'elenco fonti
+si riempirebbe di indirizzi morti. **La verifica non e' un di piu': e' il pezzo che
+rende usabile la ricerca.**
+
+La raccolta «grounded» (seguire i collegamenti dei bandi gia' letti) e' onesta ma rende
+poco: da 128 pagine e' uscito **1 candidato**. Serve insieme all'altra, non da sola.
+
+## Da fare quando i token diventeranno stretti (chiesto da lui, NON implementato)
+
+Oggi il modello legge tutti i bandi nuovi senza distinzioni. Quando le fonti cresceranno
+servira' una **priorita' di lettura**. Ordine sensato, dal piu' al meno promettente:
+1. bandi da fonti che in passato hanno prodotto compatibilita' alte;
+2. bandi il cui punteggio a parole e' gia' sopra soglia;
+3. bandi con scadenza vicina (leggere prima quelli che stanno per chiudere);
+4. tutto il resto, a scalare, nei giorni successivi.
+Il conto dei gettoni (`consumo`) c'e' gia' e si ferma da solo: manca solo l'ordinamento
+in `intelligenza.da_leggere`, che oggi ordina per `trovato_il DESC`.
