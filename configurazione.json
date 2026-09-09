@@ -2,20 +2,28 @@
   "profili": [
     {
       "id": 1,
-      "nome": "Associazione culturale",
+      "nome": "Garage68",
       "tipo_ente": "Associazione non riconosciuta",
       "settori": [
         "Cultura e arte",
         "Teatro e spettacolo",
         "Musica",
-        "Sociale e terzo settore"
+        "Cinema e audiovisivo",
+        "Sociale e terzo settore",
+        "Giovani",
+        "Ambiente",
+        "Tecnologia e digitale"
       ],
       "regioni": [
         "Calabria",
         "Tutta Italia",
         "Europa"
       ],
-      "parole": [],
+      "parole": [
+        "residenza artistica",
+        "borgo",
+        "festival"
+      ],
       "escluse": [],
       "importo_min": null,
       "importo_max": null
