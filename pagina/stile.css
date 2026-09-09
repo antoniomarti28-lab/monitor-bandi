@@ -349,6 +349,16 @@ table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13p
 th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--bordo); }
 th { color: var(--tenue); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 td.ko { color: var(--allarme); }
+tr.spenta { opacity: 0.45; }
+.aggiungi-sito select {
+  background: var(--carta);
+  border: 1px solid var(--bordo);
+  border-radius: var(--raggio);
+  color: var(--testo);
+  padding: 8px 11px;
+  font: inherit;
+  font-size: 14px;
+}
 
 @media (max-width: 620px) {
   .riepilogo { grid-template-columns: repeat(2, 1fr); }

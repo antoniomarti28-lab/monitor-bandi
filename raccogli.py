@@ -214,19 +214,20 @@ def normalizza_data(grezza):
 # ---------------------------------------------------------------- giro principale
 
 def giro():
-    cfg = json.loads(FONTI.read_text(encoding="utf-8"))
     db = apri_db()
 
     # Le impostazioni stanno nel file, non nel database: il file comanda.
+    # Da li' arrivano anche i feed, cosi' si possono accendere e spegnere dalla pagina.
     import configurazione
+    elenco_feed = configurazione.leggi_file()["feed"]
     cambiati = configurazione.importa(db)
     if cambiati:
         print("Profili modificati dalla pagina: %s\n" % cambiati)
     oggi = datetime.now(timezone.utc).isoformat(timespec="seconds")
     report = []
 
-    for f in cfg["fonti"]:
-        if not f.get("attiva", True):
+    for f in elenco_feed:
+        if not f.get("attivo", True) or not f.get("url"):
             continue
         nome, url = f["nome"], f["url"]
         esito, voci, nuovi = "ok", 0, 0

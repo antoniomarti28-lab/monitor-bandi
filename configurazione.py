@@ -29,8 +29,26 @@ def _profilo_da_riga(r):
     return p
 
 
+IMPOSTAZIONI_PREDEFINITE = {"soglia_avviso": 55, "massimo_messaggi": 8}
+
+
+def feed_iniziali():
+    """La prima volta i feed vengono da fonti.json; poi vivono in configurazione.json,
+    cosi' anche quelli si possono accendere e spegnere dalla pagina."""
+    vecchio = BASE / "fonti.json"
+    if not vecchio.exists():
+        return []
+    dati = json.loads(vecchio.read_text(encoding="utf-8"))
+    return [{"nome": f["nome"], "url": f.get("url", ""), "ente": f.get("ente", ""),
+             "attivo": bool(f.get("attiva", True)) and bool(f.get("url"))}
+            for f in dati.get("fonti", [])]
+
+
 def esporta(db):
-    """Scrive il file a partire dal database (usato dall'app sul computer)."""
+    """Scrive il file a partire dal database (usato dall'app sul computer).
+
+    Feed e impostazioni non stanno nel database: si conservano com'erano nel file.
+    """
     db.row_factory = sqlite3.Row
     profili = [_profilo_da_riga(r) for r in db.execute("SELECT * FROM profili ORDER BY id")]
     try:
@@ -41,19 +59,30 @@ def esporta(db):
         siti = []
     archiviati = [r[0] for r in db.execute("SELECT id FROM bandi WHERE archiviato=1")]
 
-    FILE.write_text(json.dumps(
-        {"profili": profili, "siti": siti, "archiviati": archiviati},
-        indent=2, ensure_ascii=False), encoding="utf-8")
+    precedente = leggi_file()
+    FILE.write_text(json.dumps({
+        "profili": profili,
+        "feed": precedente["feed"],
+        "siti": siti,
+        "impostazioni": precedente["impostazioni"],
+        "archiviati": archiviati,
+    }, indent=2, ensure_ascii=False), encoding="utf-8")
     return len(profili), len(siti), len(archiviati)
 
 
 def leggi_file():
     if not FILE.exists():
-        return {"profili": [], "siti": [], "archiviati": []}
+        return {"profili": [], "feed": feed_iniziali(), "siti": [],
+                "impostazioni": dict(IMPOSTAZIONI_PREDEFINITE), "archiviati": []}
     d = json.loads(FILE.read_text(encoding="utf-8"))
     d.setdefault("profili", [])
     d.setdefault("siti", [])
     d.setdefault("archiviati", [])
+    if not d.get("feed"):
+        d["feed"] = feed_iniziali()
+    imp = dict(IMPOSTAZIONI_PREDEFINITE)
+    imp.update(d.get("impostazioni") or {})
+    d["impostazioni"] = imp
     return d
 
 

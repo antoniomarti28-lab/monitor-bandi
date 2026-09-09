@@ -177,6 +177,11 @@ class Gestore(BaseHTTPRequestHandler):
         if u.path == "/api/siti":
             return self._json(query("SELECT * FROM siti ORDER BY id"))
 
+        if u.path == "/api/configurazione":
+            # Stesso file che la pagina pubblicata riscrive su GitHub: cosi' l'app
+            # locale e quella online si comportano allo stesso modo.
+            return self._json(configurazione.leggi_file())
+
         if u.path == "/api/notifiche":
             return self._json(query(
                 "SELECT n.quando, n.canale, n.esito, p.nome AS profilo, b.titolo, b.link "
@@ -233,6 +238,17 @@ class Gestore(BaseHTTPRequestHandler):
             trovati = profili.riabbina(c, ident)
             self._fine_scrittura(c)
             return self._json({"ok": True, "id": ident, "trovati": trovati})
+
+        if u.path == "/api/configurazione":
+            nuova = self._corpo_richiesta()
+            configurazione.FILE.write_text(
+                json.dumps(nuova, indent=2, ensure_ascii=False), encoding="utf-8")
+            c = connetti()
+            configurazione.importa(c)
+            profili.riabbina(c)
+            c.commit()
+            c.close()
+            return self._json({"ok": True})
 
         if u.path == "/api/siti/aggiungi":
             d = self._corpo_richiesta()

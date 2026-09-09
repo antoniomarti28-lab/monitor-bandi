@@ -72,6 +72,7 @@ def costruisci():
         "fonti": fonti,
         "siti": elenco_siti,
         "notifiche": notifiche,
+        "configurazione": __import__("configurazione").leggi_file(),
         "vocabolario": {"settori": list(profili.SETTORI), "regioni": list(profili.REGIONI),
                         "tipi_ente": profili.TIPI_ENTE},
     }
@@ -88,7 +89,9 @@ def costruisci():
 // Con un codice di accesso a GitHub, pero', la pagina puo' riscrivere le impostazioni.
 window.SOLA_LETTURA = true;
 window.REPO = "%s";
+window.DATI_CONFIG = null;   // riempito qui sotto
 const DATI = %s;
+window.DATI_CONFIG = DATI.configurazione;
 const reteVera = window.fetch.bind(window);
 window.fetch = async (url, opzioni) => {
   const u = new URL(url, "http://x/");

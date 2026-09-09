@@ -25,7 +25,11 @@ Utente: Antonio, non programmatore. Tutto in italiano, interfaccia compresa.
 
 ## Come e' fatto
 
-- `fonti.json` — elenco fonti. Aggiungerne una = aggiungere un blocco.
+- `configurazione.json` — **la fonte di verita'**: profili, feed, siti, soglie, archiviati.
+  La pagina online lo riscrive tramite l'API di GitHub; l'app locale tramite
+  `/api/configurazione`. `dati.db` lo ricopia a ogni giro (`configurazione.importa`).
+- `fonti.json` — serve solo come elenco iniziale dei feed alla prima installazione:
+  dopo, i feed vivono dentro `configurazione.json` e si accendono/spengono dalla pagina.
 - `raccogli.py` — un giro di raccolta: legge i feed, estrae, salva in `dati.db` (SQLite).
   Rispetta robots.txt, 2 secondi di pausa tra una richiesta e l'altra.
 - `server.py` — la pagina di consultazione su `http://localhost:8077`.
@@ -146,3 +150,32 @@ E dopo aver cambiato i profili con `Avvia Monitor Bandi.bat`:
     git add dati.db && git commit -m "profili aggiornati" && git push
 
 Senza il `pull` prima, il push viene rifiutato e si rischia di sovrascrivere un giro intero.
+
+
+## Tutto si modifica dalla pagina (9 set 2026)
+
+Profili, feed, siti, soglie di avviso e archivio si cambiano dalla pagina pubblicata,
+non solo dall'app locale. Meccanica:
+
+- la pagina legge e riscrive `configurazione.json` con l'API di GitHub;
+- il codice di accesso (token fine-grained, permesso Contents) sta nel `localStorage`
+  del suo browser, mai nel repository e mai nella pagina;
+- il push su `configurazione.json` fa partire `aggiorna-impostazioni.yml`, che importa,
+  controlla subito le fonti nuove, rivaluta i giudizi e ripubblica (~2 minuti);
+- quel workflow si esclude da solo quando il commit viene dai giri automatici,
+  altrimenti si richiamerebbero a vicenda all'infinito.
+
+**Trappole trovate costruendolo:**
+- la finta rete dell'anteprima (`window.fetch` sostituito) intercettava anche le chiamate
+  a GitHub: ora passa oltre tutto cio' che non inizia per `/api/`;
+- gli errori di salvataggio finivano in una promise non gestita e l'utente non vedeva
+  niente: ogni scrittura passa da `prova()`, che li mostra a schermo;
+- `document.querySelector(".aggiungi-sito")` prendeva il modulo sbagliato quando i moduli
+  con quella classe sono diventati due: usare gli id.
+
+## Ritardi di GitHub (misurati il 9 set 2026)
+
+Le pianificazioni gratuite partono MOLTO in ritardo: il giro delle 7 e' partito alle 11:28,
+e i comandi Telegram «ogni 15 minuti» sono partiti ogni 4-5 ore. Non e' aggirabile.
+Se un giorno diventa un problema, l'unica cura e' un server vero (~5 €/mese): gliel'ho
+proposto tre volte e ha sempre scelto il gratis.

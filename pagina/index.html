@@ -114,29 +114,45 @@
   </details>
 
   <details class="fonti">
-    <summary>Siti che controllo per te</summary>
+    <summary>Fonti che controllo</summary>
     <p class="aiuto-blocco">
-      Incolla l'indirizzo di una pagina che elenca bandi — per esempio la pagina «Bandi» di un
-      Comune o di una fondazione. Ogni giorno la apro, seguo i collegamenti che sembrano bandi
-      e leggo anche i PDF.
+      Due tipi di fonte: la <b>pagina di elenco</b> (per esempio la pagina «Bandi» di un Comune
+      o di una fondazione), di cui seguo i collegamenti e leggo anche i PDF, e il <b>feed</b>,
+      che alcuni siti pubblicano apposta per essere letti da un programma.
+      Nel dubbio scegli «pagina di elenco»: funziona quasi sempre.
     </p>
-    <div class="aggiungi-sito">
+    <div class="aggiungi-sito" id="form-aggiungi-fonte">
       <input type="url" id="s-url" placeholder="https://…/bandi">
-      <input type="text" id="s-nome" placeholder="Come chiamarlo (facoltativo)">
+      <input type="text" id="s-nome" placeholder="Come chiamarla (facoltativo)">
+      <select id="s-tipo">
+        <option value="sito">pagina di elenco</option>
+        <option value="feed">feed</option>
+      </select>
       <button id="b-aggiungi-sito">Aggiungi</button>
     </div>
     <table>
-      <thead><tr><th>Sito</th><th>Esito ultimo giro</th><th>Trovati</th><th></th></tr></thead>
-      <tbody id="tabella-siti"></tbody>
+      <thead><tr><th>Fonte</th><th>Tipo</th><th>Ultimo giro</th><th>Accesa</th><th></th></tr></thead>
+      <tbody id="tabella-fonti"></tbody>
     </table>
   </details>
 
   <details class="fonti">
-    <summary>Stato delle fonti</summary>
-    <table>
-      <thead><tr><th>Fonte</th><th>Esito</th><th>Voci</th><th>Ultimo giro</th></tr></thead>
-      <tbody id="tabella-fonti"></tbody>
-    </table>
+    <summary>Quando avvisarmi</summary>
+    <p class="aiuto-blocco">
+      Ti scrivo su Telegram solo per i bandi che superano il punteggio qui sotto.
+      Più alto è, meno messaggi ricevi ma più rischi di perderti qualcosa.
+    </p>
+    <div class="campo doppio">
+      <div>
+        <label for="i-soglia">Punteggio minimo per avvisarti</label>
+        <input type="number" id="i-soglia" min="0" max="100" step="5">
+      </div>
+      <div>
+        <label for="i-massimo">Oltre quanti bandi mandare un riepilogo unico</label>
+        <input type="number" id="i-massimo" min="1" max="30" step="1">
+      </div>
+    </div>
+    <div class="azioni"><button class="primario" id="b-salva-impostazioni">Salva</button></div>
   </details>
 
 </div>
@@ -201,49 +217,73 @@ function avvisa(testo, brutto = false) {
 
 /**
  * Unico punto da cui passano tutte le modifiche.
- * Con il server locale chiama l'app; da GitHub riscrive il file delle impostazioni.
+ * Si lavora sempre sull'oggetto delle impostazioni; cambia solo dove viene salvato:
+ * l'app sul computer lo manda al proprio server, la pagina online lo scrive su GitHub.
  */
-async function azione(nome, dati) {
-  if (!STATICA) return chiedi("/api/" + nome, dati);
+async function caricaConfig() {
+  return STATICA ? leggiConfigDaGitHub() : chiedi("/api/configurazione");
+}
 
-  if (!CONFIG) CONFIG = await leggiConfigDaGitHub();
-  const P = CONFIG.profili, S = CONFIG.siti, A = CONFIG.archiviati;
+async function salvaConfig(messaggio) {
+  if (STATICA) return scriviConfigSuGitHub(messaggio);
+  return chiedi("/api/configurazione", CONFIG);
+}
+
+async function azione(nome, dati) {
+  if (!CONFIG) CONFIG = await caricaConfig();
+  const C = CONFIG;
+  let messaggio = "Impostazioni aggiornate", risposta = { ok: true };
 
   if (nome === "profili/salva") {
-    const id = dati.id || (P.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1);
+    const id = dati.id || (C.profili.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1);
     const nuovo = { ...dati, id };
-    const i = P.findIndex((p) => p.id === id);
-    if (i >= 0) P[i] = nuovo; else P.push(nuovo);
-    await scriviConfigSuGitHub("Profilo «" + nuovo.nome + "»");
-    return { ok: true, id };
-  }
-  if (nome === "profili/elimina") {
-    CONFIG.profili = P.filter((p) => p.id !== dati.id);
-    await scriviConfigSuGitHub("Profilo eliminato");
-    return { ok: true };
-  }
-  if (nome === "siti/aggiungi") {
+    const i = C.profili.findIndex((p) => p.id === id);
+    if (i >= 0) C.profili[i] = nuovo; else C.profili.push(nuovo);
+    messaggio = "Profilo «" + nuovo.nome + "»";
+    risposta = { ok: true, id };
+
+  } else if (nome === "profili/elimina") {
+    C.profili = C.profili.filter((p) => p.id !== dati.id);
+    messaggio = "Profilo eliminato";
+
+  } else if (nome === "fonte/aggiungi") {
     let url = dati.url.trim();
     if (!url.startsWith("http")) url = "https://" + url;
-    if (!S.some((s) => s.url === url)) {
-      S.push({ nome: dati.nome || url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0],
-               url, ente: "", attivo: true });
+    const dove = dati.tipo === "feed" ? C.feed : C.siti;
+    if (!dove.some((x) => x.url === url)) {
+      dove.push({ nome: dati.nome || url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0],
+                  url, ente: "", attivo: true });
     }
-    await scriviConfigSuGitHub("Sito aggiunto");
-    return { ok: true };
+    messaggio = "Fonte aggiunta";
+
+  } else if (nome === "fonte/attiva") {
+    const dove = dati.tipo === "feed" ? C.feed : C.siti;
+    const f = dove.find((x) => x.url === dati.url);
+    if (f) f.attivo = dati.attivo;
+    messaggio = (dati.attivo ? "Fonte riaccesa" : "Fonte spenta");
+
+  } else if (nome === "fonte/rimuovi") {
+    if (dati.tipo === "feed") C.feed = C.feed.filter((x) => x.url !== dati.url);
+    else C.siti = C.siti.filter((x) => x.url !== dati.url);
+    messaggio = "Fonte tolta";
+
+  } else if (nome === "impostazioni") {
+    C.impostazioni = { ...C.impostazioni, ...dati };
+    messaggio = "Soglie aggiornate";
+
+  } else if (nome === "archivia") {
+    C.archiviati = dati.archivia
+      ? [...new Set([...C.archiviati, dati.id])]
+      : C.archiviati.filter((x) => x !== dati.id);
+    messaggio = "Archivio aggiornato";
+
+  } else {
+    throw new Error("azione sconosciuta: " + nome);
   }
-  if (nome === "siti/rimuovi") {
-    CONFIG.siti = S.filter((s) => s.url !== dati.url);
-    await scriviConfigSuGitHub("Sito tolto");
-    return { ok: true };
-  }
-  if (nome === "archivia") {
-    CONFIG.archiviati = dati.archivia
-      ? [...new Set([...A, dati.id])] : A.filter((x) => x !== dati.id);
-    await scriviConfigSuGitHub("Archivio aggiornato");
-    return { ok: true };
-  }
-  throw new Error("azione sconosciuta: " + nome);
+
+  await salvaConfig(messaggio);
+  if (!STATICA) CONFIG = null;   // in locale si rilegge, così resta allineato
+  return risposta;
 }
 
 /** Come azione(), ma se qualcosa va storto lo dice a schermo invece di tacere. */
@@ -536,17 +576,80 @@ async function aggiorna() {
 }
 
 async function caricaFonti() {
-  const fonti = await chiedi("/api/fonti");
-  $("fonte").insertAdjacentHTML("beforeend",
-    fonti.filter((f) => f.esito === "ok")
-         .map((f) => `<option value="${f.nome}">${f.nome}</option>`).join(""));
-  $("tabella-fonti").innerHTML = fonti.map((f) => `<tr>
-      <td>${f.nome}</td>
-      <td class="${f.esito === "ok" ? "" : "ko"}">${f.esito}</td>
-      <td>${f.voci}</td>
-      <td>${f.ultimo_giro ? f.ultimo_giro.replace("T", " ").slice(0, 16) : "–"}</td>
-    </tr>`).join("");
+  if (!CONFIG) {
+    try { CONFIG = await caricaConfig(); }
+    catch (e) { CONFIG = (window.DATI_CONFIG || { feed: [], siti: [], impostazioni: {} }); }
+  }
+  const stato = await chiedi("/api/fonti");     // com'è andato l'ultimo giro
+  const siti = await chiedi("/api/siti");
+  const perNome = Object.fromEntries(stato.map((f) => [f.nome, f]));
+  const perUrl = Object.fromEntries(siti.map((x) => [x.url, x]));
+
+  const elenco = [
+    ...(CONFIG.feed || []).map((f) => ({ ...f, tipo: "feed", stato: perNome[f.nome] })),
+    ...(CONFIG.siti || []).map((f) => ({ ...f, tipo: "sito", stato: perUrl[f.url] })),
+  ];
+
+  $("fonte").innerHTML = '<option value="">Tutte le fonti</option>' +
+    stato.filter((f) => f.esito === "ok").map((f) => `<option>${f.nome}</option>`).join("");
+
+  $("tabella-fonti").innerHTML = elenco.length ? elenco.map((f) => {
+    const st = f.stato || {};
+    const esito = st.esito || "mai letta";
+    const quando = st.ultimo_giro ? st.ultimo_giro.replace("T", " ").slice(0, 16) : "";
+    return `<tr class="${f.attivo ? "" : "spenta"}">
+      <td>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener noreferrer">${f.nome}</a>` : f.nome}</td>
+      <td>${f.tipo === "feed" ? "feed" : "pagina"}</td>
+      <td class="${esito === "ok" ? "" : "ko"}">${esito}${esito === "ok" && quando ? " · " + quando : ""}</td>
+      <td>${scrivibile()
+        ? `<input type="checkbox" data-accendi="${f.url}" data-tipo="${f.tipo}"${f.attivo ? " checked" : ""}>`
+        : (f.attivo ? "sì" : "no")}</td>
+      <td>${scrivibile() ? `<button class="archivia" data-togli="${f.url}" data-tipo="${f.tipo}">Togli</button>` : ""}</td>
+    </tr>`;
+  }).join("") : '<tr><td colspan="5" class="vuoto-riga">Nessuna fonte.</td></tr>';
+
+  $("tabella-fonti").querySelectorAll("[data-accendi]").forEach((c) => {
+    c.onchange = async () => {
+      if (!await prova("fonte/attiva", { url: c.dataset.accendi, tipo: c.dataset.tipo, attivo: c.checked })) {
+        c.checked = !c.checked; return;
+      }
+      if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
+      caricaFonti();
+    };
+  });
+  $("tabella-fonti").querySelectorAll("[data-togli]").forEach((b) => {
+    b.onclick = async () => {
+      if (!await prova("fonte/rimuovi", { url: b.dataset.togli, tipo: b.dataset.tipo })) return;
+      if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
+      caricaFonti();
+    };
+  });
+
+  const imp = CONFIG.impostazioni || { soglia_avviso: 55, massimo_messaggi: 8 };
+  $("i-soglia").value = imp.soglia_avviso;
+  $("i-massimo").value = imp.massimo_messaggi;
+  $("i-soglia").disabled = $("i-massimo").disabled = !scrivibile();
+  $("b-salva-impostazioni").hidden = !scrivibile();
+  $("form-aggiungi-fonte").hidden = !scrivibile();
 }
+
+$("b-salva-impostazioni").onclick = async () => {
+  if (!await prova("impostazioni", {
+    soglia_avviso: Number($("i-soglia").value),
+    massimo_messaggi: Number($("i-massimo").value),
+  })) return;
+  avvisa(STATICA ? DOPO_SALVATAGGIO : "Salvato.");
+};
+
+$("b-aggiungi-sito").onclick = async () => {
+  const url = $("s-url").value.trim();
+  if (!url) return;
+  if (!await prova("fonte/aggiungi", {
+    url, nome: $("s-nome").value.trim(), tipo: $("s-tipo").value })) return;
+  $("s-url").value = ""; $("s-nome").value = "";
+  if (STATICA) { avvisa("Fonte aggiunta. " + DOPO_SALVATAGGIO); return; }
+  caricaFonti();
+};
 
 // ------------------------------------------------------------------ storico notifiche
 
@@ -560,36 +663,6 @@ async function caricaNotifiche() {
     </tr>`).join("")
     : '<tr><td colspan="4" class="vuoto-riga">Nessuna notifica inviata finora.</td></tr>';
 }
-
-// ------------------------------------------------------------------ siti a mano
-
-async function caricaSiti() {
-  const elenco = await chiedi("/api/siti");
-  $("tabella-siti").innerHTML = elenco.length ? elenco.map((s) => `<tr>
-      <td><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.nome}</a></td>
-      <td class="${!s.esito || s.esito === "ok" ? "" : "ko"}">${s.esito || "mai controllato"}</td>
-      <td>${s.trovati || 0}</td>
-      <td>${scrivibile() ? `<button class="archivia" data-rimuovi="${s.id}" data-url="${s.url}">Togli</button>` : ""}</td>
-    </tr>`).join("")
-    : '<tr><td colspan="4" class="vuoto-riga">Nessun sito aggiunto.</td></tr>';
-
-  $("tabella-siti").querySelectorAll("[data-rimuovi]").forEach((b) => {
-    b.onclick = async () => {
-      if (!await prova("siti/rimuovi", { id: Number(b.dataset.rimuovi), url: b.dataset.url })) return;
-      if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
-      caricaSiti();
-    };
-  });
-}
-
-$("b-aggiungi-sito").onclick = async () => {
-  const url = $("s-url").value.trim();
-  if (!url) return;
-  if (!await prova("siti/aggiungi", { url, nome: $("s-nome").value.trim() })) return;
-  $("s-url").value = ""; $("s-nome").value = "";
-  if (STATICA) { avvisa("Sito aggiunto. " + DOPO_SALVATAGGIO); return; }
-  caricaSiti();
-};
 
 // ------------------------------------------------------------------ collegamento
 
@@ -606,7 +679,7 @@ function disegnaCollegamento() {
 
 async function ridisegnaTutto() {
   await caricaProfili();
-  await caricaSiti();
+  await caricaFonti();
   aggiorna();
 }
 
@@ -648,7 +721,6 @@ $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna,
   VOCE = await chiedi("/api/vocabolario");
   await caricaProfili();
   await caricaFonti();
-  await caricaSiti();
   await caricaNotifiche();
   aggiorna();
 })();

@@ -53,6 +53,8 @@ CREATE INDEX IF NOT EXISTS idx_notifiche_quando ON notifiche(quando DESC);
 # ---------------------------------------------------------------- impostazioni
 
 def carica():
+    """Le chiavi segrete stanno qui o nelle variabili d'ambiente; la soglia degli
+    avvisi invece sta in configurazione.json, perche' si cambia dalla pagina."""
     if CONFIG.exists():
         dati = json.loads(CONFIG.read_text(encoding="utf-8"))
     else:
@@ -74,6 +76,12 @@ def carica():
         unite["telegram"]["chat_id"] = os.environ["MONITOR_TELEGRAM_CHAT"]
     if os.environ.get("MONITOR_GROQ_CHIAVE"):
         unite.setdefault("groq", {})["chiave"] = os.environ["MONITOR_GROQ_CHIAVE"]
+
+    try:
+        import configurazione
+        unite.update(configurazione.leggi_file()["impostazioni"])
+    except Exception:
+        pass
     return unite
 
 

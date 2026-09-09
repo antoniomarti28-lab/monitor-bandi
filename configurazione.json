@@ -21,6 +21,92 @@
       "importo_max": null
     }
   ],
+  "feed": [
+    {
+      "nome": "Calabria Europa",
+      "url": "https://calabriaeuropa.regione.calabria.it/feed/",
+      "ente": "Regione Calabria",
+      "attivo": true
+    },
+    {
+      "nome": "Fondazione Con il Sud",
+      "url": "https://www.fondazioneconilsud.it/feed/",
+      "ente": "Fondazione Con il Sud",
+      "attivo": true
+    },
+    {
+      "nome": "Compagnia di San Paolo",
+      "url": "https://www.compagniadisanpaolo.it/it/feed/",
+      "ente": "Compagnia di San Paolo",
+      "attivo": true
+    },
+    {
+      "nome": "Forum Terzo Settore",
+      "url": "https://www.forumterzosettore.it/feed/",
+      "ente": "Forum Terzo Settore",
+      "attivo": true
+    },
+    {
+      "nome": "Cantiere Terzo Settore",
+      "url": "https://www.cantiereterzosettore.it/feed/",
+      "ente": "Cantiere Terzo Settore",
+      "attivo": true
+    },
+    {
+      "nome": "Regione Sicilia",
+      "url": "https://www.regione.sicilia.it/rss.xml",
+      "ente": "Regione Siciliana",
+      "attivo": true
+    },
+    {
+      "nome": "Fondazione Carical",
+      "url": "https://www.fondazionecarical.it/feed/",
+      "ente": "Fondazione Carical",
+      "attivo": true
+    },
+    {
+      "nome": "MIMIT - Incentivi",
+      "url": "https://www.mimit.gov.it/index.php?format=feed&type=rss",
+      "ente": "MIMIT",
+      "attivo": true
+    },
+    {
+      "nome": "Fondazione Cariplo",
+      "url": "https://www.fondazionecariplo.it/feed/",
+      "ente": "Fondazione Cariplo",
+      "attivo": true
+    },
+    {
+      "nome": "Regione Calabria",
+      "url": "",
+      "ente": "Regione Calabria",
+      "attivo": false
+    },
+    {
+      "nome": "MIC - Ministero Cultura",
+      "url": "",
+      "ente": "Ministero della Cultura",
+      "attivo": false
+    },
+    {
+      "nome": "Regione Puglia",
+      "url": "",
+      "ente": "Regione Puglia",
+      "attivo": false
+    },
+    {
+      "nome": "CSVnet",
+      "url": "",
+      "ente": "CSVnet",
+      "attivo": false
+    },
+    {
+      "nome": "Agenzia Coesione",
+      "url": "",
+      "ente": "Agenzia per la Coesione",
+      "attivo": false
+    }
+  ],
   "siti": [
     {
       "nome": "Con il Sud - pagina bandi",
@@ -33,19 +119,11 @@
       "url": "https://www.comune.tropea.vv.it/albo-pretorio/",
       "ente": "Comune di Tropea",
       "attivo": true
-    },
-    {
-      "nome": "calabriafilmcommission.it",
-      "url": "https://www.calabriafilmcommission.it/bandi-avvisi/",
-      "ente": "",
-      "attivo": true
-    },
-    {
-      "nome": "czkrvv.camcom.it",
-      "url": "https://czkrvv.camcom.it/",
-      "ente": "",
-      "attivo": true
     }
   ],
+  "impostazioni": {
+    "soglia_avviso": 55,
+    "massimo_messaggi": 8
+  },
   "archiviati": []
 }
