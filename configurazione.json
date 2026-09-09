@@ -122,7 +122,6 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "archiviati": [],
   "proposte": [
     {
       "nome": "Call 7 Interreg Euro-MED",
@@ -141,5 +140,5 @@
       "trovata_il": "2026-09-09"
     }
   ],
-  "richiesta_giro": "2026-09-09T18:49:52+00:00"
+  "archiviati": []
 }
