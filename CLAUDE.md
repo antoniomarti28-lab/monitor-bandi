@@ -280,3 +280,28 @@ bash su Ubuntu si ferma su ogni riga. Risolto con `.gitattributes` (`*.sh text e
   `profili.py`, rigenera l'anteprima dall'archivio che c'e' gia' e ripubblica. Un minuto,
   zero gettoni, e **non scrive niente nel repository**, quindi non puo' richiamare se stesso.
   Serve perche' un push di solo codice non aggiornava la pagina online fino al giorno dopo.
+
+
+## Matita, croce, «nuovo» e ricerca fonti a richiesta (10 set 2026, secondo giro)
+
+- **Sulle fonti: una matita e una croce** (SVG disegnati a mano dentro la pagina, niente
+  librerie di icone e niente emoji a colori) al posto di «Correggi» e «Togli». Togliere
+  chiede conferma e dice cosa succede davvero («i bandi restano, smetto solo di controllarla»).
+- **Bollino «nuovo» per 48 ore.** La data c'era gia': `trovato_il` viene scritta solo alla
+  prima INSERT (`INSERT OR IGNORE` sull'sha1 del link), quindi non si sposta piu'. Bastava
+  portarla fino alla pagina. **Attenzione al confronto delle date in SQL**: `trovato_il` e'
+  in formato `2026-09-10T14:44:11+00:00` e `datetime('now')` usa lo spazio al posto della T,
+  quindi `trovato_il > datetime('now','-48 hours')` da' risultati sbagliati. Il conto si fa
+  in JavaScript con `new Date(...)`, che l'ora scritta la legge giusta.
+- **Icona della scheda del browser**: SVG dentro un `data:` URI nel `<link rel="icon">`.
+  Nessun file da caricare e funziona anche in `anteprima.html` aperta a computer spento.
+  Se serve cambiarla: sta in `pagina/index.html`, dentro il `<head>`.
+- **«Cerca fonti nuove»** funziona come «Cerca adesso»: la pagina scrive una data in
+  `configurazione.json` (`richiesta_scoperta`), il lavoro automatico la confronta con
+  l'ultima gia' eseguita e, se e' nuova, lancia `scopri.giro()`. Le due richieste passano
+  ora dalla stessa funzione, `configurazione._richiesta_nuova`.
+
+**Trappola dei gruppi di concorrenza (pagata subito):** in un `concurrency: group` di GitHub
+puo' restare in coda **un lavoro solo**; quando ne arriva un altro, quello in attesa viene
+**cancellato**. Avevo messo `ripubblica-pagina` nello stesso gruppo dei giri: appena lui ha
+premuto un tasto sulla pagina, la ripubblicazione e' stata cancellata. Ora ha un gruppo suo.
