@@ -116,6 +116,12 @@
       "url": "https://www.regione.calabria.it/bandi-e-avvisi-di-gara/",
       "ente": "",
       "attivo": true
+    },
+    {
+      "nome": "Call 7 Interreg Euro-MED",
+      "url": "https://interreg-euro-med.eu/en/call-7-mediterranean-multiprogramme-mechanism-coordinated-call",
+      "ente": "Interreg Euro-MED Programme",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -123,14 +129,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "Call 7 Interreg Euro-MED",
-      "url": "https://interreg-euro-med.eu/en/call-7-mediterranean-multiprogramme-mechanism-coordinated-call",
-      "ente": "Interreg Euro-MED Programme",
-      "a_chi_serve": "Chiunque intende presentare progetti di turismo sostenibile nel Mediterraneo può trovare qui le modalità di candidatura e i requisiti del Call 7.",
-      "bandi_visti": 12,
-      "trovata_il": "2026-09-09"
-    },
     {
       "nome": "Bandi Fondazione Cariplo",
       "url": "https://www.fondazionecariplo.it/bandi",
