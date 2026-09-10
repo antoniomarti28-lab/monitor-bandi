@@ -74,15 +74,15 @@
       "attivo": true
     },
     {
-      "nome": "MIMIT - Incentivi",
-      "url": "https://www.mimit.gov.it/index.php?format=feed&type=rss",
-      "ente": "MIMIT",
-      "attivo": true
-    },
-    {
       "nome": "Fondazione Cariplo",
       "url": "https://www.fondazionecariplo.it/feed/",
       "ente": "Fondazione Cariplo",
+      "attivo": true
+    },
+    {
+      "nome": "MIMIT - Incentivi",
+      "url": "https://www.mimit.gov.it/index.php/it/incentivi",
+      "ente": "MIMIT",
       "attivo": true
     }
   ],
