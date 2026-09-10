@@ -84,6 +84,12 @@
       "url": "https://www.mimit.gov.it/index.php/it/incentivi",
       "ente": "MIMIT",
       "attivo": true
+    },
+    {
+      "nome": "Comune di Vibo Valentia",
+      "url": "https://www.comune.vibovalentia.vv.it/novita",
+      "ente": "",
+      "attivo": true
     }
   ],
   "siti": [
