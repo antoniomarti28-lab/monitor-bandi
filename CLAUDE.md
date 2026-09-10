@@ -305,3 +305,24 @@ bash su Ubuntu si ferma su ogni riga. Risolto con `.gitattributes` (`*.sh text e
 puo' restare in coda **un lavoro solo**; quando ne arriva un altro, quello in attesa viene
 **cancellato**. Avevo messo `ripubblica-pagina` nello stesso gruppo dei giri: appena lui ha
 premuto un tasto sulla pagina, la ripubblicazione e' stata cancellata. Ora ha un gruppo suo.
+
+
+## La pagina si apre sul profilo, e la ricerca si racconta (10 set 2026, terzo giro)
+
+- **Si apre sempre su un profilo**, non su «tutti i bandi»: e' quello che gli interessa
+  per primo. Si ricorda l'ultimo profilo scelto nel `localStorage`; **«tutti i bandi» non
+  viene registrato**, cosi' alla riapertura si torna comunque sui bandi adatti a lui.
+  Se il profilo ricordato non esiste piu', si parte dal primo.
+- **Il tasto «Cerca fonti nuove» ora racconta l'attesa.** La pagina non puo' guardare
+  dentro i lavori di GitHub (il suo codice di accesso ha solo il permesso sui contenuti),
+  quindi il giro d'informazione passa dal file: `scopri.py` scrive `esito_scoperta` in
+  `configurazione.json` (quando, quanti indirizzi ha aperto, quante fonti ha trovato, i
+  nomi) e la pagina rilegge il file ogni 15 secondi finche' non compare un esito piu'
+  recente della richiesta. **Va scritto sempre, anche a mani vuote**, o la pagina aspetta
+  all'infinito. Non costa nessuna scrittura in piu': entra nel salvataggio che c'era gia'.
+- Dopo 40 minuti la pagina smette di controllare e lo dice (i lavori gratuiti di GitHub
+  partono anche con ore di ritardo). Se la pagina viene chiusa e riaperta mentre la
+  ricerca e' in corso, `caricaFonti` se ne accorge e riprende a seguirla.
+- **Le due richieste dalla pagina** («Cerca adesso» e «Cerca fonti nuove») passano dalla
+  stessa funzione `configurazione._richiesta_nuova(db, campo, memoria)`: una data nel file,
+  l'ultima eseguita nel database, e si lavora solo se sono diverse.
