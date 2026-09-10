@@ -249,3 +249,34 @@ Risultato: 143 bandi (32 nuovi), 118 letti, 14 aperti, 3 avvisi partiti.
 
 **Trappola Windows→Linux:** gli script `.sh` vanno committati con fini riga Unix, o
 bash su Ubuntu si ferma su ogni riga. Risolto con `.gitattributes` (`*.sh text eol=lf`).
+
+
+## Filtri, correzioni e doppioni (10 set 2026)
+
+- **Filtro «Dove»** (`profili.zone`): la zona di un bando si deduce dal testo senza spendere
+  gettoni. Prima si cercano le regioni citate; **se ne compare una vince lei**, anche quando
+  c'e' scritto «nazionale». Solo se non ce n'e' nessuna si ripiega su Europa o Tutta Italia,
+  altrimenti «zona non indicata». Sui 153 bandi veri: 56 Sicilia, 38 Calabria, 13 tutta
+  Italia, 42 senza zona. La tendina si riempie da `/api/zone` con i conteggi.
+- **Filtro sul giudizio del modello** (si / forse / no / non ancora valutati): vive dentro
+  `abbinamenti`, quindi **esiste solo se hai scelto un profilo**. Senza profilo la tendina
+  resta nascosta invece di svuotare l'elenco.
+- **Le fonti si correggono dalla pagina** («Correggi»): indirizzo, nome e anche il tipo.
+  Il cambio di tipo e' la cura in un colpo solo di «non e' un feed, riaggiungila come pagina».
+- **L'ente compariva due volte sotto quasi ogni bando** (`ente` e `fonte` sono la stessa cosa
+  scritta in due modi: «Regione Siciliana» / «Regione Sicilia»). `stessoEnte()` confronta le
+  parole accorciate a cinque lettere e chiede il 60% in comune: **132 schede su 143** avevano
+  l'etichetta doppia, e l'unica coppia che resta distinta e' giusta (Regione Calabria /
+  Calabria Europa).
+- **L'anteprima tagliava la casella «Puoi parteciparci»**: l'immagine e' `float: right` e i
+  riquadri con lo sfondo le passavano SOTTO. Cura: `display: flow-root` sulla casella, che
+  cosi' si mette accanto all'immagine. Vale per qualunque riquadro colorato che si aggiunga
+  in futuro dentro la scheda.
+- **`salva.sh` buttava via l'archivio nuovo se doveva fondere**: in un `git rebase` «ours» e'
+  il ramo REMOTO e «theirs» e' il nostro lavoro. Erano al contrario: ora `-X theirs`.
+- **La pagina si pubblica anche quando il salvataggio dell'archivio fallisce** (`if: !cancelled()`
+  sui passi di pubblicazione): restare a guardare una pagina vecchia era la cosa peggiore.
+- **Lavoro nuovo `ripubblica-pagina.yml`**: quando cambia `pagina/**`, `anteprima.py` o
+  `profili.py`, rigenera l'anteprima dall'archivio che c'e' gia' e ripubblica. Un minuto,
+  zero gettoni, e **non scrive niente nel repository**, quindi non puo' richiamare se stesso.
+  Serve perche' un push di solo codice non aggiornava la pagina online fino al giorno dopo.
