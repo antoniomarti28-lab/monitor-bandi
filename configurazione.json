@@ -140,16 +140,7 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [
-    {
-      "nome": "Bandi e Avvisi Regione Toscana",
-      "url": "https://www.regione.toscana.it/bandi-e-avvisi",
-      "ente": "Regione Toscana",
-      "a_chi_serve": "Candidati a bandi, avvisi e contributi per progetti, borse e iniziative culturali e di mobilità",
-      "bandi_visti": 10,
-      "trovata_il": "2026-09-10"
-    }
-  ],
+  "proposte": [],
   "archiviati": [],
   "richiesta_scoperta": "2026-09-10T15:22:25.546Z",
   "esito_scoperta": {
