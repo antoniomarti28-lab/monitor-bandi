@@ -1,0 +1,47 @@
+name: Ripubblica la pagina
+
+# Parte quando cambia l'aspetto o il funzionamento della pagina (non i dati).
+# Rigenera anteprima.html dall'archivio che c'e' gia' e la ripubblica: un minuto,
+# nessuna lettura di siti, nessun gettone speso, e non riscrive niente nel repository
+# (quindi non puo' richiamare se stesso).
+on:
+  push:
+    paths:
+      - pagina/**
+      - anteprima.py
+      - profili.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: giro-bandi          # mai due pubblicazioni sovrapposte
+  cancel-in-progress: false
+
+jobs:
+  ripubblica:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblica.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Rigenera la pagina dai dati gia' in archivio
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python anteprima.py
+      - name: Pubblica
+        run: |
+          mkdir -p sito
+          cp anteprima.html sito/index.html
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: sito
+      - uses: actions/deploy-pages@v5
+        id: pubblica

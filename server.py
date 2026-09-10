@@ -88,6 +88,8 @@ class Gestore(BaseHTTPRequestHandler):
         profilo = (p.get("profilo", [""])[0] or "").strip()
         mostra_chiusi = p.get("chiusi", ["0"])[0] == "1"
         archivio = p.get("archiviati", ["0"])[0] == "1"
+        zona = (p.get("zona", [""])[0] or "").strip()
+        verdetto = (p.get("verdetto", [""])[0] or "").strip()
 
         # Il testo intero puo' essere di 60.000 caratteri: non serve nell'elenco.
         # Ne mandiamo un estratto, che basta per il «Leggi di piu'».
@@ -115,6 +117,12 @@ class Gestore(BaseHTTPRequestHandler):
             args.append(fonte)
         if not mostra_chiusi:
             sql += " " + APERTI
+        # Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
+        # non c'e' niente da filtrare, e la pagina infatti nasconde quella tendina.
+        if verdetto and profilo:
+            sql += " AND a.llm_verdetto IS NULL" if verdetto == "-" else " AND a.llm_verdetto = ?"
+            if verdetto != "-":
+                args.append(verdetto)
 
         if profilo:
             sql += " ORDER BY a.punteggio DESC,"
@@ -126,6 +134,11 @@ class Gestore(BaseHTTPRequestHandler):
         righe = query(sql, args)
         for r in righe:
             r["motivi"] = json.loads(r["motivi"]) if r.get("motivi") else []
+            r["zone"] = profili.zone(r)
+        if zona:
+            dentro = ((lambda r: not r["zone"]) if zona == "-"
+                      else (lambda r: zona in r["zone"]))
+            righe = [r for r in righe if dentro(r)]
         return righe
 
     def _riepilogo(self, profilo):
@@ -147,6 +160,17 @@ class Gestore(BaseHTTPRequestHandler):
             "fonti_ok": uno("SELECT COUNT(*) n FROM fonti_stato WHERE esito='ok'"),
             "fonti_totali": uno("SELECT COUNT(*) n FROM fonti_stato"),
         }
+
+    def _zone(self):
+        """Le zone presenti nell'archivio, con quanti bandi ciascuna: riempie la tendina
+        «Dove». Le piu' numerose in cima, e i bandi senza zona in fondo."""
+        conta = {}
+        for r in query("SELECT titolo, sommario, ente, fonte, riassunto, requisiti "
+                       "FROM bandi WHERE archiviato = 0"):
+            for z in profili.zone(r) or ["-"]:
+                conta[z] = conta.get(z, 0) + 1
+        return sorted(({"zona": z, "quanti": n} for z, n in conta.items()),
+                      key=lambda x: (x["zona"] == "-", -x["quanti"]))
 
     # ---------------------------------------------------------- rotte
 
@@ -174,6 +198,9 @@ class Gestore(BaseHTTPRequestHandler):
                 "regioni": list(profili.REGIONI.keys()),
                 "tipi_ente": profili.TIPI_ENTE,
             })
+
+        if u.path == "/api/zone":
+            return self._json(self._zone())
 
         if u.path == "/api/siti":
             return self._json(query("SELECT * FROM siti ORDER BY id"))

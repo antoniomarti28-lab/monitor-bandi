@@ -104,6 +104,33 @@ def contiene(testo, chiave):
     return r.search(testo) is not None
 
 
+# ---------------------------------------------------------------- territorio
+
+# Le due zone che non sono una regione: valgono solo quando nessuna regione e' citata.
+GENERICHE = ("Europa", "Tutta Italia")
+
+
+def zone(bando):
+    """Dove vale un bando, dedotto dal testo. Serve al filtro «Dove» della pagina.
+
+    Prima si cercano le regioni: se ne compare una, il bando e' di quella zona anche
+    se la parola «nazionale» spunta da qualche parte. Solo quando non ce n'e' nessuna
+    si ripiega sull'Europa o sull'Italia intera. Lista vuota quando non si capisce:
+    meglio dire «zona non indicata» che indovinare.
+    """
+    testo = _norm(" ".join(filter(None, [
+        bando.get("titolo", ""), bando.get("sommario") or "", bando.get("ente") or "",
+        bando.get("fonte") or "", bando.get("riassunto") or "", bando.get("requisiti") or ""])))
+    regioni = [r for r, chiavi in REGIONI.items()
+               if r not in GENERICHE and any(contiene(testo, k) for k in chiavi)]
+    if regioni:
+        return regioni
+    for g in GENERICHE:
+        if any(contiene(testo, k) for k in REGIONI[g]):
+            return [g]
+    return []
+
+
 # ---------------------------------------------------------------- punteggio
 
 PESI = {"bando": 25, "settore": 10, "settore_max": 30, "regione": 20,

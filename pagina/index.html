@@ -117,6 +117,14 @@
   <div class="filtri">
     <input type="search" id="cerca" placeholder="Cerca nel titolo, nel testo o nell'ente…">
     <select id="fonte"><option value="">Tutte le fonti</option></select>
+    <select id="zona" title="Dove vale il bando"><option value="">Dovunque</option></select>
+    <select id="verdetto" title="Il giudizio del modello per questo profilo" hidden>
+      <option value="">Puoi parteciparci: tutti</option>
+      <option value="si">Sì, puoi parteciparci</option>
+      <option value="forse">Forse puoi</option>
+      <option value="no">Non sembra per te</option>
+      <option value="-">Non ancora valutati</option>
+    </select>
     <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
     <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
     <button class="chip fantasma" id="b-cerca-adesso" hidden>Cerca adesso</button>
@@ -149,10 +157,15 @@
   <details class="fonti">
     <summary>Fonti che controllo</summary>
     <p class="aiuto-blocco">
-      Due tipi di fonte: la <b>pagina di elenco</b> (per esempio la pagina «Bandi» di un Comune
-      o di una fondazione), di cui seguo i collegamenti e leggo anche i PDF, e il <b>feed</b>,
-      che alcuni siti pubblicano apposta per essere letti da un programma.
-      Nel dubbio scegli «pagina di elenco»: funziona quasi sempre.
+      <b>Pagina di elenco</b> è l'indirizzo della pagina «Bandi» di un ente: la stessa che
+      guarderesti tu. Io la apro, seguo i collegamenti che trovo dentro, entro in ogni bando
+      e leggo anche i PDF allegati. Funziona con qualunque sito.<br>
+      <b>Feed</b> è un elenco che alcuni siti pubblicano apposta perché lo legga un programma
+      (l'indirizzo finisce quasi sempre per <i>/feed</i> o <i>/rss</i>). Si legge in un colpo
+      solo ed è sempre in ordine di data, ma non tutti i siti ce l'hanno e spesso mescola i
+      bandi con le notizie.<br>
+      <b>Nel dubbio scegli «pagina di elenco».</b> Se sbagli non si rompe niente: la fonte
+      darà errore e potrai cambiarla col tasto «Correggi» qui sotto.
     </p>
     <div class="aggiungi-sito" id="form-aggiungi-fonte">
       <input type="url" id="s-url" placeholder="https://…/bandi">
@@ -305,6 +318,25 @@ async function azione(nome, dati) {
     if (f) f.attivo = dati.attivo;
     messaggio = (dati.attivo ? "Fonte riaccesa" : "Fonte spenta");
 
+  } else if (nome === "fonte/modifica") {
+    // Correggere l'indirizzo sbagliato di una fonte, senza doverla togliere e rifare.
+    // Si puo' cambiare anche il tipo: e' la cura di «non e' un feed, riaggiungila
+    // come pagina di elenco», che prima costava due passaggi.
+    const daDove = dati.tipo_vecchio === "feed" ? "feed" : "siti";
+    const i = C[daDove].findIndex((x) => x.url === dati.url_vecchio);
+    if (i < 0) throw new Error("questa fonte non c'è più: ricarica la pagina");
+    const vecchia = C[daDove][i];
+    let url = (dati.url || "").trim();
+    if (!url) throw new Error("l'indirizzo non può restare vuoto");
+    if (!url.startsWith("http")) url = "https://" + url;
+    const altra = [...C.feed, ...C.siti]
+      .find((x) => x !== vecchia && normalizza(x.url) === normalizza(url));
+    if (altra) throw new Error("questo indirizzo ce l'ha già «" + altra.nome + "»");
+    const nuova = { ...vecchia, url, nome: (dati.nome || "").trim() || vecchia.nome };
+    C[daDove].splice(i, 1);
+    (dati.tipo === "feed" ? C.feed : C.siti).push(nuova);
+    messaggio = "Fonte corretta";
+
   } else if (nome === "fonte/rimuovi") {
     if (dati.tipo === "feed") C.feed = C.feed.filter((x) => x.url !== dati.url);
     else C.siti = C.siti.filter((x) => x.url !== dati.url);
@@ -383,6 +415,27 @@ function soldi(n, grezzo) {
 }
 
 const virgole = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
+
+/** Testo al sicuro dentro un attributo HTML (serve ai campi «Correggi»). */
+const attr = (s) => String(s == null ? "" : s)
+  .replace(/[&"<>]/g, (c) => ({ "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" })[c]);
+
+/** Le parole che contano dentro il nome di un ente, accorciate a cinque lettere. */
+const paroleEnte = (s) => new Set((s || "")
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+  .split(/[^a-z0-9]+/).filter((w) => w.length > 2).map((w) => w.slice(0, 5)));
+
+/**
+ * «Regione Siciliana» e «Regione Sicilia» sono lo stesso ente scritto in due modi.
+ * Serve a non ripetere due volte la stessa etichetta sotto ogni bando.
+ */
+function stessoEnte(a, b) {
+  const A = paroleEnte(a), B = paroleEnte(b);
+  if (!A.size || !B.size) return false;
+  let comuni = 0;
+  A.forEach((w) => { if (B.has(w)) comuni++; });
+  return comuni / Math.min(A.size, B.size) >= 0.6;
+}
 
 // ------------------------------------------------------------------ profili
 
@@ -526,6 +579,9 @@ function disegnaBandi(bandi) {
     const g = giorniMancanti(b.scadenza);
     const dati = [];
     if (b.ente) dati.push(`<span class="etichetta-dato">${b.ente}</span>`);
+    if (b.zone && b.zone.length)
+      dati.push(`<span class="etichetta-dato zona">${b.zone.slice(0, 3).join(" · ")}${
+        b.zone.length > 3 ? " +" + (b.zone.length - 3) : ""}</span>`);
     if (b.scadenza) {
       const urgente = g !== null && g <= 30 ? " scade" : "";
       const coda = g !== null && g >= 0 ? ` · tra ${g} gg` : " · scaduto";
@@ -535,7 +591,10 @@ function disegnaBandi(bandi) {
     if (b.importo) dati.push(`<span class="etichetta-dato">Fondi totali ${soldi(b.importo_num, b.importo)}</span>`);
     if (b.aperto === 0) dati.push(`<span class="etichetta-dato scade">chiuso</span>`);
     if (b.pubblicato) dati.push(`<span class="etichetta-dato">Pubblicato ${dataItaliana(b.pubblicato)}</span>`);
-    dati.push(`<span class="etichetta-dato">${b.fonte}</span>`);
+    // L'ente che pubblica e la fonte da cui l'ho preso sono quasi sempre la stessa cosa
+    // scritta in due modi: ripeterla riempiva ogni scheda della stessa etichetta due volte.
+    if (!b.ente || !stessoEnte(b.ente, b.fonte))
+      dati.push(`<span class="etichetta-dato">${b.fonte}</span>`);
 
     // Quando il modello ha letto il bando, il suo riassunto vale più del testo del feed.
     const testo = b.riassunto || b.sommario || "";
@@ -563,8 +622,9 @@ function disegnaBandi(bandi) {
     if (b.importo) scheda.push(["Fondi messi a disposizione in tutto", soldi(b.importo_num, b.importo)]);
     if (b.scadenza) scheda.push(["Scadenza", dataItaliana(b.scadenza) +
       (b.origine_scadenza ? ` <span class="fioco">(${b.origine_scadenza})</span>` : "")]);
+    if (b.zone && b.zone.length) scheda.push(["Dove vale", b.zone.join(" · ")]);
     if (b.ente) scheda.push(["Chi lo pubblica", b.ente]);
-    scheda.push(["Dove l'ho trovato", b.fonte]);
+    if (!b.ente || !stessoEnte(b.ente, b.fonte)) scheda.push(["Dove l'ho trovato", b.fonte]);
     if (b.pubblicato) scheda.push(["Pubblicato il", dataItaliana(b.pubblicato)]);
     if (b.nota) scheda.push(["Nota", b.nota]);
     if (b.aperto === 0) scheda.push(["Stato", "risulta chiuso: le domande non si possono più presentare"]);
@@ -628,7 +688,12 @@ async function aggiorna() {
     profilo: profiloAttivo,
     chiusi: $("chiusi").checked ? "1" : "0",
     archiviati: $("archiviati").checked ? "1" : "0",
+    zona: $("zona").value,
+    // Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
+    // scelto la tendina resta nascosta e il filtro non si applica.
+    verdetto: profiloAttivo ? $("verdetto").value : "",
   });
+  $("verdetto").hidden = !profiloAttivo;
   const [bandi, riepilogo] = await Promise.all([
     chiedi("/api/bandi?" + p),
     chiedi("/api/riepilogo?profilo=" + profiloAttivo),
@@ -692,7 +757,8 @@ async function caricaFonti() {
       <td>${scrivibile()
         ? `<input type="checkbox" data-accendi="${f.url}" data-tipo="${f.tipo}"${f.attivo ? " checked" : ""}>`
         : (f.attivo ? "sì" : "no")}</td>
-      <td>${scrivibile() ? `<button class="archivia" data-togli="${f.url}" data-tipo="${f.tipo}">Togli</button>` : ""}</td>
+      <td>${scrivibile() ? `<button class="archivia" data-correggi="${attr(f.url)}" data-tipo="${f.tipo}">Correggi</button>
+           <button class="archivia" data-togli="${attr(f.url)}" data-tipo="${f.tipo}">Togli</button>` : ""}</td>
     </tr>`;
   }).join("") : '<tr><td colspan="5" class="vuoto-riga">Nessuna fonte.</td></tr>';
 
@@ -703,6 +769,47 @@ async function caricaFonti() {
       }
       if (STATICA) { avvisa(DOPO_SALVATAGGIO); return; }
       caricaFonti();
+    };
+  });
+  $("tabella-fonti").querySelectorAll("[data-correggi]").forEach((b) => {
+    b.onclick = () => {
+      const riga = b.closest("tr");
+      const f = elenco.find((x) => x.url === b.dataset.correggi && x.tipo === b.dataset.tipo);
+      const seguente = riga.nextElementSibling;
+      if (!f || (seguente && seguente.classList.contains("correzione"))) {
+        if (seguente && seguente.classList.contains("correzione")) seguente.remove();
+        return;
+      }
+      const modulo = document.createElement("tr");
+      modulo.className = "correzione";
+      modulo.innerHTML = `<td colspan="5">
+        <p class="aiuto-blocco">Quando una fonte dà errore, quasi sempre l'indirizzo è
+        cambiato: aprila nel browser, copia l'indirizzo giusto dalla barra in alto e
+        incollalo qui. Se invece l'errore dice che «non è un feed», lascia l'indirizzo
+        com'è e cambia il tipo in «pagina di elenco».</p>
+        <div class="aggiungi-sito">
+          <input type="url" class="c-url" value="${attr(f.url)}">
+          <input type="text" class="c-nome" value="${attr(f.nome)}">
+          <select class="c-tipo">
+            <option value="sito"${f.tipo === "sito" ? " selected" : ""}>pagina di elenco</option>
+            <option value="feed"${f.tipo === "feed" ? " selected" : ""}>feed</option>
+          </select>
+          <button class="c-salva">Salva</button>
+          <button class="archivia c-annulla">Annulla</button>
+        </div></td>`;
+      riga.after(modulo);
+      modulo.querySelector(".c-annulla").onclick = () => modulo.remove();
+      modulo.querySelector(".c-salva").onclick = async () => {
+        if (!await prova("fonte/modifica", {
+          url_vecchio: f.url, tipo_vecchio: f.tipo,
+          url: modulo.querySelector(".c-url").value,
+          nome: modulo.querySelector(".c-nome").value,
+          tipo: modulo.querySelector(".c-tipo").value })) return;
+        await caricaFonti();
+        avvisa(STATICA
+          ? "Fonte corretta: la provo al prossimo giro. " + DOPO_SALVATAGGIO
+          : "Fonte corretta.");
+      };
     };
   });
   $("tabella-fonti").querySelectorAll("[data-togli]").forEach((b) => {
@@ -774,6 +881,16 @@ $("b-aggiungi-sito").onclick = async () => {
 };
 
 // ------------------------------------------------------------------ storico notifiche
+
+/** Riempie la tendina «Dove» con le zone che esistono davvero nell'archivio. */
+async function caricaZone() {
+  const zone = await chiedi("/api/zone");
+  const scelta = $("zona").value;
+  $("zona").innerHTML = '<option value="">Dovunque</option>' +
+    zone.map((z) => `<option value="${attr(z.zona)}">${
+      z.zona === "-" ? "Zona non indicata" : z.zona} (${z.quanti})</option>`).join("");
+  $("zona").value = scelta;
+}
 
 async function caricaNotifiche() {
   const elenco = await chiedi("/api/notifiche");
@@ -873,13 +990,14 @@ $("b-cerca-adesso").onclick = async () => {
 
 let attesa;
 $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna, 250); };
-["fonte", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
+["fonte", "zona", "verdetto", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
 
 (async () => {
   if (STATICA) disegnaCollegamento();
   VOCE = await chiedi("/api/vocabolario");
   await caricaProfili();
   await caricaFonti();
+  await caricaZone();
   await caricaNotifiche();
   aggiorna();
 })();

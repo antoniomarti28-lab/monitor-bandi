@@ -56,12 +56,18 @@ jobs:
           MONITOR_TELEGRAM_CHAT: ${{ secrets.MONITOR_TELEGRAM_CHAT }}
         run: bash salva.sh "Giro del $(date +%d/%m/%Y) - dopo modifica impostazioni"
 
+      # Anche quando il salvataggio dell'archivio non riesce, la pagina si aggiorna
+      # lo stesso: i dati nuovi sono gia' dentro anteprima.html, e restare a guardare
+      # una pagina vecchia senza sapere perche' e' la cosa peggiore.
       - name: Pubblica la pagina
+        if: ${{ !cancelled() }}
         run: |
           mkdir -p sito
           cp anteprima.html sito/index.html
       - uses: actions/upload-pages-artifact@v5
+        if: ${{ !cancelled() }}
         with:
           path: sito
       - uses: actions/deploy-pages@v5
+        if: ${{ !cancelled() }}
         id: pubblica

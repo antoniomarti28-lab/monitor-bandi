@@ -33,8 +33,11 @@ salva() {
     git fetch origin main || return 1
     # I file generati non si fondono: si tiene quello che abbiamo appena prodotto,
     # perche' e' il piu' aggiornato (contiene anche cio' che c'era prima).
-    git rebase origin/main -X ours || {
-      git checkout --ours dati.db anteprima.html configurazione.json 2>/dev/null || true
+    # ATTENZIONE: durante un rebase «ours» e' il ramo remoto e «theirs» e' il nostro
+    # lavoro appena fatto. Sono al contrario di come suonano: con -X ours si buttava
+    # via proprio l'archivio nuovo che stiamo cercando di salvare.
+    git rebase origin/main -X theirs || {
+      git checkout --theirs dati.db anteprima.html configurazione.json 2>/dev/null || true
       git add dati.db anteprima.html configurazione.json 2>/dev/null || true
       git -c core.editor=true rebase --continue || { git rebase --abort; return 1; }
     }

@@ -209,6 +209,7 @@ label.spunta { display: inline-flex; align-items: center; gap: 7px; font-size: 1
 .riga-dati { clear: both; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
 .etichetta-dato { font-size: 13px; border: 1px solid var(--bordo); border-radius: 999px; padding: 4px 12px; color: var(--tenue); }
 .etichetta-dato.scade { border-color: var(--allarme); color: var(--allarme); }
+.etichetta-dato.zona { color: var(--testo); }
 .etichetta-dato.soldi {
   border-color: var(--positivo); background: var(--positivo-tenue);
   color: var(--positivo); font-weight: 500;
@@ -236,6 +237,9 @@ button.apri:hover, button.archivia:hover { border-color: var(--accento); color: 
 .motivi { margin: 8px 0 0 !important; font-size: 14px !important; color: var(--tenue) !important; }
 
 .verdetto {
+  /* «flow-root» tiene la casella ACCANTO all'immagine invece di lasciarla scorrere
+     sotto: senza, l'anteprima ci finiva sopra e sembrava tagliata a meta'. */
+  display: flow-root;
   margin: 10px 0 0 !important; font-size: 14px !important; padding: 10px 14px;
   border-radius: var(--raggio); border: 1px solid var(--bordo);
   border-left-width: 3px; color: var(--testo) !important;
@@ -275,6 +279,15 @@ button.apri:hover, button.archivia:hover { border-color: var(--accento); color: 
 .aggiungi-sito button {
   background: var(--accento); border: 1px solid var(--accento); border-radius: var(--raggio);
   color: #fff; font: inherit; font-size: 15px; font-weight: 500; padding: 10px 24px; cursor: pointer;
+}
+
+/* la riga che si apre sotto una fonte quando premi «Correggi» */
+tr.correzione td { background: var(--sfondo-tenue); }
+tr.correzione .aiuto-blocco { margin: 4px 0 10px; }
+tr.correzione .aggiungi-sito { margin-bottom: 4px; }
+.aggiungi-sito button.archivia {
+  background: none; color: var(--tenue); border: 1px solid var(--bordo);
+  border-radius: 999px; font-size: 13px; padding: 4px 14px;
 }
 
 details.fonti { margin-top: 20px; border-top: 1px solid var(--bordo); padding-top: 16px; }

@@ -47,6 +47,7 @@ def costruisci():
             "llm_motivo": r["llm_motivo"] if "llm_motivo" in chiavi else None}
     for b in bandi:
         b["punteggi"] = per_bando.get(b["id"], {})
+        b["zone"] = profili.zone(b)     # per il filtro «Dove»: costa niente, e' testo
 
     elenco_profili = profili.leggi_profili(db)
     for p in elenco_profili:
@@ -102,6 +103,14 @@ window.fetch = async (url, opzioni) => {
   const oggi = new Date().toISOString().slice(0, 10);
   let out = [];
   if (u.pathname === "/api/fonti") out = DATI.fonti;
+  else if (u.pathname === "/api/zone") {
+    const conta = {};
+    DATI.bandi.filter((b) => !b.archiviato).forEach((b) => {
+      (b.zone.length ? b.zone : ["-"]).forEach((z) => { conta[z] = (conta[z] || 0) + 1; });
+    });
+    out = Object.entries(conta).map(([zona, quanti]) => ({ zona, quanti }))
+      .sort((a, b) => (a.zona === "-") - (b.zona === "-") || b.quanti - a.quanti);
+  }
   else if (u.pathname === "/api/siti") out = DATI.siti;
   else if (u.pathname === "/api/vocabolario") out = DATI.vocabolario;
   else if (u.pathname === "/api/profili") out = DATI.profili;
@@ -112,6 +121,9 @@ window.fetch = async (url, opzioni) => {
     const fonte = u.searchParams.get("fonte") || "";
     const arch = u.searchParams.get("archiviati") === "1";
     const chiusi = u.searchParams.get("chiusi") === "1";
+    const zona = u.searchParams.get("zona") || "";
+    const verdetto = u.searchParams.get("verdetto") || "";
+    const fra30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
     const aperto = (b) => (b.aperto === null || b.aperto === 1) && (!b.scadenza || b.scadenza >= oggi);
     let lista = DATI.bandi
       .filter((b) => (arch ? b.archiviato : !b.archiviato))
@@ -122,7 +134,8 @@ window.fetch = async (url, opzioni) => {
         totale: lista.length,
         aperti: lista.filter(aperto).length,
         archiviati: DATI.bandi.filter((b) => b.archiviato).length,
-        in_scadenza: lista.filter((b) => aperto(b) && b.scadenza && b.scadenza >= oggi).length,
+        in_scadenza: lista.filter((b) => aperto(b) && b.scadenza
+                                        && b.scadenza >= oggi && b.scadenza <= fra30).length,
         letti: DATI.bandi.filter((b) => b.analizzato_il).length,
         da_leggere: DATI.bandi.filter((b) => !b.analizzato_il && b.testo).length,
         fonti_ok: DATI.fonti.filter((f) => f.esito === "ok").length,
@@ -131,6 +144,8 @@ window.fetch = async (url, opzioni) => {
     } else {
       out = lista
         .filter((b) => !fonte || b.fonte === fonte)
+        .filter((b) => !zona || (zona === "-" ? !b.zone.length : b.zone.includes(zona)))
+        .filter((b) => !verdetto || (verdetto === "-" ? !b.llm_verdetto : b.llm_verdetto === verdetto))
         .filter((b) => chiusi || aperto(b))
         .filter((b) => !q || (b.titolo + " " + (b.sommario || "") + " " + (b.ente || "")).toLowerCase().includes(q))
         .sort((a, b) => (b.punteggio || 0) - (a.punteggio || 0));
