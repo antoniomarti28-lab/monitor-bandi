@@ -78,12 +78,6 @@
       "url": "https://www.fondazionecariplo.it/feed/",
       "ente": "Fondazione Cariplo",
       "attivo": true
-    },
-    {
-      "nome": "MIMIT - Incentivi",
-      "url": "https://www.mimit.gov.it/index.php/it/incentivi",
-      "ente": "MIMIT",
-      "attivo": true
     }
   ],
   "siti": [
@@ -133,6 +127,12 @@
       "nome": "Comune di Vibo Valentia",
       "url": "https://www.comune.vibovalentia.vv.it/novita",
       "ente": "",
+      "attivo": true
+    },
+    {
+      "nome": "MIMIT - Incentivi",
+      "url": "https://www.mimit.gov.it/index.php/it/incentivi",
+      "ente": "MIMIT",
       "attivo": true
     }
   ],
