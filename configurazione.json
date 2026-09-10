@@ -142,5 +142,12 @@
   },
   "proposte": [],
   "archiviati": [],
-  "richiesta_scoperta": "2026-09-10T15:22:25.546Z"
+  "richiesta_scoperta": "2026-09-10T15:22:25.546Z",
+  "esito_scoperta": {
+    "quando": "2026-09-10T15:24:39+00:00",
+    "esaminate": 9,
+    "trovate": 0,
+    "nomi": [],
+    "nota": "nessuno degli indirizzi aperti aveva bandi dentro"
+  }
 }
