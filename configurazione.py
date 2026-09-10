@@ -200,26 +200,36 @@ def importa(db):
     return cambiati
 
 
-def giro_richiesto(db):
-    """Il «cerca adesso» della pagina.
+def _richiesta_nuova(db, campo, memoria):
+    """Vero una volta sola per ogni richiesta scritta dalla pagina.
 
     La pagina non puo' far partire un lavoro su GitHub (servirebbe un permesso in piu'
     sul codice di accesso). Puo' pero' scrivere una data dentro configurazione.json:
-    qui la si confronta con l'ultima gia' eseguita e, se e' nuova, si fa il giro intero.
+    qui la si confronta con l'ultima gia' eseguita e, se e' nuova, si lavora.
     """
-    dati = leggi_file()
-    richiesta = dati.get("richiesta_giro")
+    richiesta = leggi_file().get(campo)
     if not richiesta:
         return False
     db.executescript("CREATE TABLE IF NOT EXISTS telegram_stato "
                      "(chiave TEXT PRIMARY KEY, valore TEXT);")
-    r = db.execute("SELECT valore FROM telegram_stato WHERE chiave='ultimo_giro_forzato'").fetchone()
+    r = db.execute("SELECT valore FROM telegram_stato WHERE chiave=?", (memoria,)).fetchone()
     if r and r[0] == str(richiesta):
         return False
-    db.execute("INSERT INTO telegram_stato (chiave,valore) VALUES ('ultimo_giro_forzato',?) "
-               "ON CONFLICT(chiave) DO UPDATE SET valore=?", (str(richiesta), str(richiesta)))
+    db.execute("INSERT INTO telegram_stato (chiave,valore) VALUES (?,?) "
+               "ON CONFLICT(chiave) DO UPDATE SET valore=?",
+               (memoria, str(richiesta), str(richiesta)))
     db.commit()
     return True
+
+
+def scoperta_richiesta(db):
+    """Il «cerca fonti nuove» della pagina."""
+    return _richiesta_nuova(db, "richiesta_scoperta", "ultima_scoperta_forzata")
+
+
+def giro_richiesto(db):
+    """Il «cerca adesso» della pagina."""
+    return _richiesta_nuova(db, "richiesta_giro", "ultimo_giro_forzato")
 
 
 if __name__ == "__main__":
@@ -233,6 +243,12 @@ if __name__ == "__main__":
             raccogli.giro()
         else:
             print("Nessun giro richiesto: faccio solo il ricalcolo.")
+        # La ricerca di fonti nuove e' un lavoro a parte: normalmente gira il lunedi',
+        # ma si puo' chiedere dalla pagina quando si vuole.
+        if scoperta_richiesta(con):
+            print("Ricerca di fonti nuove richiesta dalla pagina: la eseguo.")
+            import scopri
+            scopri.giro()
     elif "--importa" in sys.argv:
         cambiati = importa(con)
         import profili

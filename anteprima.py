@@ -36,6 +36,7 @@ def costruisci():
     bandi = [dict(r) for r in db.execute(
         "SELECT id,titolo,link,ente,fonte,pubblicato,scadenza,importo,importo_num,contributo,tipo_aiuto,"
         "sommario,archiviato,riassunto,requisiti,aperto,origine_scadenza,analizzato_il,nota,immagine,"
+        "trovato_il,"
         "substr(testo,1,3000) AS estratto, length(testo) AS quanto_testo "
         "FROM bandi ORDER BY pubblicato DESC, trovato_il DESC")]
     per_bando = {}

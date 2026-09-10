@@ -96,7 +96,7 @@ class Gestore(BaseHTTPRequestHandler):
         CAMPI = ("b.id, b.titolo, b.link, b.ente, b.fonte, b.pubblicato, b.scadenza, "
                  "b.importo, b.importo_num, b.contributo, b.tipo_aiuto, b.sommario, b.archiviato, "
                  "b.riassunto, b.requisiti, b.aperto, b.origine_scadenza, b.analizzato_il, "
-                 "b.nota, b.immagine, substr(b.testo, 1, 3000) AS estratto, "
+                 "b.nota, b.immagine, b.trovato_il, substr(b.testo, 1, 3000) AS estratto, "
                  "length(b.testo) AS quanto_testo")
         if profilo:
             sql = ("SELECT " + CAMPI + ", a.punteggio, a.motivi, a.llm_verdetto, a.llm_motivo "
