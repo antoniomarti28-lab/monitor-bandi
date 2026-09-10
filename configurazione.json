@@ -122,21 +122,18 @@
       "url": "https://interreg-euro-med.eu/en/call-7-mediterranean-multiprogramme-mechanism-coordinated-call",
       "ente": "Interreg Euro-MED Programme",
       "attivo": true
+    },
+    {
+      "nome": "Bandi Fondazione Cariplo",
+      "url": "https://www.fondazionecariplo.it/bandi",
+      "ente": "Fondazione Cariplo",
+      "attivo": true
     }
   ],
   "impostazioni": {
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [
-    {
-      "nome": "Bandi Fondazione Cariplo",
-      "url": "https://www.fondazionecariplo.it/bandi",
-      "ente": "Fondazione Cariplo",
-      "a_chi_serve": "Organizzazioni del Terzo Settore che cercano contributi a fondo perduto per progetti culturali, sociali, ambientali e di ricerca",
-      "bandi_visti": 7,
-      "trovata_il": "2026-09-09"
-    }
-  ],
+  "proposte": [],
   "archiviati": []
 }
