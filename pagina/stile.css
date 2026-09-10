@@ -298,7 +298,29 @@ button.icona {
 button.icona:hover { border-color: var(--accento); color: var(--accento); }
 
 #riga-cerca-fonti { margin-top: 12px; }
-#riga-cerca-fonti .chip { margin-right: 10px; }
+
+/* il racconto della ricerca di fonti, mentre va e quando ha finito */
+.stato-ricerca {
+  background: var(--sfondo-tenue); border: 1px solid var(--bordo);
+  border-left: 3px solid var(--accento); border-radius: var(--raggio);
+  padding: 12px 16px; margin: 12px 0 4px; font-size: 14px;
+}
+.stato-ricerca.finita { border-left-color: var(--positivo); }
+.stato-ricerca p { margin: 0 0 8px; }
+.stato-ricerca p:last-child { margin-bottom: 0; }
+.stato-ricerca .fioco { color: var(--tenue); font-size: 13px; }
+.stato-ricerca ul { margin: 4px 0 10px; padding-left: 22px; }
+.stato-ricerca li { margin-bottom: 3px; }
+.battito {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accento); margin-right: 9px; vertical-align: 1px;
+  animation: battito 1.3s ease-in-out infinite;
+}
+@keyframes battito {
+  0%, 100% { opacity: .25; transform: scale(.75); }
+  50%      { opacity: 1;   transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .battito { animation: none; opacity: .8; } }
 
 /* la riga che si apre sotto una fonte quando premi la matita */
 tr.correzione td { background: var(--sfondo-tenue); }

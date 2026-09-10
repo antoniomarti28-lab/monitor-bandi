@@ -24,7 +24,7 @@ import json
 import sqlite3
 import sys
 import time
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -204,6 +204,29 @@ def giudica(chiave, modello, url, titolo, testo):
 
 # ---------------------------------------------------------------- giro
 
+def scrivi_esito(cfg_esaminate, proposte, nota=""):
+    """Lascia scritto nel file com'e' andata, e aggiunge le proposte nuove.
+
+    E' l'unico modo che ha la pagina di sapere che la ricerca e' finita e cosa e'
+    saltato fuori: i registri di GitHub non li puo' leggere. Va scritto SEMPRE,
+    anche quando non si trova niente, altrimenti la pagina aspetta per sempre.
+    """
+    cfg = configurazione.leggi_file()
+    nuove = [p for p in proposte if not gia_conosciuto(cfg, p["url"])]
+    if nuove:
+        cfg["proposte"] = (cfg.get("proposte") or []) + nuove
+    cfg["esito_scoperta"] = {
+        "quando": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "esaminate": cfg_esaminate,
+        "trovate": len(nuove),
+        "nomi": [p["nome"] for p in nuove],
+        "nota": nota,
+    }
+    configurazione.FILE.write_text(
+        json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+    return nuove
+
+
 def giro(prova=False):
     import avvisi
     import intelligenza
@@ -221,8 +244,9 @@ def giro(prova=False):
         print("   ora sono %d (verranno comunque aperti uno per uno)" % len(candidati))
 
     print("3. Apro ognuno per vedere se e' davvero una pagina di bandi...")
-    buoni = []
+    buoni, esaminate = [], 0
     for url in candidati[:MAX_CANDIDATI]:
+        esaminate += 1
         ok, quanti, nota = verifica(url)
         print("   %s %-64s %s" % ("OK" if ok else "--", url[:64],
                                   ("%d collegamenti" % quanti) if ok else nota))
@@ -234,6 +258,8 @@ def giro(prova=False):
 
     if not buoni:
         print("Nessuna fonte nuova che valga la pena proporti.")
+        if not prova:
+            scrivi_esito(esaminate, [], "nessuno degli indirizzi aperti aveva bandi dentro")
         db.close()
         return 0
 
@@ -270,17 +296,13 @@ def giro(prova=False):
         db.close()
         return len(proposte)
 
-    cfg = configurazione.leggi_file()
-    cfg["proposte"] = (cfg.get("proposte") or []) + [
-        p for p in proposte if not gia_conosciuto(cfg, p["url"])]
-    configurazione.FILE.write_text(
-        json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+    nuove = scrivi_esito(esaminate, proposte)
     print("%sProposte scritte: %d. Le trovi sulla pagina, da accettare o scartare."
-          % (chr(10), len(proposte)))
+          % (chr(10), len(nuove)))
 
-    avvisa(proposte)
+    avvisa(nuove)
     db.close()
-    return len(proposte)
+    return len(nuove)
 
 
 def avvisa(proposte):

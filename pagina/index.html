@@ -180,12 +180,10 @@
       </select>
       <button id="b-aggiungi-sito">Aggiungi</button>
     </div>
-    <p class="aiuto-blocco" id="riga-cerca-fonti" hidden>
+    <div id="riga-cerca-fonti" hidden>
       <button class="chip fantasma" id="b-cerca-fonti">Cerca fonti nuove</button>
-      Le cerco io: seguo i collegamenti dei bandi che già leggo, chiedo al modello quali
-      portali conosce e poi <b>apro ognuno per vedere se esiste davvero</b>. Quelle che
-      passano la prova te le propongo qui sopra. Non ne aggiungo nessuna da sola.
-    </p>
+    </div>
+    <div class="stato-ricerca" id="stato-ricerca" hidden></div>
     <table>
       <thead><tr><th>Fonte</th><th>Tipo</th><th>Ultimo giro</th><th>Accesa</th><th></th></tr></thead>
       <tbody id="tabella-fonti"></tbody>
@@ -216,7 +214,14 @@
 <script>
 const $ = (id) => document.getElementById(id);
 let PROFILI = [], VOCE = { settori: [], regioni: [], tipi_ente: [] };
-let profiloAttivo = "", inModifica = null;
+let inModifica = null;
+
+// La pagina si apre sul profilo, non su «tutti i bandi»: la prima cosa che vuole
+// vedere sono i bandi adatti a lui. Ci si ricorda l'ultimo profilo scelto; quando
+// guarda «tutti i bandi» non lo si registra, cosi' alla riapertura torna sul suo.
+const CHIAVE_PROFILO = "monitor_bandi_profilo";
+let profiloAttivo = "";
+try { profiloAttivo = localStorage.getItem(CHIAVE_PROFILO) || ""; } catch (e) { /* niente */ }
 
 // La copia pubblicata non ha un server dietro. Può però riscrivere il file delle
 // impostazioni dentro il repository, se le si dà un codice di accesso: quello resta
@@ -482,6 +487,9 @@ function disegnaBarraProfili() {
   $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
     b.onclick = () => {
       profiloAttivo = b.dataset.scegli;
+      if (profiloAttivo) {
+        try { localStorage.setItem(CHIAVE_PROFILO, profiloAttivo); } catch (e) { /* niente */ }
+      }
       $("editor").hidden = true;
       $("scheda-profilo").hidden = true;
       // Va ridisegnata anche la barra, o il tasto per vedere/modificare il profilo
@@ -588,6 +596,10 @@ $("b-elimina").onclick = async () => {
 
 async function caricaProfili() {
   PROFILI = await chiedi("/api/profili");
+  // Se il profilo ricordato non c'e' piu' (o non ce n'era nessuno) si parte dal primo.
+  if (PROFILI.length && !PROFILI.some((p) => String(p.id) === profiloAttivo)) {
+    profiloAttivo = String(PROFILI[0].id);
+  }
   disegnaBarraProfili();
 }
 
@@ -861,6 +873,12 @@ async function caricaFonti() {
   $("form-aggiungi-fonte").hidden = !scrivibile();
   $("b-cerca-adesso").hidden = !scrivibile();
   $("riga-cerca-fonti").hidden = !scrivibile();
+
+  // Se la pagina si riapre mentre una ricerca e' ancora in corso, si riprende a seguirla.
+  const chiesta = CONFIG.richiesta_scoperta, esito = CONFIG.esito_scoperta;
+  const ancora = chiesta && minutiDa(chiesta) < 40 &&
+    (!esito || !esito.quando || new Date(esito.quando) <= new Date(chiesta));
+  if (ancora && !orologioRicerca && scrivibile()) seguiRicerca(chiesta);
   disegnaProposte();
 }
 
@@ -1022,15 +1040,105 @@ $("b-cerca-adesso").onclick = async () => {
        + "e ti avviso su Telegram se trovo qualcosa. Ci vogliono cinque o dieci minuti.");
 };
 
+// ------------------------------------------------------------------ ricerca fonti
+//
+// La pagina non puo' guardare dentro i lavori di GitHub (servirebbe un permesso in
+// piu' sul codice di accesso). Puo' pero' rileggere configurazione.json: quando la
+// ricerca finisce, scopri.py ci scrive com'e' andata. Quindi si ricontrolla ogni
+// quindici secondi finche' non compare l'esito, e intanto si racconta cosa succede.
+
+let orologioRicerca = null, iniziataRicerca = null;
+
+const minutiDa = (quando) =>
+  Math.max(0, Math.floor((Date.now() - new Date(quando).getTime()) / 60000));
+
+function pannelloRicerca(dentro, finita) {
+  const box = $("stato-ricerca");
+  box.className = "stato-ricerca" + (finita ? " finita" : "");
+  box.innerHTML = dentro;
+  box.hidden = false;
+}
+
+function fermaRicerca() {
+  clearInterval(orologioRicerca);
+  orologioRicerca = null;
+  $("b-cerca-fonti").disabled = false;
+}
+
+function raccontaAttesa() {
+  const m = minutiDa(iniziataRicerca);
+  pannelloRicerca(
+    '<p><span class="battito"></span><b>Sto cercando fonti nuove.</b> ' +
+    (m ? "Sono passati " + m + (m === 1 ? " minuto." : " minuti.") : "Appena partita.") +
+    '</p><p class="fioco">Seguo i collegamenti dei bandi che già leggo, chiedo al modello ' +
+    "quali portali conosce e apro ogni indirizzo per vedere se esiste davvero e se ha " +
+    "bandi dentro. Di solito ci vogliono cinque o dieci minuti, ma GitHub certe volte fa " +
+    "partire il lavoro in ritardo. Guardo da solo ogni quindici secondi" +
+    (STATICA ? ": puoi anche chiudere la pagina, ti scrivo su Telegram." : ".") +
+    (STATICA ? "" : " (Dall'app sul computer la ricerca non parte: il tasto serve dalla " +
+     "pagina online.)") + "</p>", false);
+}
+
+function raccontaEsito(esito) {
+  const quante = esito.trovate || 0;
+  const aperti = esito.esaminate ? "Ho aperto " + esito.esaminate + " indirizzi." : "";
+  if (quante) {
+    pannelloRicerca(
+      "<p><b>Ricerca finita: " + quante + (quante === 1 ? " fonte nuova" : " fonti nuove") +
+      ".</b> " + aperti + "</p><ul>" +
+      (esito.nomi || []).map((n) => "<li>" + attr(n) + "</li>").join("") +
+      '</ul><p class="fioco">Le trovi qui sopra, in «Fonti che ti propongo»: guardale una ' +
+      "per una e accetta quelle che ti interessano.</p>", true);
+  } else {
+    pannelloRicerca(
+      "<p><b>Ricerca finita: nessuna fonte nuova.</b> " + aperti +
+      (esito.nota ? " " + attr(esito.nota) + "." : "") +
+      '</p><p class="fioco">Succede spesso, ed è una buona notizia: vuol dire che i ' +
+      "portali che contano li sto già leggendo. Gli indirizzi che il modello si inventa " +
+      "li scarto prima, senza nemmeno mostrarteli.</p>", true);
+  }
+}
+
+async function controllaRicerca() {
+  raccontaAttesa();
+  let fresca;
+  try { fresca = await caricaConfig(); }
+  catch (e) { return; }              // rete ballerina: riprovo fra quindici secondi
+  CONFIG = fresca;
+  const esito = CONFIG.esito_scoperta;
+  if (esito && esito.quando && new Date(esito.quando) > new Date(iniziataRicerca)) {
+    fermaRicerca();
+    raccontaEsito(esito);
+    disegnaProposte();
+    $("sezione-proposte").open = true;
+    return;
+  }
+  if (minutiDa(iniziataRicerca) >= 40) {
+    fermaRicerca();
+    pannelloRicerca(
+      "<p><b>Ci sta mettendo più del solito.</b> I lavori gratuiti di GitHub certe volte " +
+      "partono con ore di ritardo: la ricerca si farà comunque.</p>" +
+      '<p class="fioco">Smetto di controllare qui, ma appena finisce te lo scrivo su ' +
+      "Telegram e le proposte compaiono qui sopra alla prossima apertura.</p>", true);
+  }
+}
+
+function seguiRicerca(quando) {
+  iniziataRicerca = quando;
+  $("b-cerca-fonti").disabled = true;
+  raccontaAttesa();
+  clearInterval(orologioRicerca);
+  orologioRicerca = setInterval(controllaRicerca, 15000);
+}
+
 $("b-cerca-fonti").onclick = async () => {
-  const b = $("b-cerca-fonti");
-  b.disabled = true;
-  const fatto = await prova("scoperta", { quando: new Date().toISOString() });
-  b.disabled = false;
-  if (!fatto) return;
-  avvisa("Ho chiesto una ricerca di fonti nuove. Ci vogliono cinque o dieci minuti: quando "
-       + "ho finito ti scrivo su Telegram e le trovi qui sopra, in «Fonti che ti propongo», "
-       + "da accettare o scartare una per una.");
+  const quando = new Date().toISOString();
+  $("b-cerca-fonti").disabled = true;
+  if (!await prova("scoperta", { quando })) {
+    $("b-cerca-fonti").disabled = false;
+    return;
+  }
+  seguiRicerca(quando);
 };
 
 let attesa;
