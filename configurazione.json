@@ -94,12 +94,6 @@
       "attivo": true
     },
     {
-      "nome": "Comune di Tropea - albo",
-      "url": "https://www.comune.tropea.vv.it/albo-pretorio/",
-      "ente": "Comune di Tropea",
-      "attivo": true
-    },
-    {
       "nome": "Camera di commercio",
       "url": "https://czkrvv.camcom.it/",
       "ente": "",
@@ -127,6 +121,12 @@
       "nome": "calabriafilmcommission.it",
       "url": "https://www.calabriafilmcommission.it/news/",
       "ente": "",
+      "attivo": true
+    },
+    {
+      "nome": "Comune di Tropea - albo",
+      "url": "https://www.comune.tropea.vv.it/home/novita.html",
+      "ente": "Comune di Tropea",
       "attivo": true
     }
   ],
