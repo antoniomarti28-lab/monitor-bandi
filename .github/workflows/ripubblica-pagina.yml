@@ -10,6 +10,7 @@ on:
       - pagina/**
       - anteprima.py
       - profili.py
+      - .github/workflows/ripubblica-pagina.yml
   workflow_dispatch:
 
 permissions:
@@ -18,8 +19,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: giro-bandi          # mai due pubblicazioni sovrapposte
-  cancel-in-progress: false
+  # Gruppo suo: se lo mettevo insieme ai giri, bastava che lui premesse un tasto
+  # sulla pagina perche' GitHub cancellasse la ripubblicazione ancora in coda
+  # (in un gruppo puo' aspettare un lavoro solo: l'ultimo arrivato scalza l'altro).
+  group: ripubblica-pagina
+  cancel-in-progress: true
 
 jobs:
   ripubblica:
