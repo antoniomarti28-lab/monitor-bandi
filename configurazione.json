@@ -84,12 +84,6 @@
       "url": "https://www.mimit.gov.it/index.php/it/incentivi",
       "ente": "MIMIT",
       "attivo": true
-    },
-    {
-      "nome": "Comune di Vibo Valentia",
-      "url": "https://www.comune.vibovalentia.vv.it/novita",
-      "ente": "",
-      "attivo": true
     }
   ],
   "siti": [
@@ -133,6 +127,12 @@
       "nome": "Comune di Tropea - albo",
       "url": "https://www.comune.tropea.vv.it/home/novita.html",
       "ente": "Comune di Tropea",
+      "attivo": true
+    },
+    {
+      "nome": "Comune di Vibo Valentia",
+      "url": "https://www.comune.vibovalentia.vv.it/novita",
+      "ente": "",
       "attivo": true
     }
   ],
