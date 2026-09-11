@@ -134,6 +134,12 @@
       "url": "https://www.mimit.gov.it/index.php/it/incentivi",
       "ente": "MIMIT",
       "attivo": true
+    },
+    {
+      "nome": "Chiesa Valdese",
+      "url": "https://www.ottopermillevaldese.org/news/",
+      "ente": "",
+      "attivo": true
     }
   ],
   "impostazioni": {
