@@ -6,6 +6,7 @@ Si rigenera con:  python anteprima.py
 """
 import json
 import sqlite3
+from datetime import date
 from pathlib import Path
 
 import profili
@@ -46,9 +47,21 @@ def costruisci():
             "punteggio": r["punteggio"], "motivi": json.loads(r["motivi"] or "[]"),
             "llm_verdetto": r["llm_verdetto"] if "llm_verdetto" in chiavi else None,
             "llm_motivo": r["llm_motivo"] if "llm_motivo" in chiavi else None}
+    # La pagina pubblicata si porta dentro tutti i dati, quindi ogni carattere pesa sul
+    # tempo di apertura. Misurato sull'archivio vero: il testo dei bandi era il 58% del
+    # file (503 KB su 865), e per cinque sesti era testo di bandi gia' CHIUSI, che
+    # nessuno apre. Quindi: testo intero per i bandi ancora aperti, niente per gli altri
+    # (resta il collegamento al sito dell'ente). Il sommario si taglia a 700 caratteri:
+    # nella scheda se ne vedono 300.
+    oggi = date.today().isoformat()
     for b in bandi:
         b["punteggi"] = per_bando.get(b["id"], {})
         b["zone"] = profili.zone(b)     # per il filtro «Dove»: costa niente, e' testo
+        aperto = (b["aperto"] in (None, 1)) and (not b["scadenza"] or b["scadenza"] >= oggi)
+        if not aperto or b["archiviato"]:
+            b["estratto"] = ""
+        if b.get("sommario") and len(b["sommario"]) > 700:
+            b["sommario"] = b["sommario"][:700] + "…"
 
     elenco_profili = profili.leggi_profili(db)
     for p in elenco_profili:
