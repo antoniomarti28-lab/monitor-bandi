@@ -133,6 +133,7 @@
     <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
     <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
     <button class="chip fantasma" id="b-cerca-adesso" hidden>Cerca adesso</button>
+    <button class="icona ricarica" id="b-ricarica" title="Aggiorna l'elenco" aria-label="Aggiorna l'elenco"></button>
   </div>
 
   <div id="elenco"></div>
@@ -752,7 +753,7 @@ async function aggiorna() {
   $("sottotitolo").textContent =
     (nome ? `Profilo «${nome.nome}» · ` : "") +
     `${riepilogo.fonti_ok} fonti attive su ${riepilogo.fonti_totali} · ` +
-    `${bandi.length} mostrati${restano}`;
+    `${bandi.length} mostrati${restano}` + eta();
 }
 
 /** Traduce l'errore tecnico in cosa puoi fare tu. */
@@ -1033,6 +1034,45 @@ const tornaSu = $("torna-su");
 tornaSu.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
 window.addEventListener("scroll", () => { tornaSu.hidden = window.scrollY < 400; }, { passive: true });
 
+// ------------------------------------------------------------------ aggiorna l'elenco
+//
+// La pagina pubblicata si porta i dati dentro: per vedere quelli nuovi va riletta dal
+// sito. Un semplice «ricarica» pero' puo' restituire la copia tenuta in memoria dal
+// browser (GitHub dice di conservarla per dieci minuti), e si riavrebbe la stessa
+// pagina di prima: per questo si rientra con un indirizzo mai visto.
+// Nell'app sul computer, invece, i dati arrivano a richiesta: basta richiederli.
+
+$("b-ricarica").innerHTML = DISEGNO(
+  '<path d="M13.4 3.1a6 6 0 1 0 1.5 5.6"/><path d="M14.6 1v3.4h-3.4"/>');
+
+/** Da quanto tempo sono fermi i dati che stai guardando. */
+function eta() {
+  if (!STATICA || !window.GENERATA_IL) return "";
+  const minuti = Math.max(0, Math.round((Date.now() - new Date(window.GENERATA_IL)) / 60000));
+  if (minuti < 2) return " · appena aggiornata";
+  if (minuti < 60) return ` · dati di ${minuti} minuti fa`;
+  const ore = Math.round(minuti / 60);
+  if (ore < 24) return ` · dati di ${ore} ${ore === 1 ? "ora" : "ore"} fa`;
+  const giorni = Math.round(ore / 24);
+  return ` · dati di ${giorni} ${giorni === 1 ? "giorno" : "giorni"} fa`;
+}
+
+$("b-ricarica").onclick = async () => {
+  const b = $("b-ricarica");
+  b.classList.add("gira");
+  if (STATICA) {
+    location.replace(location.pathname + "?aggiornata=" + Date.now());
+    return;
+  }
+  await caricaProfili();
+  await caricaFonti();
+  await caricaZone();
+  await caricaNotifiche();
+  await aggiorna();
+  b.classList.remove("gira");
+  avvisa("Elenco aggiornato.");
+};
+
 // ------------------------------------------------------------------ cerca adesso
 
 $("b-cerca-adesso").onclick = async () => {
@@ -1042,7 +1082,9 @@ $("b-cerca-adesso").onclick = async () => {
   b.disabled = false;
   if (!fatto) return;
   avvisa("Ho chiesto una scansione completa: guardo tutte le fonti, leggo i bandi nuovi "
-       + "e ti avviso su Telegram se trovo qualcosa. Ci vogliono cinque o dieci minuti.");
+       + "e ti avviso su Telegram se trovo qualcosa. Ci vogliono cinque o dieci minuti: "
+       + "quando è passato quel tempo, premi la freccia circolare qui accanto per rivedere "
+       + "l'elenco.");
 };
 
 // ------------------------------------------------------------------ ricerca fonti

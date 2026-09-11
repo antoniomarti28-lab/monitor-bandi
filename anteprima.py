@@ -6,7 +6,7 @@ Si rigenera con:  python anteprima.py
 """
 import json
 import sqlite3
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import profili
@@ -104,6 +104,7 @@ def costruisci():
 // Con un codice di accesso a GitHub, pero', la pagina puo' riscrivere le impostazioni.
 window.SOLA_LETTURA = true;
 window.REPO = "%s";
+window.GENERATA_IL = "%s";   // serve a dire da quanto sono fermi i dati
 window.DATI_CONFIG = null;   // riempito qui sotto
 const DATI = %s;
 window.DATI_CONFIG = DATI.configurazione;
@@ -174,7 +175,8 @@ window.fetch = async (url, opzioni) => {
   return { json: async () => out };
 };
 </script>
-""" % (repository(), json.dumps(dati, ensure_ascii=False))
+""" % (repository(), datetime.now(timezone.utc).isoformat(timespec="seconds"),
+           json.dumps(dati, ensure_ascii=False))
 
     pagina = pagina.replace("<script>", finto + "<script>", 1)
     (BASE / "anteprima.html").write_text(pagina, encoding="utf-8")

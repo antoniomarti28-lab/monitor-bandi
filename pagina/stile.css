@@ -179,6 +179,15 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accento); o
 input[type="search"] { flex: 1 1 240px; }
 label.spunta { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--tenue); cursor: pointer; }
 
+/* l'icona che rilegge l'elenco, in fondo ai filtri */
+button.icona.ricarica {
+  border-color: var(--bordo); border-radius: 999px; padding: 8px 11px;
+  margin-left: auto;
+}
+button.icona.ricarica.gira svg { animation: gira .9s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { button.icona.ricarica.gira svg { animation: none; } }
+
 .conta-nuovi:not(:empty) {
   display: inline-block; min-width: 18px; text-align: center; margin-left: 6px;
   background: var(--accento); color: #fff; border-radius: 999px;
