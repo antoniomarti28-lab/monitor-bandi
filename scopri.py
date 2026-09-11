@@ -147,10 +147,20 @@ def candidati_dal_modello(cfg, chiave, modello, db):
     import intelligenza
     profili_txt = []
     for pr in cfg.get("profili", []):
-        profili_txt.append("%s: %s, settori %s, territori %s" % (
+        riga = "%s: %s, settori %s, territori %s" % (
             pr.get("nome"), pr.get("tipo_ente"),
             ", ".join(pr.get("settori") or []) or "qualsiasi",
-            ", ".join(pr.get("regioni") or []) or "Italia"))
+            ", ".join(pr.get("regioni") or []) or "Italia")
+        if pr.get("parole"):
+            riga += ", parole che gli interessano: " + ", ".join(pr["parole"])
+        profili_txt.append(riga)
+        # Il racconto libero dice cose che le caselle non prevedono («residenze
+        # artistiche nei borghi», «lavoriamo con le scuole»): e' proprio li' che
+        # stanno gli enti giusti da cercare. Si manda accorciato, perche' qui
+        # servono i portali, non la biografia.
+        racconto = " ".join((pr.get("racconto") or "").split())
+        if racconto:
+            profili_txt.append("   cosa fanno davvero: " + racconto[:500])
     gia = [configurazione.normalizza(f.get("url")) for f in cfg["feed"] + cfg["siti"]]
     domanda = ("PROFILI DA SERVIRE:" + chr(10) + (chr(10).join(profili_txt) or "generico")
                + chr(10) + chr(10) + "GIA CONOSCIUTI (non ripeterli):" + chr(10)

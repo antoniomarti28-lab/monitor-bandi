@@ -193,6 +193,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accento); o
 input[type="search"] { flex: 1 1 240px; }
 label.spunta { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--tenue); cursor: pointer; }
 
+.conta-nuovi:not(:empty) {
+  display: inline-block; min-width: 18px; text-align: center; margin-left: 6px;
+  background: var(--accento); color: #fff; border-radius: 999px;
+  font-size: 11px; font-weight: 600; padding: 1px 6px;
+}
+
 /* ---- scheda del bando ---- */
 
 .bando { padding: 22px 24px; margin-bottom: 14px; box-shadow: var(--ombra); transition: border-color .15s; }
@@ -501,6 +507,7 @@ tr.spenta { opacity: .45; }
       <option value="no">Non sembra per te</option>
       <option value="-">Non ancora valutati</option>
     </select>
+    <label class="spunta"><input type="checkbox" id="nuovi"> Solo i nuovi<span class="conta-nuovi" id="conta-nuovi"></span></label>
     <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
     <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
     <button class="chip fantasma" id="b-cerca-adesso" hidden>Cerca adesso</button>
@@ -624,6 +631,10 @@ window.fetch = async (url, opzioni) => {
     const zona = u.searchParams.get("zona") || "";
     const verdetto = u.searchParams.get("verdetto") || "";
     const fra30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    // «Nuovo» = trovato da meno di due giorni, lo stesso taglio del bollino.
+    const soloNuovi = u.searchParams.get("nuovi") === "1";
+    const daQuando = Date.now() - 48 * 3600 * 1000;
+    const eNuovo = (b) => Boolean(b.trovato_il) && new Date(b.trovato_il).getTime() >= daQuando;
     const aperto = (b) => (b.aperto === null || b.aperto === 1) && (!b.scadenza || b.scadenza >= oggi);
     let lista = DATI.bandi
       .filter((b) => (arch ? b.archiviato : !b.archiviato))
@@ -636,6 +647,7 @@ window.fetch = async (url, opzioni) => {
         archiviati: DATI.bandi.filter((b) => b.archiviato).length,
         in_scadenza: lista.filter((b) => aperto(b) && b.scadenza
                                         && b.scadenza >= oggi && b.scadenza <= fra30).length,
+        nuovi: lista.filter((b) => eNuovo(b) && (chiusi || aperto(b))).length,
         letti: DATI.bandi.filter((b) => b.analizzato_il).length,
         da_leggere: DATI.bandi.filter((b) => !b.analizzato_il && b.testo).length,
         fonti_ok: DATI.fonti.filter((f) => f.esito === "ok").length,
@@ -646,6 +658,7 @@ window.fetch = async (url, opzioni) => {
         .filter((b) => !fonte || b.fonte === fonte)
         .filter((b) => !zona || (zona === "-" ? !b.zone.length : b.zone.includes(zona)))
         .filter((b) => !verdetto || (verdetto === "-" ? !b.llm_verdetto : b.llm_verdetto === verdetto))
+        .filter((b) => !soloNuovi || eNuovo(b))
         .filter((b) => chiusi || aperto(b))
         .filter((b) => !q || (b.titolo + " " + (b.sommario || "") + " " + (b.ente || "")).toLowerCase().includes(q))
         .sort((a, b) => (b.punteggio || 0) - (a.punteggio || 0));
@@ -1170,6 +1183,7 @@ async function aggiorna() {
     chiusi: $("chiusi").checked ? "1" : "0",
     archiviati: $("archiviati").checked ? "1" : "0",
     zona: $("zona").value,
+    nuovi: $("nuovi").checked ? "1" : "0",
     // Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
     // scelto la tendina resta nascosta e il filtro non si applica.
     verdetto: profiloAttivo ? $("verdetto").value : "",
@@ -1177,13 +1191,16 @@ async function aggiorna() {
   $("verdetto").hidden = !profiloAttivo;
   const [bandi, riepilogo] = await Promise.all([
     chiedi("/api/bandi?" + p),
-    chiedi("/api/riepilogo?profilo=" + profiloAttivo),
+    chiedi("/api/riepilogo?profilo=" + profiloAttivo + "&chiusi=" + ($("chiusi").checked ? "1" : "0")),
   ]);
   disegnaBandi(bandi);
   $("n-aperti").textContent = riepilogo.aperti;
   $("n-imminenti").textContent = riepilogo.in_scadenza;
   $("n-letti").textContent = riepilogo.letti;
   $("n-archiviati").textContent = riepilogo.archiviati;
+  // Il numero accanto a «Solo i nuovi»: se non ce n'e' nessuno la spunta resta,
+  // ma senza numero, cosi' si vede subito che oggi non e' arrivato niente.
+  $("conta-nuovi").textContent = riepilogo.nuovi ? riepilogo.nuovi : "";
   const nome = PROFILI.find((x) => String(x.id) === profiloAttivo);
   const restano = riepilogo.da_leggere
     ? ` · ${riepilogo.da_leggere} ancora da leggere` : "";
@@ -1586,7 +1603,7 @@ $("b-cerca-fonti").onclick = async () => {
 
 let attesa;
 $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna, 250); };
-["fonte", "zona", "verdetto", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
+["fonte", "zona", "verdetto", "nuovi", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
 
 (async () => {
   if (STATICA) disegnaCollegamento();

@@ -129,6 +129,7 @@
       <option value="no">Non sembra per te</option>
       <option value="-">Non ancora valutati</option>
     </select>
+    <label class="spunta"><input type="checkbox" id="nuovi"> Solo i nuovi<span class="conta-nuovi" id="conta-nuovi"></span></label>
     <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
     <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
     <button class="chip fantasma" id="b-cerca-adesso" hidden>Cerca adesso</button>
@@ -727,6 +728,7 @@ async function aggiorna() {
     chiusi: $("chiusi").checked ? "1" : "0",
     archiviati: $("archiviati").checked ? "1" : "0",
     zona: $("zona").value,
+    nuovi: $("nuovi").checked ? "1" : "0",
     // Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
     // scelto la tendina resta nascosta e il filtro non si applica.
     verdetto: profiloAttivo ? $("verdetto").value : "",
@@ -734,13 +736,16 @@ async function aggiorna() {
   $("verdetto").hidden = !profiloAttivo;
   const [bandi, riepilogo] = await Promise.all([
     chiedi("/api/bandi?" + p),
-    chiedi("/api/riepilogo?profilo=" + profiloAttivo),
+    chiedi("/api/riepilogo?profilo=" + profiloAttivo + "&chiusi=" + ($("chiusi").checked ? "1" : "0")),
   ]);
   disegnaBandi(bandi);
   $("n-aperti").textContent = riepilogo.aperti;
   $("n-imminenti").textContent = riepilogo.in_scadenza;
   $("n-letti").textContent = riepilogo.letti;
   $("n-archiviati").textContent = riepilogo.archiviati;
+  // Il numero accanto a «Solo i nuovi»: se non ce n'e' nessuno la spunta resta,
+  // ma senza numero, cosi' si vede subito che oggi non e' arrivato niente.
+  $("conta-nuovi").textContent = riepilogo.nuovi ? riepilogo.nuovi : "";
   const nome = PROFILI.find((x) => String(x.id) === profiloAttivo);
   const restano = riepilogo.da_leggere
     ? ` · ${riepilogo.da_leggere} ancora da leggere` : "";
@@ -1143,7 +1148,7 @@ $("b-cerca-fonti").onclick = async () => {
 
 let attesa;
 $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna, 250); };
-["fonte", "zona", "verdetto", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
+["fonte", "zona", "verdetto", "nuovi", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
 
 (async () => {
   if (STATICA) disegnaCollegamento();

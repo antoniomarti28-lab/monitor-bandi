@@ -125,6 +125,10 @@ window.fetch = async (url, opzioni) => {
     const zona = u.searchParams.get("zona") || "";
     const verdetto = u.searchParams.get("verdetto") || "";
     const fra30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    // «Nuovo» = trovato da meno di due giorni, lo stesso taglio del bollino.
+    const soloNuovi = u.searchParams.get("nuovi") === "1";
+    const daQuando = Date.now() - 48 * 3600 * 1000;
+    const eNuovo = (b) => Boolean(b.trovato_il) && new Date(b.trovato_il).getTime() >= daQuando;
     const aperto = (b) => (b.aperto === null || b.aperto === 1) && (!b.scadenza || b.scadenza >= oggi);
     let lista = DATI.bandi
       .filter((b) => (arch ? b.archiviato : !b.archiviato))
@@ -137,6 +141,7 @@ window.fetch = async (url, opzioni) => {
         archiviati: DATI.bandi.filter((b) => b.archiviato).length,
         in_scadenza: lista.filter((b) => aperto(b) && b.scadenza
                                         && b.scadenza >= oggi && b.scadenza <= fra30).length,
+        nuovi: lista.filter((b) => eNuovo(b) && (chiusi || aperto(b))).length,
         letti: DATI.bandi.filter((b) => b.analizzato_il).length,
         da_leggere: DATI.bandi.filter((b) => !b.analizzato_il && b.testo).length,
         fonti_ok: DATI.fonti.filter((f) => f.esito === "ok").length,
@@ -147,6 +152,7 @@ window.fetch = async (url, opzioni) => {
         .filter((b) => !fonte || b.fonte === fonte)
         .filter((b) => !zona || (zona === "-" ? !b.zone.length : b.zone.includes(zona)))
         .filter((b) => !verdetto || (verdetto === "-" ? !b.llm_verdetto : b.llm_verdetto === verdetto))
+        .filter((b) => !soloNuovi || eNuovo(b))
         .filter((b) => chiusi || aperto(b))
         .filter((b) => !q || (b.titolo + " " + (b.sommario || "") + " " + (b.ente || "")).toLowerCase().includes(q))
         .sort((a, b) => (b.punteggio || 0) - (a.punteggio || 0));

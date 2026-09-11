@@ -7,7 +7,7 @@ Usa SOLO la libreria standard di Python.
 import json
 import sqlite3
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -24,6 +24,16 @@ PORTA = 8077
 # I bandi non ancora letti restano visibili: meglio uno di troppo che perderne uno.
 APERTI = ("AND (b.aperto IS NULL OR b.aperto = 1) "
           "AND (b.scadenza IS NULL OR b.scadenza >= date('now'))")
+
+# «Nuovo» vuol dire trovato da meno di due giorni. Stesso taglio del bollino sulla
+# scheda, cosi' la spunta mostra esattamente i bandi che portano la scritta «nuovo».
+ORE_NUOVO = 48
+
+
+def da_quando_e_nuovo():
+    """La soglia, scritta come la scrive raccogli.py in trovato_il: cosi' il confronto
+    fra testi funziona senza conversioni."""
+    return (datetime.now(timezone.utc) - timedelta(hours=ORE_NUOVO)).isoformat(timespec="seconds")
 
 
 def connetti():
@@ -89,6 +99,7 @@ class Gestore(BaseHTTPRequestHandler):
         mostra_chiusi = p.get("chiusi", ["0"])[0] == "1"
         archivio = p.get("archiviati", ["0"])[0] == "1"
         zona = (p.get("zona", [""])[0] or "").strip()
+        solo_nuovi = p.get("nuovi", ["0"])[0] == "1"
         verdetto = (p.get("verdetto", [""])[0] or "").strip()
 
         # Il testo intero puo' essere di 60.000 caratteri: non serve nell'elenco.
@@ -115,6 +126,9 @@ class Gestore(BaseHTTPRequestHandler):
         if fonte:
             sql += " AND b.fonte = ?"
             args.append(fonte)
+        if solo_nuovi:
+            sql += " AND b.trovato_il >= ?"
+            args.append(da_quando_e_nuovo())
         if not mostra_chiusi:
             sql += " " + APERTI
         # Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
@@ -141,7 +155,7 @@ class Gestore(BaseHTTPRequestHandler):
             righe = [r for r in righe if dentro(r)]
         return righe
 
-    def _riepilogo(self, profilo):
+    def _riepilogo(self, profilo, mostra_chiusi=False):
         if profilo:
             base = ("FROM bandi b JOIN abbinamenti a ON a.bando_id=b.id AND a.profilo_id=%d "
                     "WHERE b.archiviato=0" % int(profilo))
@@ -154,6 +168,8 @@ class Gestore(BaseHTTPRequestHandler):
             "archiviati": uno("SELECT COUNT(*) n FROM bandi WHERE archiviato=1"),
             "in_scadenza": uno("SELECT COUNT(*) n " + base + " " + APERTI +
                                " AND b.scadenza BETWEEN date('now') AND date('now','+30 day')"),
+            "nuovi": uno("SELECT COUNT(*) n " + base + " AND b.trovato_il >= ?"
+                         + ("" if mostra_chiusi else " " + APERTI), (da_quando_e_nuovo(),)),
             "letti": uno("SELECT COUNT(*) n FROM bandi WHERE analizzato_il IS NOT NULL"),
             "da_leggere": uno("SELECT COUNT(*) n FROM bandi WHERE analizzato_il IS NULL "
                               "AND testo IS NOT NULL AND testo <> ''"),
@@ -187,7 +203,8 @@ class Gestore(BaseHTTPRequestHandler):
             return self._json(self._elenco_bandi(p))
 
         if u.path == "/api/riepilogo":
-            return self._json(self._riepilogo((p.get("profilo", [""])[0] or "").strip()))
+            return self._json(self._riepilogo((p.get("profilo", [""])[0] or "").strip(),
+                                             p.get("chiusi", ["0"])[0] == "1"))
 
         if u.path == "/api/fonti":
             return self._json(query("SELECT * FROM fonti_stato ORDER BY esito='ok' DESC, nome"))
