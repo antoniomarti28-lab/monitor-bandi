@@ -326,3 +326,21 @@ premuto un tasto sulla pagina, la ripubblicazione e' stata cancellata. Ora ha un
 - **Le due richieste dalla pagina** («Cerca adesso» e «Cerca fonti nuove») passano dalla
   stessa funzione `configurazione._richiesta_nuova(db, campo, memoria)`: una data nel file,
   l'ultima eseguita nel database, e si lavora solo se sono diverse.
+
+
+## «Solo i nuovi» e il racconto nella ricerca fonti (11 set 2026)
+
+- **Spunta «Solo i nuovi»** fra i filtri, col numero accanto. Taglio a 48 ore, lo stesso
+  del bollino sulla scheda: la spunta e il bollino devono mostrare gli stessi bandi, o uno
+  dei due mente. **Il numero conta quello che la spunta mostrerebbe davvero**: il riepilogo
+  riceve anche `chiusi`, perche' contando i nuovi chiusi quando i chiusi sono nascosti si
+  prometteva roba che poi non compariva (88 promessi, 9 mostrati).
+- `server.py` confronta `trovato_il` con una soglia scritta **nello stesso formato** con cui
+  la scrive `raccogli.py` (`datetime.now(timezone.utc).isoformat()`), cosi' il confronto fra
+  testi in SQL funziona. Non usare `datetime('now')`: separa la data dall'ora con uno spazio
+  invece che con la T, e il confronto viene sbagliato.
+- **`scopri.py` ora legge anche il racconto libero e le parole del profilo.** Prima mandava
+  al modello solo le caselle spuntate (tipo di ente, settori, regioni), cioe' la parte piu'
+  generica del profilo: chiedeva portali «per un'associazione culturale in Calabria» invece
+  che per chi fa residenze artistiche nei borghi. Il racconto si manda accorciato a 500
+  caratteri: servono i portali, non la biografia.
