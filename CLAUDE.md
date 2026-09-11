@@ -344,3 +344,25 @@ premuto un tasto sulla pagina, la ripubblicazione e' stata cancellata. Ora ha un
   generica del profilo: chiedeva portali «per un'associazione culturale in Calabria» invece
   che per chi fa residenze artistiche nei borghi. Il racconto si manda accorciato a 500
   caratteri: servono i portali, non la biografia.
+
+
+## Peso della pagina e icona «aggiorna» (11 set 2026)
+
+- **La pagina pubblicata pesava 1 MB** e ci metteva a caricare. Misurato: 865 KB erano dati,
+  e **il 58% era il testo dei bandi** (`estratto`, 3.000 caratteri a bando) — per cinque
+  sesti testo di bandi gia' CHIUSI, che nessuno apre. Ora il testo intero resta solo sui
+  bandi aperti (24 su 207) e il sommario si taglia a 700 caratteri: **da 1.001 a 504 KB**,
+  che sono **121 KB veri** quando GitHub comprime. Se un domani serve altro spazio, i
+  prossimi candidati sono `sommario` (114 KB) e `riassunto` (54 KB).
+- **Vercel non risolverebbe questo**: lo stesso file, da un altro indirizzo. Misurato l'11
+  set: la coda di GitHub era **0 minuti** su tutti i lavori, e un cambio di profilo si
+  chiude in 2,7 minuti. Vercel servirebbe solo a rendere istantaneo quel ricalcolo, ma
+  il giro quotidiano dura 5 minuti e le funzioni gratuite si fermano a 60 secondi, e
+  l'archivio dovrebbe passare a un database. La strada economica, se serve: **rifare i
+  conti nel browser** (i dati sono gia' tutti in pagina) mentre GitHub scrive per conto suo.
+- **Icona «aggiorna l'elenco»** in fondo ai filtri. Sulla pagina pubblicata **non basta
+  `location.reload()`**: GitHub Pages chiede al browser di tenere la copia dieci minuti e
+  si riavrebbe la stessa pagina. Si rientra con `location.replace(pathname + "?aggiornata="
+  + Date.now())`. Nell'app locale invece si richiamano le API, senza ricaricare.
+- Accanto, nel sottotitolo, **da quanto sono fermi i dati** (`window.GENERATA_IL`, scritto
+  da `anteprima.py`): senza quel dato l'icona non si sa quando premerla.
