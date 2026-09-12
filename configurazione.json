@@ -147,13 +147,5 @@
     "massimo_messaggi": 8
   },
   "proposte": [],
-  "archiviati": [],
-  "richiesta_scoperta": "2026-09-11T16:23:41.259Z",
-  "esito_scoperta": {
-    "quando": "2026-09-11T16:30:16+00:00",
-    "esaminate": 13,
-    "trovate": 0,
-    "nomi": [],
-    "nota": "nessuno degli indirizzi aperti aveva bandi dentro"
-  }
+  "archiviati": []
 }
