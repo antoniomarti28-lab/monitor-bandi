@@ -144,6 +144,10 @@ window.fetch = async (url, opzioni) => {
     const daQuando = Date.now() - 48 * 3600 * 1000;
     const eNuovo = (b) => Boolean(b.trovato_il) && new Date(b.trovato_il).getTime() >= daQuando;
     const aperto = (b) => (b.aperto === null || b.aperto === 1) && (!b.scadenza || b.scadenza >= oggi);
+    // Prima quelli che puoi fare davvero, poi i forse, poi i non ancora letti, e per
+    // ultimi quelli gia' scartati dal modello: il punteggio conta le parole, il
+    // verdetto viene da chi ha letto il bando intero, e vince il secondo.
+    const rango = (b) => ({ si: 0, forse: 1, no: 3 })[b.llm_verdetto] ?? 2;
     let lista = DATI.bandi
       .filter((b) => (arch ? b.archiviato : !b.archiviato))
       .filter((b) => !prof || b.punteggi[prof])
@@ -169,7 +173,7 @@ window.fetch = async (url, opzioni) => {
         .filter((b) => !soloNuovi || eNuovo(b))
         .filter((b) => chiusi || aperto(b))
         .filter((b) => !q || (b.titolo + " " + (b.sommario || "") + " " + (b.ente || "")).toLowerCase().includes(q))
-        .sort((a, b) => (b.punteggio || 0) - (a.punteggio || 0));
+        .sort((a, b) => rango(a) - rango(b) || (b.punteggio || 0) - (a.punteggio || 0));
     }
   }
   return { json: async () => out };

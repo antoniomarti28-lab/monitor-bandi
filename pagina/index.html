@@ -639,8 +639,16 @@ function disegnaBandi(bandi) {
     // Quando il modello ha letto il bando, il suo riassunto vale più del testo del feed.
     const testo = b.riassunto || b.sommario || "";
     const sommario = testo.slice(0, 300) + (testo.length > 300 ? "…" : "");
+    // Il punteggio conta le parole che combaciano; il verdetto viene da chi ha letto il
+    // bando intero. Quando il modello dice no, il numero non deve piu' brillare: capitava
+    // di vedere un bel 100 verde su un bando che chiede l'iscrizione al RUNTS.
+    const fascia = b.llm_verdetto === "no" ? "smentito"
+      : b.punteggio >= 70 ? "alto" : b.punteggio >= 55 ? "medio" : "basso";
+    const spiegaPunteggio = b.llm_verdetto === "no"
+      ? ' title="Le parole del tuo profilo combaciano, ma leggendo il bando intero risulta che non puoi parteciparci"'
+      : '';
     const punteggio = b.punteggio != null
-      ? `<span class="punteggio ${b.punteggio >= 70 ? "alto" : b.punteggio >= 55 ? "medio" : "basso"}">${b.punteggio}</span>` : "";
+      ? `<span class="punteggio ${fascia}"${spiegaPunteggio}>${b.punteggio}</span>` : "";
     const motivi = (b.motivi && b.motivi.length)
       ? `<p class="motivi">Perché ti riguarda: ${b.motivi.join(" · ")}</p>` : "";
 

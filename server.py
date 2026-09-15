@@ -139,7 +139,11 @@ class Gestore(BaseHTTPRequestHandler):
                 args.append(verdetto)
 
         if profilo:
-            sql += " ORDER BY a.punteggio DESC,"
+            # Prima quelli che puoi fare davvero, poi i forse, poi quelli non ancora
+            # letti, e per ultimi quelli che il modello ha gia' scartato: un bando da
+            # 100 punti che chiede l'iscrizione al RUNTS non va in cima all'elenco.
+            sql += (" ORDER BY CASE a.llm_verdetto WHEN 'si' THEN 0 WHEN 'forse' THEN 1"
+                    " WHEN 'no' THEN 3 ELSE 2 END, a.punteggio DESC,")
         else:
             sql += " ORDER BY"
         sql += (" CASE WHEN b.scadenza IS NULL THEN 1 ELSE 0 END,"
