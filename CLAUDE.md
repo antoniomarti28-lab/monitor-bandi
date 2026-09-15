@@ -366,3 +366,26 @@ premuto un tasto sulla pagina, la ripubblicazione e' stata cancellata. Ora ha un
   + Date.now())`. Nell'app locale invece si richiamano le API, senza ricaricare.
 - Accanto, nel sottotitolo, **da quanto sono fermi i dati** (`window.GENERATA_IL`, scritto
   da `anteprima.py`): senza quel dato l'icona non si sa quando premerla.
+
+
+## Il verdetto batte il punteggio, e il territorio lo dice il modello (15 set 2026)
+
+- **Il punteggio conta le parole, il verdetto viene dal documento intero: quando si
+  contraddicono ha ragione il verdetto.** Se n'e' accorto lui guardando la pagina: un
+  bando da **100/100** in cima («SàFF Social Pitch») che il modello aveva gia' scartato
+  perche' chiede l'iscrizione al RUNTS. Ora l'elenco ordina per verdetto (si, forse, non
+  letto, no) e il numero smentito e' grigio col bordo tratteggiato. Vale in tutte e due
+  le strade: `ORDER BY CASE a.llm_verdetto ...` in `server.py`, `rango()` nell'anteprima.
+- **Il silenzio delle notifiche non e' un guasto**: prima di dare la colpa al bot,
+  guardare quanti abbinamenti sopra soglia hanno `llm_verdetto = 'no'` (il 15 set erano
+  12 su 12, tutti giustamente scartati). `da_avvisare` esclude i «no» e i non letti.
+- **`territorio`, nuovo campo letto dal modello.** Due dei cinque «si» erano bandi di
+  Fondazione Cariplo, che finanzia solo Lombardia piu' Novara e VCO: due notifiche
+  sbagliate. La parola «Lombardia» compariva **solo dopo il tremillesimo carattere**,
+  cioe' fuori dai campi corti che guarda `valuta()` e fuori dal ritaglio mandato al
+  modello. Ora il modello dichiara le regioni dove il bando vale, e
+  `profili.territorio_dichiarato()` le fa comandare su punteggio e filtro «Dove». Quando
+  il campo manca si torna al conteggio di prima: **nessun bando sparisce per un dato che
+  non c'e'**.
+- Trappola nel tradurre i nomi: la lista `REGIONI["Europa"]` contiene «europea» e
+  «europeo», che **non agganciano la parola «Europa» scritta da sola**. Si cerca «europ».
