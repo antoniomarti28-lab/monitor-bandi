@@ -70,6 +70,10 @@ COLONNE_NUOVE = {
     "giudizio": "TEXT",
     "origine_scadenza": "TEXT",
     "analizzato_il": "TEXT",
+    # Dove vale il bando, letto dal documento intero. Le regole non ce la fanno: nei due
+    # bandi di Fondazione Cariplo la parola «Lombardia» compariva solo dopo il
+    # tremillesimo carattere, e sono arrivate due notifiche per bandi di un'altra regione.
+    "territorio": "TEXT",
 }
 
 
@@ -272,6 +276,13 @@ Campi richiesti:
   "settori"     : da 1 a 4 parole sull'ambito (es. ["cultura", "teatro"]).
   "destinatari" : elenco breve di chi puo' partecipare, come scritto nel testo
                   (es. ["associazioni di promozione sociale", "ODV iscritte al RUNTS"]).
+  "territorio"  : DOVE vale il bando, cioe' dove devono avere sede o operare i
+                  partecipanti. Elenco di nomi di regioni italiane (es. ["Lombardia"],
+                  ["Calabria", "Puglia"]), oppure ["Italia"] se vale su tutto il
+                  territorio nazionale, oppure ["Europa"] per i programmi europei.
+                  Attenzione: molti enti finanziano SOLO la propria zona anche quando
+                  non lo ripetono a ogni riga. Metti null solo se dal testo non si
+                  capisce proprio.
   "riassunto"   : massimo 100 parole, in italiano semplice, su cosa finanzia il bando."""
 
 SISTEMA_GIUDIZIO = """Valuti se un soggetto puo' partecipare a un bando.
@@ -385,12 +396,14 @@ def salva_lettura(db, ident, r):
         # L'importo del modello SOSTITUISCE quello trovato dalle regole: la regola
         # pescava la cifra della prima edizione elencata nella pagina, non di questa.
         "importo=COALESCE(?,importo), importo_num=CASE WHEN ? IS NULL THEN importo_num END, "
-        "contributo=?, tipo_aiuto=?, requisiti=?, riassunto=?, analizzato_il=? WHERE id=?",
+        "contributo=?, tipo_aiuto=?, requisiti=?, riassunto=?, territorio=?, "
+        "analizzato_il=? WHERE id=?",
         (1 if r.get("aperto") and r.get("e_un_bando") else 0,
          scadenza, "letto dal modello" if scadenza else None,
          r.get("importo"), r.get("importo"), r.get("contributo"), r.get("tipo_aiuto"),
          json.dumps(r.get("destinatari") or [], ensure_ascii=False),
          (r.get("riassunto") or "").strip() or None,
+         json.dumps(r.get("territorio") or [], ensure_ascii=False) if r.get("territorio") else None,
          datetime.now(timezone.utc).isoformat(timespec="seconds"), ident))
     db.commit()
 

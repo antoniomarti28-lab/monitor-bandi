@@ -110,6 +110,40 @@ def contiene(testo, chiave):
 GENERICHE = ("Europa", "Tutta Italia")
 
 
+def territorio_dichiarato(bando):
+    """Le regioni che il modello ha letto nel bando, tradotte nei nostri nomi.
+
+    Vale piu' di qualunque conteggio di parole: il modello legge il documento intero,
+    allegati compresi, mentre qui si guardano titolo e sommario. Nei due bandi di
+    Fondazione Cariplo la parola «Lombardia» compariva solo dopo il tremillesimo
+    carattere, e sono partite due notifiche per bandi di un'altra regione.
+    """
+    grezzo = bando.get("territorio")
+    if not grezzo:
+        return []
+    try:
+        voci = json.loads(grezzo) if isinstance(grezzo, str) else list(grezzo)
+    except (ValueError, TypeError):
+        return []
+    fuori = []
+    for v in voci:
+        n = _norm(str(v))
+        if not n:
+            continue
+        # «europ» e non le parole della lista: quella contiene «europea» e «europeo»,
+        # che non agganciano la parola «Europa» scritta da sola.
+        if contiene(n, "europ") or n in ("ue", "unione europea"):
+            fuori.append("Europa")
+            continue
+        regione = next((r for r, chiavi in REGIONI.items()
+                        if r not in GENERICHE and any(contiene(n, k) for k in chiavi)), None)
+        if regione:
+            fuori.append(regione)
+        elif contiene(n, "italia") or "nazional" in n:
+            fuori.append("Tutta Italia")
+    return list(dict.fromkeys(fuori))
+
+
 def zone(bando):
     """Dove vale un bando, dedotto dal testo. Serve al filtro «Dove» della pagina.
 
@@ -118,6 +152,9 @@ def zone(bando):
     si ripiega sull'Europa o sull'Italia intera. Lista vuota quando non si capisce:
     meglio dire «zona non indicata» che indovinare.
     """
+    dichiarato = territorio_dichiarato(bando)
+    if dichiarato:
+        return dichiarato          # chi ha letto il documento intero ha ragione
     testo = _norm(" ".join(filter(None, [
         bando.get("titolo", ""), bando.get("sommario") or "", bando.get("ente") or "",
         bando.get("fonte") or "", bando.get("riassunto") or "", bando.get("requisiti") or ""])))
@@ -214,7 +251,16 @@ def valuta(bando, profilo):
 
     # 4. Territorio.
     regioni_profilo = profilo.get("regioni", [])
-    if regioni_profilo:
+    dichiarato = territorio_dichiarato(bando)
+    if regioni_profilo and dichiarato:
+        # Il modello ha letto DOVE vale il bando: comanda quello, non le parole.
+        in_comune = [r for r in dichiarato if r in regioni_profilo]
+        if in_comune:
+            punti += PESI["regione"]
+            motivi.append(in_comune[0])
+        else:
+            return 0, ["vale solo per %s" % ", ".join(dichiarato[:3])]
+    elif regioni_profilo:
         trovata = next((r for r in regioni_profilo
                         if any(contiene(testo, k) for k in REGIONI.get(r, []))), None)
         if trovata:
