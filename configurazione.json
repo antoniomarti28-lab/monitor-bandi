@@ -28,6 +28,29 @@
       "escluse": [],
       "importo_min": null,
       "importo_max": null
+    },
+    {
+      "id": 2,
+      "nome": "Labo Art Tropea",
+      "tipo_ente": "Associazione di promozione sociale (APS)",
+      "racconto": "LaboArt Tropea è un’associazione culturale, iscritta al RUNTS, che usa soprattutto teatro, danza e arti performative come strumenti di inclusione, cura e partecipazione sociale.\n\nIn pratica, organizza:\n\nlaboratori e workshop teatrali per bambini, giovani e adulti;\n\nattività rivolte a persone con disabilità, fragilità o rischio di marginalità;\n\npercorsi di teatro sociale e di comunità;\n\nspettacoli, performance, incontri e iniziative culturali;\n\nil festival “Teatro d’aMare”, con teatro, danza, musica, installazioni, dibattiti e laboratori nel centro storico di Tropea.",
+      "settori": [
+        "Cultura e arte",
+        "Teatro e spettacolo",
+        "Cinema e audiovisivo",
+        "Sociale e terzo settore",
+        "Giovani",
+        "Formazione"
+      ],
+      "regioni": [
+        "Calabria",
+        "Tutta Italia",
+        "Europa"
+      ],
+      "parole": [],
+      "escluse": [],
+      "importo_min": null,
+      "importo_max": null
     }
   ],
   "feed": [
