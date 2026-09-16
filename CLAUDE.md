@@ -389,3 +389,38 @@ premuto un tasto sulla pagina, la ripubblicazione e' stata cancellata. Ora ha un
   non c'e'**.
 - Trappola nel tradurre i nomi: la lista `REGIONI["Europa"]` contiene «europea» e
   «europeo», che **non agganciano la parola «Europa» scritta da sola**. Si cerca «europ».
+
+
+## I tre difetti del 16 set 2026 (li ha visti lui guardando la pagina)
+
+Era partito da due domande — «non mi arrivano le notifiche» e «vedo bandi con punteggio
+alto che non c'entrano niente» — e sotto c'erano tre cose diverse.
+
+- **Il punteggio di un bando gia' avvisato restava congelato per sempre.** `riabbina`
+  giustamente non cancella gli abbinamenti con `avvisato=1`, ma la UPDATE avveniva solo
+  per quelli sopra soglia: chi scendeva sotto restava scritto com'era. Tredici righe su
+  ventinove mostravano il punteggio di giorni prima, compreso un 100 su un bando che il
+  modello aveva poi letto e scartato. **Ora il punteggio si riscrive comunque**, e il
+  verdetto entra nel conto: `llm_verdetto = 'no'` vale `PUNTI_SCARTATO` (15) con la
+  ragione al posto dei motivi. Chi e' gia' stato giudicato non si cancella mai piu'
+  (un giudizio costa gettoni).
+- **Il campo `territorio` non veniva riconosciuto** quando il modello rispondeva in
+  inglese (`"Piedmont"`) o nominava province (`"Catanzaro", "Vibo Valentia"`). Risultato:
+  i due bandi di Cariplo restavano in classifica e un bando delle sue province prendeva
+  8 punti invece di 20. Aggiunte in `profili.py` le tabelle `ALTRI_NOMI` (nomi inglesi)
+  e `PROVINCE` (capoluoghi raggruppati per regione). **Quando si chiede un dato a un
+  modello, i suoi nomi non sono i nostri: la traduzione va prevista.**
+- **Gli avvisi di un profilo nuovo aspettavano il giro del mattino dopo**, perche'
+  `avvisi.invia()` lo chiamava solo `raccogli.giro()`. Ora lo chiama anche il lavoro
+  delle impostazioni.
+
+Piu' due difetti visti per strada:
+
+- **Nei messaggi Telegram compariva `&#x27;`**: Telegram in modo HTML conosce solo
+  `&lt; &gt; &amp;` e il resto lo stampa com'e'. `avvisi.escape()` ora usa
+  `html.escape(..., quote=False)`. (E' la stessa lezione dell'`html.unescape` doppio,
+  dall'altro verso.)
+- **Nell'elenco di un profilo i bandi gia' scartati non si mostrano piu'.** Il filtro
+  «Puoi parteciparci» ha ora un valore implicito `-no`, e la voce «...compresi quelli
+  scartati» li rimette. Il sottotitolo dice quanti sono, perche' nascondere in silenzio
+  e' peggio che mostrare troppo.
