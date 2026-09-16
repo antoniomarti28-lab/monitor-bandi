@@ -48,6 +48,9 @@ jobs:
           python configurazione.py --se-richiesto   # «Cerca adesso» premuto sulla pagina
           python siti.py            # controlla subito le fonti appena aggiunte
           python intelligenza.py --solo-giudizi
+          # Un profilo nuovo trova subito i suoi bandi: senza questa riga gli avvisi
+          # aspettavano il giro del mattino dopo.
+          python -c "import avvisi; avvisi.invia()"
           python anteprima.py
 
       - name: Risalva l'archivio

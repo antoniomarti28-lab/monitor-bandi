@@ -134,8 +134,12 @@ class Gestore(BaseHTTPRequestHandler):
         # Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
         # non c'e' niente da filtrare, e la pagina infatti nasconde quella tendina.
         if verdetto and profilo:
-            sql += " AND a.llm_verdetto IS NULL" if verdetto == "-" else " AND a.llm_verdetto = ?"
-            if verdetto != "-":
+            if verdetto == "-":            # non ancora valutati
+                sql += " AND a.llm_verdetto IS NULL"
+            elif verdetto == "-no":        # tutti tranne quelli scartati (il default)
+                sql += " AND (a.llm_verdetto IS NULL OR a.llm_verdetto <> 'no')"
+            elif verdetto != "tutti":
+                sql += " AND a.llm_verdetto = ?"
                 args.append(verdetto)
 
         if profilo:
@@ -174,6 +178,8 @@ class Gestore(BaseHTTPRequestHandler):
                                " AND b.scadenza BETWEEN date('now') AND date('now','+30 day')"),
             "nuovi": uno("SELECT COUNT(*) n " + base + " AND b.trovato_il >= ?"
                          + ("" if mostra_chiusi else " " + APERTI), (da_quando_e_nuovo(),)),
+            "scartati": (uno("SELECT COUNT(*) n " + base + " AND a.llm_verdetto='no' "
+                             + ("" if mostra_chiusi else APERTI)) if profilo else 0),
             "letti": uno("SELECT COUNT(*) n FROM bandi WHERE analizzato_il IS NOT NULL"),
             "da_leggere": uno("SELECT COUNT(*) n FROM bandi WHERE analizzato_il IS NULL "
                               "AND testo IS NOT NULL AND testo <> ''"),

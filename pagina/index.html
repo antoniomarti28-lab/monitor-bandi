@@ -123,7 +123,8 @@
     <select id="fonte"><option value="">Tutte le fonti</option></select>
     <select id="zona" title="Dove vale il bando"><option value="">Dovunque</option></select>
     <select id="verdetto" title="Il giudizio del modello per questo profilo" hidden>
-      <option value="">Puoi parteciparci: tutti</option>
+      <option value="">Tutti, tranne gli scartati</option>
+      <option value="tutti">…compresi quelli scartati</option>
       <option value="si">Sì, puoi parteciparci</option>
       <option value="forse">Forse puoi</option>
       <option value="no">Non sembra per te</option>
@@ -740,7 +741,10 @@ async function aggiorna() {
     nuovi: $("nuovi").checked ? "1" : "0",
     // Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
     // scelto la tendina resta nascosta e il filtro non si applica.
-    verdetto: profiloAttivo ? $("verdetto").value : "",
+    // Senza scelta esplicita, i bandi che il modello ha gia' letto e scartato non si
+    // mostrano: restano a un clic di distanza, ma non riempiono l'elenco di roba che
+    // non ti riguarda. «…compresi quelli scartati» li rimette dentro.
+    verdetto: profiloAttivo ? ($("verdetto").value || "-no") : "",
   });
   $("verdetto").hidden = !profiloAttivo;
   const [bandi, riepilogo] = await Promise.all([
@@ -758,10 +762,12 @@ async function aggiorna() {
   const nome = PROFILI.find((x) => String(x.id) === profiloAttivo);
   const restano = riepilogo.da_leggere
     ? ` · ${riepilogo.da_leggere} ancora da leggere` : "";
+  const scartati = profiloAttivo && riepilogo.scartati && !$("verdetto").value
+    ? ` · ${riepilogo.scartati} scartati dal modello, non mostrati` : "";
   $("sottotitolo").textContent =
     (nome ? `Profilo «${nome.nome}» · ` : "") +
     `${riepilogo.fonti_ok} fonti attive su ${riepilogo.fonti_totali} · ` +
-    `${bandi.length} mostrati${restano}` + eta();
+    `${bandi.length} mostrati${restano}${scartati}` + eta();
 }
 
 /** Traduce l'errore tecnico in cosa puoi fare tu. */

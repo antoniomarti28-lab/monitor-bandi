@@ -17,7 +17,16 @@ import sqlite3
 import sys
 import time
 from datetime import datetime, timezone
-from html import escape
+from html import escape as _escape_html
+
+
+def escape(testo):
+    """Mette al sicuro solo i tre segni che Telegram interpreta.
+
+    Con l'escape completo apostrofi e virgolette diventavano &#x27; e &quot;, che
+    Telegram non traduce: arrivavano scritti cosi' dentro il messaggio.
+    """
+    return _escape_html(str(testo), quote=False)
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode

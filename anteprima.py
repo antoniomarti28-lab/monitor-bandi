@@ -160,6 +160,7 @@ window.fetch = async (url, opzioni) => {
         in_scadenza: lista.filter((b) => aperto(b) && b.scadenza
                                         && b.scadenza >= oggi && b.scadenza <= fra30).length,
         nuovi: lista.filter((b) => eNuovo(b) && (chiusi || aperto(b))).length,
+        scartati: prof ? lista.filter((b) => b.llm_verdetto === "no" && (chiusi || aperto(b))).length : 0,
         letti: DATI.bandi.filter((b) => b.analizzato_il).length,
         da_leggere: DATI.bandi.filter((b) => !b.analizzato_il && b.testo).length,
         fonti_ok: DATI.fonti.filter((f) => f.esito === "ok").length,
@@ -169,7 +170,10 @@ window.fetch = async (url, opzioni) => {
       out = lista
         .filter((b) => !fonte || b.fonte === fonte)
         .filter((b) => !zona || (zona === "-" ? !b.zone.length : b.zone.includes(zona)))
-        .filter((b) => !verdetto || (verdetto === "-" ? !b.llm_verdetto : b.llm_verdetto === verdetto))
+        .filter((b) => !verdetto || verdetto === "tutti"
+                || (verdetto === "-" ? !b.llm_verdetto
+                : verdetto === "-no" ? b.llm_verdetto !== "no"
+                : b.llm_verdetto === verdetto))
         .filter((b) => !soloNuovi || eNuovo(b))
         .filter((b) => chiusi || aperto(b))
         .filter((b) => !q || (b.titolo + " " + (b.sommario || "") + " " + (b.ente || "")).toLowerCase().includes(q))

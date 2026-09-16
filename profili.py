@@ -56,6 +56,46 @@ REGIONI = {
                "creative europe"],
 }
 
+# Il modello, quando dice dove vale un bando, non usa sempre i nostri nomi: ha risposto
+# «Piedmont» (in inglese) e «Vibo Valentia» (una provincia). Senza questa tabella quei
+# bandi risultavano «zona non indicata» e restavano in classifica con punteggi alti.
+ALTRI_NOMI = {
+    "piedmont": "Piemonte", "lombardy": "Lombardia", "tuscany": "Toscana",
+    "sicily": "Sicilia", "sardinia": "Sardegna", "apulia": "Puglia", "latium": "Lazio",
+    "aosta valley": "Valle d'Aosta", "south tyrol": "Trentino-Alto Adige",
+    "trentino south tyrol": "Trentino-Alto Adige", "friuli venezia giulia": "Friuli-Venezia Giulia",
+    "emilia romagna": "Emilia-Romagna", "the marches": "Marche",
+}
+
+# Le province, raggruppate per regione: se un bando vale «a Vibo Valentia», vale in Calabria.
+PROVINCE = {
+    "Abruzzo": ["aquila", "chieti", "pescara", "teramo"],
+    "Basilicata": ["potenza", "matera"],
+    "Calabria": ["catanzaro", "cosenza", "crotone", "reggio calabria", "vibo valentia"],
+    "Campania": ["napoli", "avellino", "benevento", "caserta", "salerno"],
+    "Emilia-Romagna": ["bologna", "ferrara", "forli", "cesena", "modena", "parma",
+                       "piacenza", "ravenna", "reggio emilia", "rimini"],
+    "Friuli-Venezia Giulia": ["trieste", "gorizia", "pordenone", "udine"],
+    "Lazio": ["roma", "frosinone", "latina", "rieti", "viterbo"],
+    "Liguria": ["genova", "imperia", "la spezia", "savona"],
+    "Lombardia": ["milano", "bergamo", "brescia", "como", "cremona", "lecco", "lodi",
+                  "mantova", "monza", "pavia", "sondrio", "varese"],
+    "Marche": ["ancona", "ascoli", "fermo", "macerata", "pesaro", "urbino"],
+    "Molise": ["campobasso", "isernia"],
+    "Piemonte": ["torino", "alessandria", "asti", "biella", "cuneo", "novara",
+                 "verbania", "vercelli", "verbano"],
+    "Puglia": ["bari", "barletta", "andria", "trani", "brindisi", "foggia", "lecce", "taranto"],
+    "Sardegna": ["cagliari", "nuoro", "oristano", "sassari"],
+    "Sicilia": ["palermo", "agrigento", "caltanissetta", "catania", "enna", "messina",
+                "ragusa", "siracusa", "trapani"],
+    "Toscana": ["firenze", "arezzo", "grosseto", "livorno", "lucca", "massa", "carrara",
+                "pisa", "pistoia", "prato", "siena"],
+    "Trentino-Alto Adige": ["trento", "bolzano"],
+    "Umbria": ["perugia", "terni"],
+    "Valle d'Aosta": ["aosta"],
+    "Veneto": ["venezia", "belluno", "padova", "rovigo", "treviso", "verona", "vicenza"],
+}
+
 TIPI_ENTE = [
     "Associazione non riconosciuta", "Associazione di promozione sociale (APS)",
     "Organizzazione di volontariato (ODV)", "Ente del Terzo Settore (ETS/ONLUS)",
@@ -135,8 +175,12 @@ def territorio_dichiarato(bando):
         if contiene(n, "europ") or n in ("ue", "unione europea"):
             fuori.append("Europa")
             continue
-        regione = next((r for r, chiavi in REGIONI.items()
-                        if r not in GENERICHE and any(contiene(n, k) for k in chiavi)), None)
+        regione = ALTRI_NOMI.get(n) or next(
+            (r for r, chiavi in REGIONI.items()
+             if r not in GENERICHE and any(contiene(n, k) for k in chiavi)), None)
+        if not regione:
+            regione = next((r for r, citta in PROVINCE.items()
+                            if any(contiene(n, c) for c in citta)), None)
         if regione:
             fuori.append(regione)
         elif contiene(n, "italia") or "nazional" in n:
@@ -197,7 +241,8 @@ def parole_del_racconto(racconto):
         fuori.append(parola[:8])   # troncata: cosi' «teatrale» trova «teatralita'»
     return fuori[:40]
 
-SOGLIA = 40  # sotto questo punteggio il bando non viene mostrato nel profilo
+SOGLIA = 40          # sotto questo punteggio il bando non viene mostrato nel profilo
+PUNTI_SCARTATO = 15  # quanto resta a un bando che il modello ha letto e scartato
 
 
 def valuta(bando, profilo):
@@ -212,6 +257,13 @@ def valuta(bando, profilo):
     # Il verdetto del modello vale piu' di qualunque conteggio di parole.
     if bando.get("aperto") == 0:
         return 0, ["il modello lo da' per chiuso o per notizia"]
+
+    # Chi ha letto il bando intero dice che non puoi parteciparci: il conteggio delle
+    # parole non puo' smentirlo. Il punteggio scende a 15 invece di restare a 100 —
+    # un numero alto su un bando escluso e' la cosa che confonde di piu' guardando la
+    # pagina. Non si azzera del tutto perche' l'abbinamento resta consultabile.
+    if bando.get("llm_verdetto") == "no":
+        return PUNTI_SCARTATO, ["l'ho letto per intero: non rientri fra chi puo' partecipare"]
 
     # 1. Parole da escludere: se compare una di queste, il bando esce subito.
     for p in profilo.get("escluse", []):
@@ -359,11 +411,25 @@ def riabbina(db, solo_profilo=None):
     if not profili:
         return 0
     bandi = [dict(r) for r in db.execute("SELECT * FROM bandi").fetchall()]
+    # I giudizi gia' dati: servono al conteggio, perche' un «no» del modello deve
+    # abbassare il punteggio invece di lasciarlo alto per sempre.
+    verdetti = {(r["bando_id"], r["profilo_id"]): r["llm_verdetto"]
+                for r in db.execute("SELECT bando_id, profilo_id, llm_verdetto FROM abbinamenti")}
     scritti = 0
     for p in profili:
         compatibili = []
         for b in bandi:
-            punti, motivi = valuta(b, p)
+            punti, motivi = valuta(dict(b, llm_verdetto=verdetti.get((b["id"], p["id"]))), p)
+            testo_motivi = json.dumps(motivi, ensure_ascii=False)
+            if punti < SOGLIA:
+                # Sotto soglia. Gli abbinamenti gia' avvisati o gia' giudicati non si
+                # cancellano (l'avviso e' partito, e il giudizio e' costato gettoni), ma
+                # il loro punteggio va AGGIORNATO: prima restava quello vecchio, e in
+                # pagina si vedeva per sempre un 100 su un bando poi risultato escluso.
+                db.execute("UPDATE abbinamenti SET punteggio=?, motivi=? WHERE bando_id=? "
+                           "AND profilo_id=? AND (avvisato=1 OR llm_verdetto IS NOT NULL)",
+                           (punti, testo_motivi, b["id"], p["id"]))
+                continue
             if punti >= SOGLIA:
                 compatibili.append(b["id"])
                 # Si aggiorna solo il punteggio: il giudizio del modello (llm_verdetto)
@@ -375,11 +441,13 @@ def riabbina(db, solo_profilo=None):
                      punti, json.dumps(motivi, ensure_ascii=False)))
                 scritti += 1
 
-        # Si tolgono solo quelli che non sono piu' compatibili e di cui non era ancora
-        # partito l'avviso.
+        # Si tolgono solo quelli che non sono piu' compatibili, di cui non era ancora
+        # partito l'avviso e che il modello non ha ancora letto: un giudizio pagato in
+        # gettoni non si butta via.
         segnaposti = ",".join("?" * len(compatibili)) or "NULL"
         db.execute("DELETE FROM abbinamenti WHERE profilo_id=? AND avvisato=0 "
-                   "AND bando_id NOT IN (%s)" % segnaposti, [p["id"]] + compatibili)
+                   "AND llm_verdetto IS NULL AND bando_id NOT IN (%s)" % segnaposti,
+                   [p["id"]] + compatibili)
     db.commit()
     return scritti
 
