@@ -55,12 +55,6 @@
   ],
   "feed": [
     {
-      "nome": "Calabria Europa",
-      "url": "https://calabriaeuropa.regione.calabria.it/feed/",
-      "ente": "Regione Calabria",
-      "attivo": true
-    },
-    {
       "nome": "Fondazione Con il Sud",
       "url": "https://www.fondazioneconilsud.it/feed/",
       "ente": "Fondazione Con il Sud",
@@ -100,6 +94,12 @@
       "nome": "Fondazione Cariplo",
       "url": "https://www.fondazionecariplo.it/feed/",
       "ente": "Fondazione Cariplo",
+      "attivo": true
+    },
+    {
+      "nome": "Calabria Europa",
+      "url": "https://calabriaeuropa.regione.calabria.it/",
+      "ente": "Regione Calabria",
       "attivo": true
     }
   ],
