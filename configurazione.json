@@ -170,5 +170,12 @@
     "massimo_messaggi": 8
   },
   "proposte": [],
-  "archiviati": []
+  "archiviati": [],
+  "esito_scoperta": {
+    "quando": "2026-09-21T10:39:58+00:00",
+    "esaminate": 13,
+    "trovate": 0,
+    "nomi": [],
+    "nota": "nessuno degli indirizzi aperti aveva bandi dentro"
+  }
 }
