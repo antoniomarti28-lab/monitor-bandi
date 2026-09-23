@@ -157,6 +157,12 @@
       "url": "https://calabriaeuropa.regione.calabria.it/",
       "ente": "Regione Calabria",
       "attivo": true
+    },
+    {
+      "nome": "GrantOffice",
+      "url": "https://cultura.gov.it/grantoffice-opportunita-dall-europa",
+      "ente": "Ministero della Cultura – Grant Office",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -164,16 +170,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "GrantOffice",
-      "url": "https://cultura.gov.it/grantoffice-opportunita-dall-europa",
-      "tipo": "sito",
-      "ente": "Ministero della Cultura – Grant Office",
-      "a_chi_serve": "fornisce formazione e informazioni su bandi europei che possono finanziare progetti culturali e artistici",
-      "quando_serve": "in_futuro",
-      "bandi_visti": 19,
-      "trovata_il": "2026-09-23"
-    },
     {
       "nome": "EU Culture Calls",
       "url": "https://culture.ec.europa.eu/funding/calls",
