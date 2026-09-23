@@ -169,6 +169,12 @@
       "url": "https://culture.ec.europa.eu/funding/calls",
       "ente": "European Commission – Culture and Creativity Calls",
       "attivo": true
+    },
+    {
+      "nome": "Spettacolo.gov.it",
+      "url": "https://spettacolo.cultura.gov.it",
+      "ente": "Spettacolo – Direzione generale",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -176,16 +182,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "Spettacolo.gov.it",
-      "url": "https://spettacolo.cultura.gov.it",
-      "tipo": "sito",
-      "ente": "Spettacolo – Direzione generale",
-      "a_chi_serve": "Il sito pubblica bandi futuri per teatro, musica e festival, offrendo opportunità di finanziamento e residenza artistica a Garage68 e LaboArt Tropea",
-      "quando_serve": "in_futuro",
-      "bandi_visti": 4,
-      "trovata_il": "2026-09-24"
-    },
     {
       "nome": "PoliticheGiovanili",
       "url": "https://www.politichegiovanili.gov.it",
