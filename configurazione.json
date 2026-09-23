@@ -181,6 +181,12 @@
       "url": "https://www.politichegiovanili.gov.it",
       "ente": "Dipartimento per le Politiche Giovanili e il Servizio Civile Universale",
       "attivo": true
+    },
+    {
+      "nome": "Opportunità AIG",
+      "url": "https://agenziagioventu.gov.it/news/opportunita-aig",
+      "ente": "Agenzia Gioventù",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -188,16 +194,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "Opportunità AIG",
-      "url": "https://agenziagioventu.gov.it/news/opportunita-aig",
-      "tipo": "sito",
-      "ente": "Agenzia Gioventù",
-      "a_chi_serve": "Offre call per partecipare a eventi e progetti di inclusione e creatività, adatti a collettivi culturali e di teatro come Garage68 e LaboArt Tropea",
-      "quando_serve": "ora",
-      "bandi_visti": 4,
-      "trovata_il": "2026-09-24"
-    },
     {
       "nome": "NUOVO IMAIE",
       "url": "https://www.nuovoimaie.it",
