@@ -513,6 +513,7 @@ link). Se si', cercare il feed: `/rss.xml`, `/feed/`, `?format=feed&type=rss` (J
   perche', e scarta gare d'appalto ed enti di altri territori (Fondazione Caritro,
   Trento, era passata). I «No» si ricordano in `proposte_scartate`.
 - **Trappola della shell:** passando codice Python via heredoc nello strumento Bash, le
-  barre rovesciate doppie diventano singole (`\n` -> `\n`, `\'` -> `'`). Ha rotto una
+  barre rovesciate doppie diventano singole (una barra doppia prima di «n» arriva come
+  a capo, una barra doppia prima dell'apostrofo sparisce). Ha rotto una
   riga di Python e un apostrofo in JavaScript. Per modifiche con barre rovesciate usare
   lo strumento Edit, e dopo ogni modifica alla pagina `node --check` sugli script.
