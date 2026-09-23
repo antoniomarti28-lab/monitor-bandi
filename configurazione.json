@@ -175,6 +175,12 @@
       "url": "https://spettacolo.cultura.gov.it",
       "ente": "Spettacolo – Direzione generale",
       "attivo": true
+    },
+    {
+      "nome": "PoliticheGiovanili",
+      "url": "https://www.politichegiovanili.gov.it",
+      "ente": "Dipartimento per le Politiche Giovanili e il Servizio Civile Universale",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -182,16 +188,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "PoliticheGiovanili",
-      "url": "https://www.politichegiovanili.gov.it",
-      "tipo": "sito",
-      "ente": "Dipartimento per le Politiche Giovanili e il Servizio Civile Universale",
-      "a_chi_serve": "Il Dipartimento offre bandi e call per progetti culturali, inclusivi e di rigenerazione urbana, adatti a Garage68 e LaboArt Tropea.",
-      "quando_serve": "in_futuro",
-      "bandi_visti": 5,
-      "trovata_il": "2026-09-24"
-    },
     {
       "nome": "Opportunità AIG",
       "url": "https://agenziagioventu.gov.it/news/opportunita-aig",
