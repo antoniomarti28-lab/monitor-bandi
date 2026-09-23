@@ -19,10 +19,11 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
-from urllib.robotparser import RobotFileParser
 
 import estrattore
-from raccogli import UA, estrai_importo
+# robots.txt e ritmo delle richieste si decidono in un posto solo: prima qui ce n'era
+# una seconda copia, con lo stesso difetto della prima.
+from raccogli import UA, estrai_importo, pausa_per, robots_permette
 
 BASE = Path(__file__).parent
 DB = BASE / "dati.db"
@@ -58,15 +59,6 @@ def migra(db):
     db.commit()
 
 
-def robots_permette(url):
-    try:
-        p = urlparse(url)
-        rp = RobotFileParser()
-        rp.set_url(p.scheme + "://" + p.netloc + "/robots.txt")
-        rp.read()
-        return rp.can_fetch(UA, url)
-    except Exception:
-        return True
 
 
 def _ident(link):
@@ -98,7 +90,7 @@ def controlla_sito(db, sito):
         if db.execute("SELECT 1 FROM bandi WHERE id=?", (ident,)).fetchone():
             continue
 
-        time.sleep(PAUSA)
+        time.sleep(pausa_per(link))
         doc = estrattore.leggi_con_allegati(link)
         if not doc["testo"]:
             continue
@@ -146,7 +138,7 @@ def giro_siti(db):
         segno = "OK" if esito == "ok" else "--"
         print("  %s %-30s %3d nuovi   %s" % (segno, s["nome"][:30], nuovi,
                                              "" if esito == "ok" else esito))
-        time.sleep(PAUSA)
+        time.sleep(pausa_per(s["url"]))
 
     if primo_giro:
         racconta_fonti_nuove(db, primo_giro)
@@ -223,7 +215,7 @@ def approfondisci(db, limite=MAX_APPROFONDIMENTI):
         else:
             db.execute("UPDATE bandi SET nota=? WHERE id=?", (doc["nota"], b["id"]))
         db.commit()
-        time.sleep(PAUSA)
+        time.sleep(pausa_per(b["link"]))
 
     print("Testo completo scaricato per %d bandi su %d." % (fatti, len(righe)))
     return fatti

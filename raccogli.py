@@ -65,16 +65,57 @@ def apri_db():
 
 # ---------------------------------------------------------------- rete
 
-def robots_permette(url):
-    """Chiede al sito se gradisce essere letto da un programma. Se non risponde, assumiamo di si."""
-    try:
-        p = urlparse(url)
+_ROBOTS = {}
+
+
+def _regole(url):
+    """Il robots.txt del sito, letto una volta per giro e CON il nostro nome.
+
+    RobotFileParser.read() lo scarica presentandosi come «Python-urllib», e molti
+    firewall rispondono 403 a quel nome. Python legge quel 403 come «vietato tutto».
+    Il 23 set 2026 cinque fonti risultavano «vietate da robots.txt»: per quattro
+    (Fondazione Cariplo due volte, Calabria Europa, regione.calabria.it) il robots.txt
+    vero ci dava il permesso in chiaro. Era un nostro errore di lettura.
+    """
+    p = urlparse(url)
+    base = p.scheme + "://" + p.netloc
+    if base not in _ROBOTS:
         rp = RobotFileParser()
-        rp.set_url(p.scheme + "://" + p.netloc + "/robots.txt")
-        rp.read()
-        return rp.can_fetch(UA, url)
+        try:
+            req = Request(base + "/robots.txt", headers={"User-Agent": UA})
+            with urlopen(req, timeout=20) as r:
+                rp.parse(r.read().decode("utf-8", "replace").splitlines())
+        except HTTPError as e:
+            # 5xx: il sito e' in avaria, ci si ferma e si riprova domani.
+            # 4xx: non c'e' un robots.txt leggibile, quindi nessuna regola (RFC 9309).
+            # Se poi il sito respinge davvero i programmi, lo dice la pagina stessa col
+            # suo 403, e l'errore mostrato e' quello giusto invece di un finto divieto.
+            if e.code >= 500:
+                rp.disallow_all = True
+            else:
+                rp.allow_all = True
+        except Exception:
+            rp.allow_all = True
+        _ROBOTS[base] = rp
+    return _ROBOTS[base]
+
+
+def robots_permette(url):
+    """Chiede al sito se gradisce essere letto da un programma."""
+    return _regole(url).can_fetch(UA, url)
+
+
+def pausa_per(url):
+    """Quanto aspettare prima di chiedere di nuovo qualcosa a quel sito.
+
+    Se il robots.txt chiede un ritmo lo si rispetta (Fondazione Cariplo scrive
+    «Crawl-delay: 10»), altrimenti bastano i soliti due secondi.
+    """
+    try:
+        ritardo = _regole(url).crawl_delay(UA)
     except Exception:
-        return True
+        ritardo = None
+    return max(PAUSA, float(ritardo or 0))
 
 
 def scarica(url):
@@ -274,7 +315,7 @@ def giro():
         segno = "OK" if esito == "ok" else "--"
         nota = "" if esito == "ok" else esito
         print("  %s %-26s %4d voci  %4d nuovi   %s" % (segno, nome[:26], voci, nuovi, nota))
-        time.sleep(PAUSA)
+        time.sleep(pausa_per(url))
 
     tot = db.execute("SELECT COUNT(*) FROM bandi").fetchone()[0]
     ok = sum(1 for r in report if r[1] == "ok")

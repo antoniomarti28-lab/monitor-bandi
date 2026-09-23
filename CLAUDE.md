@@ -424,3 +424,33 @@ Piu' due difetti visti per strada:
   «Puoi parteciparci» ha ora un valore implicito `-no`, e la voce «...compresi quelli
   scartati» li rimette. Il sottotitolo dice quanti sono, perche' nascondere in silenzio
   e' peggio che mostrare troppo.
+
+
+## Il finto divieto di robots.txt (23 set 2026)
+
+Cinque fonti risultavano «vietato da robots.txt», e la pagina consigliava di toglierle.
+**Per quattro era falso.** Fondazione Cariplo (feed e pagina), Calabria Europa e
+regione.calabria.it hanno un robots.txt che ci lascia passare in chiaro (`User-agent: *`,
+vietate solo le pagine di amministrazione).
+
+La causa: **`RobotFileParser.read()` scarica il robots.txt senza User-Agent**, cioe' come
+«Python-urllib». Molti firewall rispondono 403 a quel nome, e la libreria standard
+**traduce un 403 sul robots.txt in `disallow_all = True`**: vietato tutto. Quindi non
+leggevamo il loro divieto, leggevamo il loro firewall.
+
+Ora `raccogli._regole()` scarica il robots.txt col nostro nome e lo passa a `parse()`,
+una volta per sito per giro. Se il robots.txt non si legge: 5xx = ci si ferma e si
+riprova domani; 4xx = nessuna regola (RFC 9309), e se il sito respinge davvero i
+programmi lo dice la pagina stessa col suo 403 — con il messaggio giusto.
+`siti.py` non ha piu' una sua copia: importa da `raccogli`.
+
+Anche **`Crawl-delay`** ora si rispetta (`raccogli.pausa_per()`): Cariplo chiede 10
+secondi fra una richiesta e l'altra, prima ne aspettavamo 2.
+
+**calabriafilmcommission.it e' l'unico blocco vero**: risponde 403 anche fingendosi un
+browser. C'e' una verifica anti-programmi davanti a tutto il sito. Non si aggira: o si
+toglie, o i suoi bandi si prendono da un'altra strada.
+
+**Regola generale**: prima di dire all'utente «quel sito ti vieta», rileggere il suo
+robots.txt con `curl -A "<il nostro UA>"`. Un divieto dichiarato dal programma non e'
+una prova del divieto.
