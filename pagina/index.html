@@ -747,9 +747,15 @@ async function aggiorna() {
     verdetto: profiloAttivo ? ($("verdetto").value || "-no") : "",
   });
   $("verdetto").hidden = !profiloAttivo;
-  const [bandi, riepilogo] = await Promise.all([
+  // Il numero accanto a «Solo i nuovi» si conta con la STESSA richiesta dell'elenco,
+  // spunta accesa: contandolo a parte ignorava gli altri filtri (i bandi scartati dal
+  // modello, la fonte, la zona) e prometteva 5 bandi dove poi se ne vedeva 1.
+  const pNuovi = new URLSearchParams(p);
+  pNuovi.set("nuovi", "1");
+  const [bandi, riepilogo, nuovi] = await Promise.all([
     chiedi("/api/bandi?" + p),
     chiedi("/api/riepilogo?profilo=" + profiloAttivo + "&chiusi=" + ($("chiusi").checked ? "1" : "0")),
+    chiedi("/api/bandi?" + pNuovi),
   ]);
   disegnaBandi(bandi);
   $("n-aperti").textContent = riepilogo.aperti;
@@ -758,7 +764,7 @@ async function aggiorna() {
   $("n-archiviati").textContent = riepilogo.archiviati;
   // Il numero accanto a «Solo i nuovi»: se non ce n'e' nessuno la spunta resta,
   // ma senza numero, cosi' si vede subito che oggi non e' arrivato niente.
-  $("conta-nuovi").textContent = riepilogo.nuovi ? riepilogo.nuovi : "";
+  $("conta-nuovi").textContent = nuovi.length ? nuovi.length : "";
   const nome = PROFILI.find((x) => String(x.id) === profiloAttivo);
   const restano = riepilogo.da_leggere
     ? ` · ${riepilogo.da_leggere} ancora da leggere` : "";
@@ -773,14 +779,14 @@ async function aggiorna() {
 /** Traduce l'errore tecnico in cosa puoi fare tu. */
 function spiegaErrore(esito) {
   const e = (esito || "").toLowerCase();
-  if (e.includes("404")) return "indirizzo sbagliato o pagina spostata: aprila nel browser e ricopia l'indirizzo";
+  if (e.includes("404")) return "indirizzo sbagliato o pagina spostata: al prossimo controllo cerco da solo quello nuovo";
   if (e.includes("403")) return "il sito blocca i programmi automatici: non c'è rimedio, conviene toglierla";
   if (e.includes("500") || e.includes("502") || e.includes("503")) return "il sito era in avaria: riprovo domani da solo";
   if (e.includes("certificat")) return "certificato del sito non valido: da riprendere più avanti";
-  if (e.includes("irraggiungibile")) return "il sito non ha risposto: se dura, l'indirizzo non esiste più";
+  if (e.includes("irraggiungibile")) return "il sito non ha risposto ai server che lo controllano (stanno all'estero, e alcuni siti di Comuni li respingono): riprovo ogni giorno da solo";
   if (e.includes("robots")) return "il sito vieta la lettura automatica: va tolta";
-  if (e.includes("nessun collegamento")) return "pagina raggiunta ma senza link a bandi: prova la sottosezione giusta";
-  if (e.includes("non e") && e.includes("feed")) return "non è un feed: riaggiungila scegliendo «pagina di elenco»";
+  if (e.includes("nessun collegamento")) return "pagina raggiunta ma senza link a bandi: al prossimo controllo cerco da solo la sezione giusta o il feed";
+  if (e.includes("non e") && e.includes("feed")) return "non è un feed: al prossimo controllo la provo da solo come pagina";
   return "";
 }
 
@@ -805,13 +811,23 @@ async function caricaFonti() {
   $("tabella-fonti").innerHTML = elenco.length ? elenco.map((f) => {
     const st = f.stato || {};
     const esito = st.esito || "mai letta";
-    const spiega = spiegaErrore(esito);
     const quando = st.ultimo_giro ? st.ultimo_giro.replace("T", " ").slice(0, 16) : "";
+    // Cosa ha fatto da sola la riparazione automatica (ripara.py): una fonte che cambia
+    // indirizzo o tipo senza che tu la tocchi va detta, e anche un tentativo andato a vuoto.
+    const rip = (CONFIG.riparazioni || {})[f.nome];
+    let spiega = spiegaErrore(esito), riparata = "";
+    if (rip && rip.riuscita) {
+      riparata = `Sistemata da sola il ${rip.quando.slice(8, 10)}/${rip.quando.slice(5, 7)}: ${rip.come}.`;
+    } else if (rip && esito !== "ok") {
+      spiega = `ho già provato a sistemarla da solo (${rip.provati} indirizzi aperti) senza trovare una strada: ` +
+        "aprila nel browser e, se la trovi, correggi l'indirizzo con la matita";
+    }
     return `<tr class="${f.attivo ? "" : "spenta"}">
       <td>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener noreferrer">${f.nome}</a>` : f.nome}</td>
       <td>${f.tipo === "feed" ? "feed" : "pagina"}</td>
       <td class="${esito === "ok" ? "" : "ko"}">${esito}${esito === "ok" && quando ? " · " + quando : ""}${
-        spiega ? `<br><span class="spiega">${spiega}</span>` : ""}</td>
+        spiega && esito !== "ok" ? `<br><span class="spiega">${spiega}</span>` : ""}${
+        riparata ? `<br><span class="riparata">${attr(riparata)}</span>` : ""}</td>
       <td>${scrivibile()
         ? `<input type="checkbox" data-accendi="${f.url}" data-tipo="${f.tipo}"${f.attivo ? " checked" : ""}>`
         : (f.attivo ? "sì" : "no")}</td>

@@ -176,8 +176,6 @@ class Gestore(BaseHTTPRequestHandler):
             "archiviati": uno("SELECT COUNT(*) n FROM bandi WHERE archiviato=1"),
             "in_scadenza": uno("SELECT COUNT(*) n " + base + " " + APERTI +
                                " AND b.scadenza BETWEEN date('now') AND date('now','+30 day')"),
-            "nuovi": uno("SELECT COUNT(*) n " + base + " AND b.trovato_il >= ?"
-                         + ("" if mostra_chiusi else " " + APERTI), (da_quando_e_nuovo(),)),
             "scartati": (uno("SELECT COUNT(*) n " + base + " AND a.llm_verdetto='no' "
                              + ("" if mostra_chiusi else APERTI)) if profilo else 0),
             "letti": uno("SELECT COUNT(*) n FROM bandi WHERE analizzato_il IS NOT NULL"),

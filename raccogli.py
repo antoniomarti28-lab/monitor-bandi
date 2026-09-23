@@ -8,6 +8,7 @@ import hashlib
 import json
 import re
 import sqlite3
+import ssl
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -83,7 +84,7 @@ def _regole(url):
         rp = RobotFileParser()
         try:
             req = Request(base + "/robots.txt", headers={"User-Agent": UA})
-            with urlopen(req, timeout=20) as r:
+            with apri(req, 20) as r:
                 rp.parse(r.read().decode("utf-8", "replace").splitlines())
         except HTTPError as e:
             # 5xx: il sito e' in avaria, ci si ferma e si riprova domani.
@@ -118,12 +119,28 @@ def pausa_per(url):
     return max(PAUSA, float(ritardo or 0))
 
 
+def apri(req, timeout):
+    """urlopen, con un ripiego per i siti che espongono un certificato incompleto.
+
+    Tanti siti pubblici italiani (l'Agenzia per la Coesione, per esempio) dimenticano
+    il certificato intermedio: il browser lo recupera da solo, Python no, e la fonte
+    risultava «irraggiungibile». Qui si LEGGONO soltanto pagine pubbliche, non si
+    manda niente: in quel caso si riprova senza verifica invece di perdere la fonte.
+    """
+    try:
+        return urlopen(req, timeout=timeout)
+    except URLError as e:
+        if not isinstance(e.reason, ssl.SSLCertVerificationError):
+            raise
+        return urlopen(req, timeout=timeout, context=ssl._create_unverified_context())
+
+
 def scarica(url):
     req = Request(url, headers={
         "User-Agent": UA,
         "Accept": "application/rss+xml, application/xml, text/xml, */*",
     })
-    with urlopen(req, timeout=TIMEOUT) as r:
+    with apri(req, TIMEOUT) as r:
         return r.read()
 
 
@@ -267,6 +284,57 @@ def normalizza_data(grezza):
 
 # ---------------------------------------------------------------- giro principale
 
+def leggi_un_feed(db, f, oggi=None):
+    """Legge un feed, salva i bandi nuovi e scrive com'e' andata in fonti_stato.
+
+    Separata dal giro perche' la usa anche la riparazione automatica (ripara.py),
+    che dopo aver sistemato una fonte la rilegge subito.
+    """
+    oggi = oggi or datetime.now(timezone.utc).isoformat(timespec="seconds")
+    nome, url = f["nome"], f["url"]
+    esito, voci, nuovi = "ok", 0, 0
+    try:
+        if not robots_permette(url):
+            esito = "vietato da robots.txt"
+        else:
+            elenco = leggi_feed(scarica(url))
+            voci = len(elenco)
+            for v in elenco:
+                link = (v["link"] or "").strip()
+                titolo = pulisci(v["titolo"])
+                if not link or not titolo:
+                    continue
+                ident = hashlib.sha1(link.encode("utf-8")).hexdigest()
+                sommario = pulisci(v["sommario"])[:2000]
+                testo = titolo + ". " + sommario
+                importo, importo_num = estrai_importo(testo)
+                cur = db.execute(
+                    "INSERT OR IGNORE INTO bandi "
+                    "(id,titolo,link,ente,fonte,pubblicato,scadenza,importo,importo_num,sommario,trovato_il) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    (ident, titolo, link, f.get("ente", ""), nome,
+                     normalizza_data(v["pubblicato"]), estrai_scadenza(testo),
+                     importo, importo_num, sommario, oggi))
+                nuovi += cur.rowcount
+            if voci == 0:
+                esito = "nessuna voce (formato non riconosciuto)"
+    except HTTPError as e:
+        esito = "errore HTTP " + str(e.code)
+    except URLError as e:
+        esito = "irraggiungibile (" + str(e.reason) + ")"
+    except ET.ParseError:
+        esito = "non e' un feed valido"
+    except Exception as e:
+        esito = "errore: " + type(e).__name__
+
+    db.execute(
+        "INSERT INTO fonti_stato (nome,ultimo_giro,esito,voci,nuovi) VALUES (?,?,?,?,?) "
+        "ON CONFLICT(nome) DO UPDATE SET ultimo_giro=?,esito=?,voci=?,nuovi=?",
+        (nome, oggi, esito, voci, nuovi, oggi, esito, voci, nuovi))
+    db.commit()
+    return esito, voci, nuovi
+
+
 def giro():
     db = apri_db()
 
@@ -283,52 +351,12 @@ def giro():
     for f in elenco_feed:
         if not f.get("attivo", True) or not f.get("url"):
             continue
-        nome, url = f["nome"], f["url"]
-        esito, voci, nuovi = "ok", 0, 0
-        try:
-            if not robots_permette(url):
-                esito = "vietato da robots.txt"
-            else:
-                elenco = leggi_feed(scarica(url))
-                voci = len(elenco)
-                for v in elenco:
-                    link = (v["link"] or "").strip()
-                    titolo = pulisci(v["titolo"])
-                    if not link or not titolo:
-                        continue
-                    ident = hashlib.sha1(link.encode("utf-8")).hexdigest()
-                    sommario = pulisci(v["sommario"])[:2000]
-                    testo = titolo + ". " + sommario
-                    importo, importo_num = estrai_importo(testo)
-                    cur = db.execute(
-                        "INSERT OR IGNORE INTO bandi "
-                        "(id,titolo,link,ente,fonte,pubblicato,scadenza,importo,importo_num,sommario,trovato_il) "
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                        (ident, titolo, link, f.get("ente", ""), nome,
-                         normalizza_data(v["pubblicato"]), estrai_scadenza(testo),
-                         importo, importo_num, sommario, oggi))
-                    nuovi += cur.rowcount
-                if voci == 0:
-                    esito = "nessuna voce (formato non riconosciuto)"
-        except HTTPError as e:
-            esito = "errore HTTP " + str(e.code)
-        except URLError as e:
-            esito = "irraggiungibile (" + str(e.reason) + ")"
-        except ET.ParseError:
-            esito = "non e' un feed valido"
-        except Exception as e:
-            esito = "errore: " + type(e).__name__
-
-        db.execute(
-            "INSERT INTO fonti_stato (nome,ultimo_giro,esito,voci,nuovi) VALUES (?,?,?,?,?) "
-            "ON CONFLICT(nome) DO UPDATE SET ultimo_giro=?,esito=?,voci=?,nuovi=?",
-            (nome, oggi, esito, voci, nuovi, oggi, esito, voci, nuovi))
-        db.commit()
-        report.append((nome, esito, voci, nuovi))
+        esito, voci, nuovi = leggi_un_feed(db, f, oggi)
+        report.append((f["nome"], esito, voci, nuovi))
         segno = "OK" if esito == "ok" else "--"
         nota = "" if esito == "ok" else esito
-        print("  %s %-26s %4d voci  %4d nuovi   %s" % (segno, nome[:26], voci, nuovi, nota))
-        time.sleep(pausa_per(url))
+        print("  %s %-26s %4d voci  %4d nuovi   %s" % (segno, f["nome"][:26], voci, nuovi, nota))
+        time.sleep(pausa_per(f["url"]))
 
     tot = db.execute("SELECT COUNT(*) FROM bandi").fetchone()[0]
     ok = sum(1 for r in report if r[1] == "ok")
@@ -339,6 +367,11 @@ def giro():
     import siti
     print()
     siti.giro_siti(db)
+    # Le fonti che hanno appena dato errore si provano a riparare da sole: tipo
+    # sbagliato, indirizzo spostato, feed nascosto. Quelle sistemate si rileggono subito.
+    import ripara
+    print()
+    ripara.ripara(db)
     # ...e il testo completo dei bandi che hanno solo il riassunto: e' quello che
     # la Fase 5 dara' da leggere a Groq.
     siti.approfondisci(db)
@@ -366,6 +399,37 @@ def giro():
     avvisi.invia()
 
 
+def giro_fonti():
+    """Solo le fonti: feed, pagine e riparazione, senza modello e senza avvisi.
+
+    Lo usa il lavoro che parte quando cambi qualcosa dalla pagina. Prima controllava
+    solo le pagine, e un feed appena corretto restava con l'errore di giorni prima:
+    MIMIT e Vibo mostravano ancora «non e' un feed» del 10 settembre, e sono stati
+    rimessi a mano come pagine, cioe' rotti di nuovo.
+    """
+    import configurazione
+    import ripara
+    import siti
+    db = apri_db()
+    configurazione.importa(db)
+    oggi = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    for f in configurazione.leggi_file()["feed"]:
+        if f.get("attivo", True) and f.get("url"):
+            esito, voci, nuovi = leggi_un_feed(db, f, oggi)
+            print("  %s %-26s %4d voci  %4d nuovi   %s" % (
+                "OK" if esito == "ok" else "--", f["nome"][:26], voci, nuovi,
+                "" if esito == "ok" else esito))
+            time.sleep(pausa_per(f["url"]))
+    siti.giro_siti(db)
+    print()
+    ripara.ripara(db)
+    db.close()
+
+
 if __name__ == "__main__":
-    print("Giro di raccolta bandi\n")
-    giro()
+    import sys
+    if "--fonti" in sys.argv:
+        giro_fonti()
+    else:
+        print("Giro di raccolta bandi\n")
+        giro()

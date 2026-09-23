@@ -46,7 +46,7 @@ jobs:
         run: |
           python configurazione.py --importa
           python configurazione.py --se-richiesto   # «Cerca adesso» premuto sulla pagina
-          python siti.py            # controlla subito le fonti appena aggiunte
+          python raccogli.py --fonti   # rilegge tutte le fonti e ripara quelle rotte
           python intelligenza.py --solo-giudizi
           # Un profilo nuovo trova subito i suoi bandi: senza questa riga gli avvisi
           # aspettavano il giro del mattino dopo.

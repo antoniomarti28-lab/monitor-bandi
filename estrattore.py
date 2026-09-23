@@ -12,7 +12,9 @@ import re
 from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
+
+from raccogli import apri
 
 UA = "MonitorBandi/0.1 (monitoraggio bandi pubblici, uso personale)"
 TIMEOUT = 40
@@ -107,7 +109,7 @@ def scarica(url):
     req = Request(url, headers={"User-Agent": UA,
                                 "Accept": "text/html,application/pdf,*/*",
                                 "Accept-Language": "it-IT,it;q=0.9"})
-    with urlopen(req, timeout=TIMEOUT) as r:
+    with apri(req, TIMEOUT) as r:
         return r.read(MAX_SCARICO), dict(r.headers), r.geturl()
 
 
@@ -143,7 +145,9 @@ def leggi(url):
         elif codice:
             nota = "errore HTTP %s" % codice
         else:
-            nota = "irraggiungibile (%s)" % type(e).__name__
+            # Il motivo vero (tempo scaduto, nome del sito inesistente...) serve a
+            # capire se la fonte e' morta o solo lenta: «URLError» da solo non dice niente.
+            nota = "irraggiungibile (%s)" % (getattr(e, "reason", None) or type(e).__name__)
         return {"tipo": None, "titolo": "", "testo": "", "link": [],
                 "immagine": "", "nota": nota}
 

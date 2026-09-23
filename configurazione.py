@@ -83,15 +83,12 @@ def esporta(db):
         siti = []
     archiviati = [r[0] for r in db.execute("SELECT id FROM bandi WHERE archiviato=1")]
 
+    # Tutto il resto del file si conserva com'era: prima si riscrivevano solo sei voci,
+    # e il registro delle riparazioni (o l'esito di una ricerca) spariva a ogni giro.
     precedente = leggi_file()
-    FILE.write_text(json.dumps({
-        "profili": profili,
-        "feed": precedente["feed"],
-        "siti": siti,
-        "impostazioni": precedente["impostazioni"],
-        "proposte": precedente.get("proposte", []),
-        "archiviati": archiviati,
-    }, indent=2, ensure_ascii=False), encoding="utf-8")
+    FILE.write_text(json.dumps(dict(
+        precedente, profili=profili, siti=siti, archiviati=archiviati,
+    ), indent=2, ensure_ascii=False), encoding="utf-8")
     return len(profili), len(siti), len(archiviati)
 
 

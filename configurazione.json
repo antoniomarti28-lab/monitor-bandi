@@ -95,6 +95,18 @@
       "url": "https://www.fondazionecariplo.it/feed/",
       "ente": "Fondazione Cariplo",
       "attivo": true
+    },
+    {
+      "nome": "MIMIT - Incentivi",
+      "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
+      "ente": "MIMIT",
+      "attivo": true
+    },
+    {
+      "nome": "Comune di Vibo Valentia",
+      "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
+      "ente": "",
+      "attivo": true
     }
   ],
   "siti": [
@@ -141,18 +153,6 @@
       "attivo": true
     },
     {
-      "nome": "MIMIT - Incentivi",
-      "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
-      "ente": "MIMIT",
-      "attivo": true
-    },
-    {
-      "nome": "Comune di Vibo Valentia",
-      "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
-      "ente": "",
-      "attivo": true
-    },
-    {
       "nome": "Calabria Europa",
       "url": "https://calabriaeuropa.regione.calabria.it/",
       "ente": "Regione Calabria",
@@ -164,5 +164,35 @@
     "massimo_messaggi": 8
   },
   "proposte": [],
-  "archiviati": []
+  "archiviati": [],
+  "riparazioni": {
+    "MIMIT - Incentivi": {
+      "quando": "2026-09-23T21:44:47+00:00",
+      "riuscita": true,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "come": "era segnata come pagina ma e' un feed",
+      "prima": {
+        "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
+        "tipo": "sito"
+      },
+      "dopo": {
+        "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
+        "tipo": "feed"
+      }
+    },
+    "Comune di Vibo Valentia": {
+      "quando": "2026-09-23T21:44:50+00:00",
+      "riuscita": true,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "come": "era segnata come pagina ma e' un feed",
+      "prima": {
+        "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
+        "tipo": "sito"
+      },
+      "dopo": {
+        "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
+        "tipo": "feed"
+      }
+    }
+  }
 }

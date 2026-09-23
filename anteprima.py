@@ -159,7 +159,6 @@ window.fetch = async (url, opzioni) => {
         archiviati: DATI.bandi.filter((b) => b.archiviato).length,
         in_scadenza: lista.filter((b) => aperto(b) && b.scadenza
                                         && b.scadenza >= oggi && b.scadenza <= fra30).length,
-        nuovi: lista.filter((b) => eNuovo(b) && (chiusi || aperto(b))).length,
         scartati: prof ? lista.filter((b) => b.llm_verdetto === "no" && (chiusi || aperto(b))).length : 0,
         letti: DATI.bandi.filter((b) => b.analizzato_il).length,
         da_leggere: DATI.bandi.filter((b) => !b.analizzato_il && b.testo).length,

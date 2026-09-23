@@ -360,6 +360,7 @@ td.ko { color: var(--allarme); }
 td a { color: var(--testo); text-decoration: underline; text-decoration-color: var(--bordo); }
 td a:hover { color: var(--accento); text-decoration-color: var(--accento); }
 .spiega { color: var(--tenue); font-size: 12px; font-style: italic; }
+.riparata { color: var(--positivo); font-size: 12px; }
 .conta-proposte:not(:empty) {
   display: inline-block; min-width: 20px; text-align: center;
   background: var(--accento); color: #fff; border-radius: 999px;
