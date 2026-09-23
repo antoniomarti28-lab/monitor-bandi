@@ -107,6 +107,12 @@
       "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
       "ente": "",
       "attivo": true
+    },
+    {
+      "nome": "ItaliaFestival",
+      "url": "https://www.italiafestival.org/feed/",
+      "ente": "ItaliaFestival",
+      "attivo": true
     }
   ],
   "siti": [
@@ -205,18 +211,7 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [
-    {
-      "nome": "ItaliaFestival",
-      "url": "https://www.italiafestival.org/feed/",
-      "tipo": "feed",
-      "ente": "ItaliaFestival",
-      "a_chi_serve": "ItaliaFestival promuove partnership e call per festival multidisciplinari, offrendo opportunità di visibilità e networking a collettivi culturali come Garage68 e LaboArt Tropea.",
-      "quando_serve": "in_futuro",
-      "bandi_visti": 0,
-      "trovata_il": "2026-09-24"
-    }
-  ],
+  "proposte": [],
   "archiviati": [],
   "riparazioni": {
     "MIMIT - Incentivi": {
