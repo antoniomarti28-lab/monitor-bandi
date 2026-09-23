@@ -479,3 +479,40 @@ accanto a ogni avviso.
 pagina, guardare se il sito e' un'applicazione JavaScript (tanti KB di HTML, pochissimi
 link). Se si', cercare il feed: `/rss.xml`, `/feed/`, `?format=feed&type=rss` (Joomla),
 `/++api++/` (Plone/Volto).
+
+
+## «Nuovi», riparazione automatica e ricerca fonti per il potenziale (23-24 set 2026)
+
+- **Il numero accanto a «Solo i nuovi» ora si conta con la stessa richiesta dell'elenco**
+  (spunta accesa, tutti gli altri filtri uguali). Contato a parte ignorava il filtro
+  implicito `-no` sui bandi scartati: prometteva 5, ne mostrava 1. Regola: un numero
+  che promette un elenco si calcola CON quell'elenco, mai con una query parallela.
+- **`ripara.py`**: dopo ogni giro (e nel lavoro delle impostazioni) le fonti con errore
+  riparabile (404, «non e' un feed», «nessun collegamento», nessuna voce) si provano a
+  sistemare da sole: stesso indirizzo col tipo opposto, sezione «Bandi» del sito, feed
+  dichiarato, percorsi di feed classici. Ogni candidato si apre davvero. La riuscita
+  cambia `configurazione.json`, rilegge subito la fonte, va in `riparazioni` (la pagina
+  la mostra in verde per 14 giorni) e parte un messaggio Telegram. 5xx, 403 e siti che
+  non rispondono NON si riparano.
+- **Perche' MIMIT e Vibo si erano rotti di nuovo:** il lavoro delle impostazioni
+  controllava solo le pagine, mai i feed, e la tabella mostrava l'errore dei feed del 10
+  settembre. Lui l'ha letto e li ha rimessi come pagine. Ora quel lavoro usa
+  `raccogli.py --fonti` (feed + pagine + riparazione), e `togli_fantasmi` cancella lo
+  stato dei feed che non esistono piu' (erano 5, gonfiavano «fonti attive su N»).
+- **`configurazione.esporta` conserva ogni voce del file** (prima riscriveva solo sei
+  chiavi: riparazioni, esito della ricerca e richieste sparivano a ogni giro).
+- **Certificati incompleti**: `raccogli.apri()` riprova senza verifica solo se l'errore e'
+  di certificato. Si leggono solo pagine pubbliche.
+- **Comune di Tropea da GitHub va in «tempo scaduto»**, dall'Italia risponde in un
+  attimo: il sito respinge (o lascia cadere) il traffico dall'estero. Non si ripara.
+- **Ricerca fonti: lui vuole enti POTENZIALMENTE utili, non solo con bandi aperti oggi.**
+  `scopri.py` ora: il modello grande propone enti a partire dai racconti dei profili,
+  piu' `SEMI` (11 enti veri aperti uno per uno il 23 set; funder35.it era diventato un
+  casino'); `verifica` cerca il punto da sorvegliare e riparte dalla home se il modello
+  inventa il percorso (8 su 18); il giudizio risponde «ora» / «in_futuro» / «no» con il
+  perche', e scarta gare d'appalto ed enti di altri territori (Fondazione Caritro,
+  Trento, era passata). I «No» si ricordano in `proposte_scartate`.
+- **Trappola della shell:** passando codice Python via heredoc nello strumento Bash, le
+  barre rovesciate doppie diventano singole (`\n` -> `\n`, `\'` -> `'`). Ha rotto una
+  riga di Python e un apostrofo in JavaScript. Per modifiche con barre rovesciate usare
+  lo strumento Edit, e dopo ogni modifica alla pagina `node --check` sugli script.
