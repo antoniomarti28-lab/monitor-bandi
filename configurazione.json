@@ -193,6 +193,12 @@
       "url": "https://www.nuovoimaie.it",
       "ente": "NUOVO IMAIE",
       "attivo": true
+    },
+    {
+      "nome": "PerChiCrea",
+      "url": "https://www.perchicrea.it",
+      "ente": "SIAE – Per Chi Crea",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -200,16 +206,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "PerChiCrea",
-      "url": "https://www.perchicrea.it",
-      "tipo": "sito",
-      "ente": "SIAE – Per Chi Crea",
-      "a_chi_serve": "offre bandi attivi per giovani artisti, inclusi progetti di residenza e supporto finanziario",
-      "quando_serve": "ora",
-      "bandi_visti": 5,
-      "trovata_il": "2026-09-24"
-    },
     {
       "nome": "ItaliaFestival",
       "url": "https://www.italiafestival.org/feed/",
