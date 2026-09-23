@@ -107,12 +107,6 @@
       "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
       "ente": "",
       "attivo": true
-    },
-    {
-      "nome": "MIMIT - Incentivi",
-      "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
-      "ente": "MIMIT",
-      "attivo": true
     }
   ],
   "siti": [
@@ -162,6 +156,12 @@
       "nome": "Chiesa Valdese",
       "url": "https://www.ottopermillevaldese.org/news/",
       "ente": "",
+      "attivo": true
+    },
+    {
+      "nome": "MIMIT - Incentivi",
+      "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
+      "ente": "MIMIT",
       "attivo": true
     }
   ],
