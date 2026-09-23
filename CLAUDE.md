@@ -454,3 +454,28 @@ toglie, o i suoi bandi si prendono da un'altra strada.
 **Regola generale**: prima di dire all'utente «quel sito ti vieta», rileggere il suo
 robots.txt con `curl -A "<il nostro UA>"`. Un divieto dichiarato dal programma non e'
 una prova del divieto.
+
+
+## Comune di Vibo Valentia e MIMIT: da pagina a feed (23 set 2026)
+
+Tutte e due davano «nessun collegamento a bandi trovato». Il motivo era lo stesso: **la
+pagina e' un'applicazione JavaScript**, e quello che arriva al programma e' il guscio con
+i riquadri vuoti (Vibo: 380 KB di HTML e 3 link; MIMIT: 94 KB e 3 link). Nessun indirizzo
+diverso della stessa pagina risolve, perche' la lista la costruisce il browser.
+
+La strada e' il **feed**, che questi siti hanno anche se non lo mostrano:
+- **Vibo Valentia** usa Plone con Volto (lo stesso modello di centinaia di Comuni
+  italiani): feed RSS in `/rss.xml`. Esiste anche l'API JSON `/++api++/novita/avvisi`
+  (261 avvisi, 25 per pagina), tenuta da parte se il feed un giorno non bastasse.
+- **MIMIT** e' un Joomla: ogni elenco diventa RSS aggiungendo `?format=feed&type=rss`.
+
+**Il feed di Plone non ha `<link>`**: l'indirizzo di ogni voce sta solo in `<guid>`
+(RSS 2.0 lo permette). Il lettore prendeva il link vuoto, e siccome l'identificativo di
+un bando e' l'impronta del link, tutte le voci sarebbero finite schiacciate in una. Ora
+`leggi_feed` ripiega su `<guid>`, e scarta le voci «Documenti allegati» che Plone mette
+accanto a ogni avviso.
+
+**Regola per le fonti nuove che danno «nessun collegamento»**: prima di cercare un'altra
+pagina, guardare se il sito e' un'applicazione JavaScript (tanti KB di HTML, pochissimi
+link). Se si', cercare il feed: `/rss.xml`, `/feed/`, `?format=feed&type=rss` (Joomla),
+`/++api++/` (Plone/Volto).

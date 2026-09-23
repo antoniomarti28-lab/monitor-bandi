@@ -144,9 +144,22 @@ def leggi_feed(xml_bytes):
     voci = []
 
     for item in radice.iter("item"):          # RSS 2.0
+        titolo = _testo(item.find("title"))
+        # Plone (il sito del Comune di Vibo Valentia, e con lui centinaia di Comuni
+        # italiani) mette una voce «Documenti allegati» accanto a ogni avviso: e' il
+        # contenitore degli allegati, non una notizia.
+        if titolo.strip().lower() in ("documenti allegati", "allegati"):
+            continue
+        # Il link puo' mancare: RSS 2.0 ammette che l'indirizzo stia solo in <guid>.
+        # Senza questo ripiego ogni voce aveva link vuoto, e tutte finivano schiacciate
+        # in una sola (l'identificativo di un bando e' l'impronta del suo link).
+        link = _testo(item.find("link"))
+        guid = _testo(item.find("guid"))
+        if not link and guid.startswith("http"):
+            link = guid
         voci.append({
-            "titolo": _testo(item.find("title")),
-            "link": _testo(item.find("link")),
+            "titolo": titolo,
+            "link": link,
             "sommario": _testo(item.find("description")),
             "pubblicato": _testo(item.find("pubDate")) or _testo(item.find("dc:date", NS)),
         })
