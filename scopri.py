@@ -3,14 +3,19 @@
 Ricerca di nuove fonti - non le aggiunge, te le propone.
 
 Come funziona, in tre passi:
+  0. ENTI PENSATI PER I PROFILI. Il modello grande legge il racconto dei profili e
+     propone gli enti che POTREBBERO servire, anche se oggi non hanno niente di
+     aperto (chi pubblica una volta l'anno, chi fa call per artisti o residenze).
+     Lui l'ha chiesto esplicitamente il 23 set 2026: non solo chi ha bandi attivi.
   1. RACCOLTA. Dalle pagine dei bandi gia' scaricati si prendono i collegamenti che
      escono verso altri enti (.gov.it, .it di regioni, comuni, fondazioni) e che
      sembrano portare a pagine di bandi. Sono indirizzi VERI, trovati su pagine vere:
      nessuno se li e' inventati.
-  2. VERIFICA. Ogni candidato viene aperto davvero: risponde? contiene collegamenti
-     che sembrano bandi? quanti? Chi non passa la prova viene scartato subito.
-  3. GIUDIZIO. Sui superstiti il modello dice se sembra la pagina bandi di un ente
-     serio e a chi si rivolge. Costa poco: sono poche righe per candidato.
+  2. VERIFICA. Ogni candidato viene aperto davvero e si cerca il posto da sorvegliare:
+     la pagina stessa se ha collegamenti a bandi, altrimenti la sua sezione «Bandi»,
+     altrimenti il suo feed. Chi non risponde o non ha dove pubblicare, fuori.
+  3. GIUDIZIO. Sui superstiti il modello dice se servono A QUESTI profili, ora o in
+     futuro, e perche'. Costa poco: sono poche righe per candidato.
 
 Poi finiscono in `configurazione.json` sotto "proposte", e compaiono sulla pagina
 con un pulsante per accettarle. **Niente viene aggiunto da solo**: se lo facesse,
@@ -35,7 +40,7 @@ BASE = Path(__file__).parent
 DB = BASE / "dati.db"
 
 MAX_CANDIDATI = 40      # quanti indirizzi provare ad aprire in un giro
-MAX_PROPOSTE = 8        # quante proposte tenere alla fine
+MAX_PROPOSTE = 10       # quante proposte tenere alla fine
 PAUSA = 2.0
 
 # Un ente che pubblica bandi sta quasi sempre su uno di questi domini.
@@ -55,7 +60,10 @@ MAI = ("facebook.", "twitter.", "x.com", "instagram.", "linkedin.", "youtube.",
 
 def gia_conosciuto(cfg, url):
     n = configurazione.normalizza(url)
-    for f in cfg["feed"] + cfg["siti"] + cfg.get("proposte", []):
+    # Anche quelle che hai gia' scartato con «No»: riproportele ogni lunedi' sarebbe
+    # solo rumore.
+    for f in cfg["feed"] + cfg["siti"] + cfg.get("proposte", []) + [
+            {"url": u} for u in cfg.get("proposte_scartate", [])]:
         conosciuto = configurazione.normalizza(f.get("url"))
         if conosciuto and (n == conosciuto or n.startswith(conosciuto + "/")):
             return True
@@ -125,26 +133,51 @@ def candidati_dalle_pagine_fonte(db, cfg):
     return fuori
 
 
-SISTEMA_PROPOSTE = """Conosci i portali italiani che pubblicano bandi e contributi.
-Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
+SISTEMA_PROPOSTE = """Conosci gli enti italiani ed europei che finanziano, premiano o
+sostengono attivita' come quelle descritte. Rispondi SOLO con un oggetto JSON, senza
+spiegazioni prima o dopo.
 
-  "portali": elenco di 15 oggetti {"nome": ..., "url": ...} con l'indirizzo della
-             PAGINA CHE ELENCA I BANDI (non la home del sito).
+  "portali": elenco di 20 oggetti {"nome": ..., "url": ..., "perche": ...}
+             "url"    = la pagina dove l'ente pubblica bandi, avvisi, call o premi;
+                        se non la conosci, la home del sito (la sezione la cerco io);
+             "perche" = una frase su cosa potrebbe offrire A QUESTI profili.
 
-Regole:
-  - solo enti veri: regioni, comuni, ministeri, camere di commercio, fondazioni
-    bancarie e d'impresa, programmi europei;
-  - indirizzi che credi esistano davvero, senza inventare percorsi improbabili;
-  - niente aggregatori commerciali o siti di consulenza a pagamento."""
+Non cercare solo chi ha un bando aperto oggi: servono gli enti che POTREBBERO
+pubblicare qualcosa di utile, anche una volta l'anno o in futuro. Per esempio:
+  - fondazioni bancarie, di comunita' e d'impresa attive nel loro territorio;
+  - ministeri e direzioni generali del loro settore, agenzie e programmi regionali;
+  - GAL, parchi, province, comuni e unioni di comuni della loro zona;
+  - programmi europei e i loro sportelli italiani;
+  - reti, festival, teatri e centri che fanno call per artisti, residenze, premi.
+
+Regole: solo enti veri; indirizzi che credi esistano davvero; niente aggregatori
+commerciali o consulenti a pagamento; niente enti che finanziano solo altre regioni."""
 
 
-def candidati_dal_modello(cfg, chiave, modello, db):
-    """Chiede al modello dei portali, per allargare oltre a cio' che gia' conosciamo.
+# Enti veri che finanziano cultura, sociale, giovani e Mezzogiorno, anche solo una volta
+# l'anno. Il modello da solo ne conosce pochi e s'inventa i domini (il 23 set 2026, 7
+# su 12 non esistevano): questi sono stati aperti uno per uno il 23 set 2026 (e ne sono
+# stati tolti sei che non rispondevano, piu' funder35.it, diventato un sito di
+# casino'). Costano zero gettoni, e passano dalla
+# stessa verifica e dallo stesso giudizio di tutti gli altri. Chi non serve ai profili
+# viene scartato li'. Si indica la home: la sezione dei bandi la cerca `verifica`.
+SEMI = [
+    ("https://spettacolo.cultura.gov.it", "MiC - Direzione generale Spettacolo: contributi a teatro, danza, musica, festival"),
+    ("https://www.politichegiovanili.gov.it", "Dipartimento Politiche giovanili: bandi per progetti dei e con i giovani"),
+    ("https://www.agenziagiovani.it", "Agenzia italiana per la Gioventu': Erasmus+ Gioventu' e Corpo europeo di solidarieta'"),
+    ("https://www.fondazioneunipolis.org", "Fondazione Unipolis: culturability, rigenerazione di spazi con la cultura"),
+    ("https://www.nuovoimaie.it", "Nuovo IMAIE: bandi per artisti interpreti, spettacoli e festival"),
+    ("https://www.perchicrea.it", "SIAE Per Chi Crea: bandi per giovani autori e artisti"),
+    ("https://www.italiafestival.it", "Italiafestival: rete dei festival italiani, bandi e opportunita'"),
+    ("https://www.fondazioneterzopilastrointernazionale.it", "Fondazione Terzo Pilastro: cultura e sociale nel Mezzogiorno"),
+    ("https://www.csvcalabriacentro.it", "CSV Calabria Centro: bandi e opportunita' per le associazioni del territorio"),
+    ("https://www.8xmille.it", "8xmille Chiesa cattolica: progetti sociali e culturali"),
+    ("https://www.anci.it", "ANCI: bandi per i Comuni e i loro partner, spesso su giovani e cultura"),
+]
 
-    I modelli SI INVENTANO gli indirizzi: per questo ogni proposta passa comunque
-    dalla verifica, che apre la pagina davvero. Qui si raccolgono solo candidati.
-    """
-    import intelligenza
+
+def descrivi_profili(cfg):
+    """I profili in poche righe: caselle, parole e il racconto libero accorciato."""
     profili_txt = []
     for pr in cfg.get("profili", []):
         riga = "%s: %s, settori %s, territori %s" % (
@@ -161,55 +194,113 @@ def candidati_dal_modello(cfg, chiave, modello, db):
         racconto = " ".join((pr.get("racconto") or "").split())
         if racconto:
             profili_txt.append("   cosa fanno davvero: " + racconto[:500])
+    return chr(10).join(profili_txt) or "generico"
+
+
+def candidati_dal_modello(cfg, chiave, modello, db):
+    """Chiede al modello gli enti che potrebbero servire, per allargare oltre a cio'
+    che gia' conosciamo. Restituisce {url: perche}.
+
+    I modelli SI INVENTANO gli indirizzi: per questo ogni proposta passa comunque
+    dalla verifica, che apre la pagina davvero. Qui si raccolgono solo candidati.
+    """
+    import intelligenza
     gia = [configurazione.normalizza(f.get("url")) for f in cfg["feed"] + cfg["siti"]]
-    domanda = ("PROFILI DA SERVIRE:" + chr(10) + (chr(10).join(profili_txt) or "generico")
+    domanda = ("PROFILI DA SERVIRE:" + chr(10) + descrivi_profili(cfg)
                + chr(10) + chr(10) + "GIA CONOSCIUTI (non ripeterli):" + chr(10)
-               + chr(10).join(gia[:25]))
+               + chr(10).join(gia[:40]))
     try:
-        r, usati = intelligenza.chiedi(chiave, modello, SISTEMA_PROPOSTE, domanda, 1200)
+        r, usati = intelligenza.chiedi(chiave, modello, SISTEMA_PROPOSTE, domanda, 4000)
         intelligenza.segna_consumo(db, modello, usati)
     except Exception as e:
         print("   il modello non ha risposto (%s)" % type(e).__name__)
-        return []
-    fuori = []
+        return {}
+    # Un ente che seguiamo gia' non si ripropone, anche se il modello indica un'altra
+    # pagina dello stesso sito: la sezione dei bandi e' comunque quella.
+    dominio = lambda u: urlparse(u).netloc.lower().replace("www.", "")
+    domini_noti = {dominio(f.get("url") or "") for f in cfg["feed"] + cfg["siti"]}
+    fuori = {}
     for x in r.get("portali") or []:
         url = (x.get("url") or "").strip().rstrip("/")
-        if url.startswith("http") and not gia_conosciuto(cfg, url):
-            fuori.append(url)
+        if (url.startswith("http") and dominio(url) not in domini_noti
+                and not gia_conosciuto(cfg, url)):
+            fuori[url] = (x.get("perche") or "").strip()
     return fuori
 
 
 # ---------------------------------------------------------------- 2. verifica
 
 def verifica(url):
-    """Apre davvero l'indirizzo. Restituisce (va bene, quanti bandi sembra avere, nota)."""
+    """Apre davvero l'indirizzo e cerca il punto giusto da tenere d'occhio.
+
+    Restituisce (url da seguire, tipo, quanti bandi si vedono oggi, nota), oppure
+    url None se l'indirizzo non risponde o non c'e' niente da sorvegliare.
+
+    Prima si scartava tutto cio' che oggi aveva meno di tre bandi: cosi' si perdevano
+    proprio gli enti che pubblicano una volta l'anno. Ora basta che ci sia un posto
+    dove i bandi compariranno: una pagina con qualche collegamento a bandi (anche
+    chiusi), la sezione «Bandi» del sito, oppure il suo feed.
+    """
+    import ripara
     doc = estrattore.leggi(url)
+    radice = ripara._radice(url)
+    if (not doc["testo"] and "errore HTTP 4" in (doc["nota"] or "")
+            and url.rstrip("/") != radice):
+        # Il modello indovina l'ente ma s'inventa il percorso (misurato il 23 set:
+        # 8 indirizzi su 18 davano 404 su siti veri). Si riparte dalla home e la
+        # sezione dei bandi la si cerca da se'.
+        time.sleep(PAUSA)
+        url = radice
+        doc = estrattore.leggi(url)
     if not doc["testo"]:
-        return False, 0, doc["nota"] or "non risponde"
+        return None, None, 0, doc["nota"] or "non risponde"
     quanti = len(estrattore.link_interessanti(doc["link"], url, massimo=60))
-    if quanti < 3:
-        return False, quanti, "raggiunta ma con pochi collegamenti a bandi"
-    return True, quanti, doc["titolo"][:120] or ""
+    if quanti >= 3:
+        return url, "sito", quanti, ""
+
+    html, finale = ripara._html(url)
+    for sezione in ripara.sezioni_bandi(html, finale)[:3]:
+        time.sleep(PAUSA)
+        n = ripara.funziona_come_pagina(sezione)
+        if n:
+            return sezione.rstrip("/"), "sito", n, ""
+    if quanti:
+        return url, "sito", quanti, ""
+    for feed in ripara.feed_dichiarati(html, finale)[:2]:
+        time.sleep(PAUSA)
+        if ripara.funziona_come_feed(feed):
+            return feed, "feed", 0, ""
+    return None, None, 0, "raggiunta, ma senza una sezione di bandi da sorvegliare"
 
 
 # ---------------------------------------------------------------- 3. giudizio
 
-SISTEMA_SCOPERTA = """Guardi la pagina di un sito italiano e dici se e' una pagina che
-elenca bandi, avvisi o contributi pubblicati da un ente.
+SISTEMA_SCOPERTA = """Guardi la pagina di un ente e decidi se vale la pena sorvegliarla
+per i profili descritti: non conta solo se oggi c'e' un bando aperto, conta se
+quell'ente pubblica, o potrebbe pubblicare in futuro, bandi, contributi, premi, call
+o residenze a cui questi profili potrebbero candidarsi.
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
 
-  "e_pagina_bandi" : true se elenca bandi/avvisi/contributi a cui ci si puo' candidare,
-                     false se e' altro (notizie, servizi al cittadino, pagina vetrina).
-  "ente"           : il nome dell'ente che la pubblica, come si legge nella pagina.
-  "a_chi_serve"    : una frase breve su chi puo' trovarci qualcosa di utile.
-  "nome"           : un nome corto per l'elenco delle fonti, massimo 40 caratteri."""
+  "utile"  : "ora"       se ci sono gia' bandi aperti adatti a loro;
+             "in_futuro" se l'ente finanzia o premia cose come le loro, anche se oggi
+                         non ha niente di aperto (bandi annuali, edizioni passate...);
+             "no"        se non c'entra: altro settore, riservato a imprese o a enti
+                         che loro non sono, pagina di sole notizie, oppure pagina di
+                         gare d'appalto e forniture (non sono contributi).
+                         E' "no" anche quando l'ente finanzia solo il SUO territorio e
+                         quel territorio non e' il loro: una fondazione di Trento, di
+                         Verona o di Firenze non da' soldi a chi sta in Calabria.
+  "perche" : una frase concreta su cosa potrebbe offrire A LORO (non all'ente in generale).
+  "ente"   : il nome dell'ente, come si legge nella pagina.
+  "nome"   : un nome corto per l'elenco delle fonti, massimo 40 caratteri."""
 
 
-def giudica(chiave, modello, url, titolo, testo):
+def giudica(chiave, modello, url, titolo, testo, profili_txt):
     import intelligenza
-    domanda = "INDIRIZZO: %s%sTITOLO: %s%s%sTESTO:%s%s" % (
+    domanda = "PROFILI:%s%s%s%sINDIRIZZO: %s%sTITOLO: %s%s%sTESTO:%s%s" % (
+        chr(10), profili_txt, chr(10), chr(10),
         url, chr(10), titolo, chr(10), chr(10), chr(10), testo[:2500])
-    return intelligenza.chiedi(chiave, modello, SISTEMA_SCOPERTA, domanda, 500)
+    return intelligenza.chiedi(chiave, modello, SISTEMA_SCOPERTA, domanda, 2500)
 
 
 # ---------------------------------------------------------------- giro
@@ -243,58 +334,78 @@ def giro(prova=False):
     cfg = configurazione.leggi_file()
     db = sqlite3.connect(DB)
 
-    print("1. Raccolgo indirizzi dai bandi gia' letti...")
-    candidati = candidati_dai_bandi(db, cfg)
-    print("   trovati %d candidati" % len(candidati))
     imp = intelligenza.impostazioni()
-    if len(candidati) < 12 and imp.get("chiave"):
-        print("2. Pochi: chiedo anche al modello quali portali conosce...")
-        proposti = candidati_dal_modello(cfg, imp["chiave"], imp["modello_piccolo"], db)
-        candidati += [c for c in proposti if c not in candidati]
-        print("   ora sono %d (verranno comunque aperti uno per uno)" % len(candidati))
+    profili_txt = descrivi_profili(cfg)
 
-    print("3. Apro ognuno per vedere se e' davvero una pagina di bandi...")
-    buoni, esaminate = [], 0
+    # Prima gli enti pensati per i SUOI profili (anche senza bandi aperti oggi), poi
+    # quelli trovati seguendo i collegamenti dei bandi gia' letti, che invece portano
+    # solo a chi ha qualcosa di aperto adesso. Il modello si interpella sempre: prima
+    # solo quando i candidati «veri» erano pochi, e la ricerca vedeva solo l'oggi.
+    perche = {}
+    if imp.get("chiave"):
+        print("1. Chiedo al modello gli enti che potrebbero servire ai tuoi profili...")
+        perche = candidati_dal_modello(cfg, imp["chiave"], imp["modello_grande"], db)
+        print("   ne ha proposti %d (verranno comunque aperti uno per uno)" % len(perche))
+    print("2. Raccolgo indirizzi dai bandi gia' letti...")
+    dai_bandi = candidati_dai_bandi(db, cfg)
+    print("   trovati %d candidati" % len(dai_bandi))
+    dominio = lambda u: urlparse(u).netloc.lower().replace("www.", "")
+    domini_noti = {dominio(f.get("url") or "")
+                   for f in cfg["feed"] + cfg["siti"] + cfg.get("proposte", [])}
+    for url, motivo in SEMI:
+        if dominio(url) not in domini_noti and not gia_conosciuto(cfg, url):
+            perche.setdefault(url, motivo)
+    candidati = list(perche) + [c for c in dai_bandi if c not in perche]
+
+    print("3. Apro ognuno e cerco dove l'ente pubblica i bandi...")
+    buoni, esaminate, visti = [], 0, set()
     for url in candidati[:MAX_CANDIDATI]:
         esaminate += 1
-        ok, quanti, nota = verifica(url)
-        print("   %s %-64s %s" % ("OK" if ok else "--", url[:64],
-                                  ("%d collegamenti" % quanti) if ok else nota))
-        if ok:
-            buoni.append((url, quanti))
+        da_seguire, tipo, quanti, nota = verifica(url)
+        print("   %s %-64s %s" % ("OK" if da_seguire else "--", url[:64],
+                                  (da_seguire[:60] if da_seguire != url else "%d bandi visti" % quanti)
+                                  if da_seguire else nota))
+        chiave = configurazione.normalizza(da_seguire or "")
+        if da_seguire and chiave not in visti and not gia_conosciuto(cfg, da_seguire):
+            visti.add(chiave)
+            buoni.append((url, da_seguire, tipo, quanti))
         time.sleep(PAUSA)
-        if len(buoni) >= MAX_PROPOSTE:
+        if len(buoni) >= MAX_PROPOSTE + 4:     # margine per quelli che il giudizio scarta
             break
 
     if not buoni:
         print("Nessuna fonte nuova che valga la pena proporti.")
         if not prova:
-            scrivi_esito(esaminate, [], "nessuno degli indirizzi aperti aveva bandi dentro")
+            scrivi_esito(esaminate, [], "nessuno degli indirizzi aperti aveva un posto dove pubblica bandi")
         db.close()
         return 0
 
-    print("4. Faccio giudicare le superstiti al modello...")
+    print("4. Faccio giudicare al modello se servono davvero ai tuoi profili...")
     proposte = []
-    for url, quanti in buoni:
-        doc = estrattore.leggi(url)
-        nome = urlparse(url).netloc.replace("www.", "")
-        ente, a_chi = "", ""
+    for url, da_seguire, tipo, quanti in buoni:
+        if len(proposte) >= MAX_PROPOSTE:
+            break
+        doc = estrattore.leggi(da_seguire) if tipo == "sito" else estrattore.leggi(url)
+        nome = urlparse(da_seguire).netloc.replace("www.", "")
+        ente, motivo, quando = "", perche.get(url, ""), "ora" if quanti >= 3 else "in_futuro"
         if imp.get("chiave") and not prova:
             try:
-                r, usati = giudica(imp["chiave"], imp["modello_piccolo"], url,
-                                   doc["titolo"], doc["testo"])
+                r, usati = giudica(imp["chiave"], imp["modello_piccolo"], da_seguire,
+                                   doc["titolo"], doc["testo"], profili_txt)
                 intelligenza.segna_consumo(db, imp["modello_piccolo"], usati)
-                if not r.get("e_pagina_bandi"):
-                    print("   scartata dal modello: %s" % url[:60])
+                if r.get("utile") not in ("ora", "in_futuro"):
+                    print("   scartata dal modello: %s" % da_seguire[:60])
                     continue
                 nome = (r.get("nome") or nome)[:40]
-                ente, a_chi = r.get("ente") or "", r.get("a_chi_serve") or ""
+                ente = r.get("ente") or ""
+                motivo = r.get("perche") or motivo
+                quando = r.get("utile")
                 time.sleep(60.0 * usati / imp["gettoni_al_minuto"])
             except Exception as e:
                 print("   giudizio saltato (%s)" % type(e).__name__)
-        proposte.append({"nome": nome, "url": url, "ente": ente,
-                         "a_chi_serve": a_chi, "bandi_visti": quanti,
-                         "trovata_il": date.today().isoformat()})
+        proposte.append({"nome": nome, "url": da_seguire, "tipo": tipo, "ente": ente,
+                         "a_chi_serve": motivo, "quando_serve": quando,
+                         "bandi_visti": quanti, "trovata_il": date.today().isoformat()})
 
     if prova:
         print()

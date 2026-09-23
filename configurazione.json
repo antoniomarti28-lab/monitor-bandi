@@ -163,7 +163,88 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [],
+  "proposte": [
+    {
+      "nome": "GrantOffice",
+      "url": "https://cultura.gov.it/grantoffice-opportunita-dall-europa",
+      "tipo": "sito",
+      "ente": "Ministero della Cultura – Grant Office",
+      "a_chi_serve": "fornisce formazione e informazioni su bandi europei che possono finanziare progetti culturali e artistici",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 19,
+      "trovata_il": "2026-09-23"
+    },
+    {
+      "nome": "EU Culture Calls",
+      "url": "https://culture.ec.europa.eu/funding/calls",
+      "tipo": "sito",
+      "ente": "European Commission – Culture and Creativity Calls",
+      "a_chi_serve": "Il portale presenta bandi europei di cultura e creatività, inclusi programmi per residenze artistiche, festival e progetti di inclusione sociale, che possono essere rilevanti per Garage68 e LaboArt Tropea.",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 1,
+      "trovata_il": "2026-09-23"
+    },
+    {
+      "nome": "Spettacolo.gov.it",
+      "url": "https://spettacolo.cultura.gov.it",
+      "tipo": "sito",
+      "ente": "Spettacolo – Direzione generale",
+      "a_chi_serve": "Il sito pubblica bandi futuri per teatro, musica e festival, offrendo opportunità di finanziamento e residenza artistica a Garage68 e LaboArt Tropea",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 4,
+      "trovata_il": "2026-09-24"
+    },
+    {
+      "nome": "PoliticheGiovanili",
+      "url": "https://www.politichegiovanili.gov.it",
+      "tipo": "sito",
+      "ente": "Dipartimento per le Politiche Giovanili e il Servizio Civile Universale",
+      "a_chi_serve": "Il Dipartimento offre bandi e call per progetti culturali, inclusivi e di rigenerazione urbana, adatti a Garage68 e LaboArt Tropea.",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 5,
+      "trovata_il": "2026-09-24"
+    },
+    {
+      "nome": "Opportunità AIG",
+      "url": "https://agenziagioventu.gov.it/news/opportunita-aig",
+      "tipo": "sito",
+      "ente": "Agenzia Gioventù",
+      "a_chi_serve": "Offre call per partecipare a eventi e progetti di inclusione e creatività, adatti a collettivi culturali e di teatro come Garage68 e LaboArt Tropea",
+      "quando_serve": "ora",
+      "bandi_visti": 4,
+      "trovata_il": "2026-09-24"
+    },
+    {
+      "nome": "NUOVO IMAIE",
+      "url": "https://www.nuovoimaie.it",
+      "tipo": "sito",
+      "ente": "NUOVO IMAIE",
+      "a_chi_serve": "Bando Cortometraggi 2026 aperto, ideale per artisti di cinema e audiovisivo di Garage68 e LaboArt Tropea",
+      "quando_serve": "ora",
+      "bandi_visti": 4,
+      "trovata_il": "2026-09-24"
+    },
+    {
+      "nome": "PerChiCrea",
+      "url": "https://www.perchicrea.it",
+      "tipo": "sito",
+      "ente": "SIAE – Per Chi Crea",
+      "a_chi_serve": "offre bandi attivi per giovani artisti, inclusi progetti di residenza e supporto finanziario",
+      "quando_serve": "ora",
+      "bandi_visti": 5,
+      "trovata_il": "2026-09-24"
+    },
+    {
+      "nome": "ItaliaFestival",
+      "url": "https://www.italiafestival.org/feed/",
+      "tipo": "feed",
+      "ente": "ItaliaFestival",
+      "a_chi_serve": "ItaliaFestival promuove partnership e call per festival multidisciplinari, offrendo opportunità di visibilità e networking a collettivi culturali come Garage68 e LaboArt Tropea.",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 0,
+      "trovata_il": "2026-09-24"
+    }
+  ],
   "archiviati": [],
   "riparazioni": {
     "MIMIT - Incentivi": {
@@ -194,5 +275,25 @@
         "tipo": "feed"
       }
     }
+  },
+  "proposte_scartate": [
+    "https://www.fondazionecaritro.it/bandi",
+    "https://www.fondazionemediterraneo.org/index.php/attivita/amministrazione-trasparente-avvisi-bandi-e-gare"
+  ],
+  "esito_scoperta": {
+    "quando": "2026-09-23T22:01:46+00:00",
+    "esaminate": 26,
+    "trovate": 8,
+    "nomi": [
+      "GrantOffice",
+      "EU Culture Calls",
+      "Spettacolo.gov.it",
+      "PoliticheGiovanili",
+      "Opportunità AIG",
+      "NUOVO IMAIE",
+      "PerChiCrea",
+      "ItaliaFestival"
+    ],
+    "nota": ""
   }
 }
