@@ -187,6 +187,12 @@
       "url": "https://agenziagioventu.gov.it/news/opportunita-aig",
       "ente": "Agenzia Gioventù",
       "attivo": true
+    },
+    {
+      "nome": "NUOVO IMAIE",
+      "url": "https://www.nuovoimaie.it",
+      "ente": "NUOVO IMAIE",
+      "attivo": true
     }
   ],
   "impostazioni": {
@@ -194,16 +200,6 @@
     "massimo_messaggi": 8
   },
   "proposte": [
-    {
-      "nome": "NUOVO IMAIE",
-      "url": "https://www.nuovoimaie.it",
-      "tipo": "sito",
-      "ente": "NUOVO IMAIE",
-      "a_chi_serve": "Bando Cortometraggi 2026 aperto, ideale per artisti di cinema e audiovisivo di Garage68 e LaboArt Tropea",
-      "quando_serve": "ora",
-      "bandi_visti": 4,
-      "trovata_il": "2026-09-24"
-    },
     {
       "nome": "PerChiCrea",
       "url": "https://www.perchicrea.it",
