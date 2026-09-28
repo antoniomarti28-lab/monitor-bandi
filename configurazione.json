@@ -248,19 +248,10 @@
     "https://www.fondazionemediterraneo.org/index.php/attivita/amministrazione-trasparente-avvisi-bandi-e-gare"
   ],
   "esito_scoperta": {
-    "quando": "2026-09-23T22:01:46+00:00",
-    "esaminate": 26,
-    "trovate": 8,
-    "nomi": [
-      "GrantOffice",
-      "EU Culture Calls",
-      "Spettacolo.gov.it",
-      "PoliticheGiovanili",
-      "Opportunità AIG",
-      "NUOVO IMAIE",
-      "PerChiCrea",
-      "ItaliaFestival"
-    ],
+    "quando": "2026-09-28T11:47:44+00:00",
+    "esaminate": 20,
+    "trovate": 0,
+    "nomi": [],
     "nota": ""
   }
 }
