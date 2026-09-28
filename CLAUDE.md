@@ -594,3 +594,36 @@ Il sistema era fatto per i bandi e un'audizione non l'avrebbe riconosciuta. Camb
 - Trappola: con `git pull --autostash` e `dati.db` cambiato su tutti e due i lati, il
   pull finisce in conflitto e lascia lo stash. Si fonde a mano: base = archivio di
   GitHub, sopra i bandi solo locali, i campi completati, il consumo massimo.
+
+
+## La pagina rifatta dopo la revisione (28 set 2026, notte)
+
+Revisione del design 21/40 (in `.impeccable/critique/`), poi tutto rifatto in un blocco:
+- **Tutti i numeri nascono dallo stesso elenco.** La pagina chiede UNA volta per
+  profilo l'elenco completo (`/api/bandi?verdetto=tutti&chiusi=1`, in `LISTE`) e fa
+  filtri, sezioni, bottoni dei profili, frase del conto, tendine Fonte e Dove, «Solo i
+  nuovi (n)» e «chiusi (n)» nel browser. Niente piu' `/api/riepilogo` e `/api/zone`
+  (restano nel server, non usati). Verificato: Mati 89 = 8 + 3 + 78.
+- **Sezioni**: Puoi parteciparci / Forse / Ancora da leggere / Scartati (chiusa), in
+  ordine di scadenza, 12 per volta. Via i quattro riquadri e la tendina del verdetto.
+- **`sembraVecchio`**: un annuncio non ancora letto con soli anni passati nel titolo non
+  e' ne' «aperto» ne' «nuovo». «Nuovo» chiede anche pubblicazione entro 60 giorni.
+- **Scheda**: scadenza in cima, soldi/compenso sotto il titolo, verdetto in casella
+  piena, «Affinita'» in parole solo finche' il modello non ha letto, un solo tasto
+  «Apri il bando» / «Apri l'annuncio», «Dettagli» con solo cio' che manca.
+  `pulisciTesto` toglie menu, cookie e «[email protected]» dal testo dei siti.
+- **Lessico per profilo** (`lessico()`): per un artista «annunci», «Puoi candidarti».
+- **Chi non puo' modificare** vede solo profili ed elenco: niente «Tutti i bandi», fonti,
+  soglie, notifiche (`applicaPermessi`, `.solo-gestione`). L'accesso sta nel piede.
+- **Link da Telegram** (`avvisi.link_pagina`): `?profilo=ID#b-ID` apre il profilo (e lo
+  ricorda su quel telefono) e mette l'annuncio in cima in «L'annuncio che ti ho
+  segnalato», anche se filtri o sezioni chiuse lo nasconderebbero.
+- **Telefono**: profili che scorrono (l'attivo si porta in vista), ricerca + un tasto
+  «Filtri», tocchi da 44 px, tabelle impilate, nessuno sforamento.
+- **Tema scuro**: `--su-accento` (testo scuro sull'accento): contrasto da 3,1 a 6,0.
+- **Peso**: da 2,1 MB a 692 KB. Non si pubblicano i bandi chiusi di nessun profilo; testo
+  (1.500 caratteri) solo per aperti non scartati ovunque; sommario 300 e mai insieme al
+  riassunto.
+- Verifica: il browser integrato non apre file locali e non si usa localhost; si
+  controlla la pagina PUBBLICATA (si ripubblica in ~30 s dopo il push). Le catture a
+  pagina scorsa escono bianche: difetto dello strumento, non della pagina.
