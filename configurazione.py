@@ -75,17 +75,20 @@ def esporta(db):
     """
     db.row_factory = sqlite3.Row
     profili = [_profilo_da_riga(r) for r in db.execute("SELECT * FROM profili ORDER BY id")]
+    # Tutto il resto del file si conserva com'era: prima si riscrivevano solo sei voci,
+    # e il registro delle riparazioni (o l'esito di una ricerca) spariva a ogni giro.
+    # Lo stesso per ogni sito: le voci che il database non conosce (a quali profili
+    # serve la fonte) si ricopiano dal file invece di perderle.
+    precedente = leggi_file()
+    nel_file = {s.get("url"): s for s in precedente.get("siti", [])}
     try:
-        siti = [{"nome": r["nome"], "url": r["url"], "ente": r["ente"],
-                 "attivo": bool(r["attivo"])}
+        siti = [dict(nel_file.get(r["url"], {}), nome=r["nome"], url=r["url"],
+                     ente=r["ente"], attivo=bool(r["attivo"]))
                 for r in db.execute("SELECT * FROM siti ORDER BY id")]
     except sqlite3.OperationalError:
         siti = []
     archiviati = [r[0] for r in db.execute("SELECT id FROM bandi WHERE archiviato=1")]
 
-    # Tutto il resto del file si conserva com'era: prima si riscrivevano solo sei voci,
-    # e il registro delle riparazioni (o l'esito di una ricerca) spariva a ogni giro.
-    precedente = leggi_file()
     FILE.write_text(json.dumps(dict(
         precedente, profili=profili, siti=siti, archiviati=archiviati,
     ), indent=2, ensure_ascii=False), encoding="utf-8")

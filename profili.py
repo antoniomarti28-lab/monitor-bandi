@@ -414,6 +414,15 @@ def leggi_profili(db):
     return fuori
 
 
+def profili_delle_fonti():
+    """{nome della fonte: insieme degli id dei profili a cui serve}. Solo le fonti che
+    lo dichiarano: le altre servono a tutti."""
+    import configurazione
+    cfg = configurazione.leggi_file()
+    return {f["nome"]: {int(x) for x in f["profili"]}
+            for f in cfg["feed"] + cfg["siti"] if f.get("profili")}
+
+
 def riabbina(db, solo_profilo=None):
     """Ricalcola la compatibilita'. Si richiama dopo ogni raccolta e a ogni modifica di un profilo."""
     prepara(db)
@@ -427,11 +436,19 @@ def riabbina(db, solo_profilo=None):
     # abbassare il punteggio invece di lasciarlo alto per sempre.
     verdetti = {(r["bando_id"], r["profilo_id"]): r["llm_verdetto"]
                 for r in db.execute("SELECT bando_id, profilo_id, llm_verdetto FROM abbinamenti")}
+    padroni = profili_delle_fonti()
     scritti = 0
     for p in profili:
         compatibili = []
         for b in bandi:
-            punti, motivi = valuta(dict(b, llm_verdetto=verdetti.get((b["id"], p["id"]))), p)
+            # Ogni profilo ha le sue fonti (28 set 2026): un'audizione trovata per
+            # «Mati» non si confronta con Garage68, e i bandi per le associazioni non
+            # finiscono fra le audizioni. Fonte senza «profili» = serve a tutti.
+            suoi = padroni.get(b.get("fonte"))
+            if suoi and p["id"] not in suoi:
+                punti, motivi = 0, ["fonte di un altro profilo"]
+            else:
+                punti, motivi = valuta(dict(b, llm_verdetto=verdetti.get((b["id"], p["id"]))), p)
             testo_motivi = json.dumps(motivi, ensure_ascii=False)
             if punti < SOGLIA:
                 # Sotto soglia. Gli abbinamenti gia' avvisati o gia' giudicati non si

@@ -232,8 +232,23 @@ def leggi_con_allegati(url):
     return doc
 
 
-def link_interessanti(link, url_base, massimo=25):
-    """Sceglie i collegamenti che sembrano portare a un bando, non al menu del sito."""
+# Per i siti delle compagnie (28 set 2026): solo audizioni e offerte di lavoro, in piu'
+# lingue. Le parole dei bandi («premio», «call», «bando») sulla home di una compagnia
+# pescherebbero notizie di ogni genere.
+PAROLE_AUDIZIONE = ["audizion", "audition", "auditie", "audicion", "audicio", "vortanzen",
+                    "casting", "provini", "cerchiamo danzat", "cerca danzat",
+                    "looking for dancers", "seeking dancers", "dancers wanted",
+                    "call for dancers", "lavora con noi", "lavora-con-noi", "work with us",
+                    "work-with-us", "jobs", "job-", "vacanc", "vacature", "stellenangebot",
+                    "stellenausschreib", "offre d'emploi", "offres d'emploi", "offre-d-emploi",
+                    "emploi", "lediga", "ledige stilling", "careers", "opportunit"]
+
+
+def link_interessanti(link, url_base, massimo=25, parole=None):
+    """Sceglie i collegamenti che sembrano portare a un bando, non al menu del sito.
+
+    Con `parole` si cercano solo quelle, e senza ripiego sui titoli lunghi: sulla home
+    di una compagnia il ripiego prenderebbe ogni articolo."""
     dominio = urlparse(url_base).netloc
     visti, buoni, ripiego = set(), [], []
 
@@ -250,9 +265,9 @@ def link_interessanti(link, url_base, massimo=25):
         visti.add(pulito)
 
         spia = (pulito + " " + testo).lower()
-        if any(p in spia for p in PAROLE_BANDO):
+        if any(p in spia for p in (parole or PAROLE_BANDO)):
             buoni.append((pulito, testo))
-        elif len(testo) >= 30:
+        elif len(testo) >= 30 and not parole:
             ripiego.append((pulito, testo))
 
     # Se il sito non usa mai la parola «bando», ripieghiamo sui titoli lunghi.

@@ -165,6 +165,13 @@ def soldi(n, grezzo):
 
 def componi(b, profilo_nome):
     righe = ["<b>%s</b>" % escape(b["titolo"])]
+    # Audizioni e lavori da artista: compenso, compagnia e citta' vengono prima di tutto.
+    artista = [x for x in (
+        {"a pagamento": "A PAGAMENTO: paghi tu"}.get(b.get("ingaggio"),
+                                                     (b.get("ingaggio") or "").upper()),
+        b.get("lavoro"), b.get("compagnia"), b.get("citta")) if x]
+    if artista:
+        righe.append(" · ".join(escape(x) for x in artista))
     dettagli = []
     if b["ente"]:
         dettagli.append(escape(b["ente"]))

@@ -56,7 +56,7 @@
       "id": 5,
       "nome": "Mati",
       "tipo_ente": "Artista (persona singola)",
-      "racconto": "Mati e' una ballerina di danza contemporanea. Cerca TUTTI gli annunci di audizioni di COMPAGNIE di danza CONTEMPORANEA, in Italia e all'estero: audizioni per entrare in compagnia, per una produzione, per una tournee o per una sostituzione. Non le interessano: balletto classico puro, musical, hip hop e danze commerciali, casting per TV o pubblicita', concorsi e premi per scuole, e 'audizioni' che sono in realta' corsi, stage o intensivi a pagamento.",
+      "racconto": "Mati e' una ballerina di danza contemporanea. Cerca due cose.\n\n1. TUTTI gli annunci di audizioni di COMPAGNIE di danza CONTEMPORANEA, in Italia e all'estero: per entrare in compagnia, per una produzione, per una tournee o per una sostituzione.\n\n2. In ITALIA, anche i lavori singoli adatti a una ballerina contemporanea, pure se non vengono da una compagnia: una performance, un evento, un video o un videoclip, un'installazione, una singola produzione teatrale o di un coreografo.\n\nPer lei conta sapere se e' pagato, non pagato o uno stage, chi cerca e in che citta'.\n\nNon le interessano: balletto classico puro, musical, hip hop e danze commerciali, animazione in villaggi e discoteche, casting per TV o talent, concorsi e premi per scuole, posti da insegnante, e 'audizioni' che sono in realta' corsi, stage formativi o intensivi a pagamento.",
       "settori": [
         "Danza"
       ],
@@ -67,7 +67,10 @@
         "danza contemporanea",
         "contemporary dance",
         "danzatrici",
-        "dancers"
+        "dancers",
+        "ballerine",
+        "danzatrice",
+        "performer contemporanea"
       ],
       "escluse": [],
       "importo_min": null,
@@ -79,97 +82,155 @@
       "nome": "Fondazione Con il Sud",
       "url": "https://www.fondazioneconilsud.it/feed/",
       "ente": "Fondazione Con il Sud",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Compagnia di San Paolo",
       "url": "https://www.compagniadisanpaolo.it/it/feed/",
       "ente": "Compagnia di San Paolo",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Forum Terzo Settore",
       "url": "https://www.forumterzosettore.it/feed/",
       "ente": "Forum Terzo Settore",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Cantiere Terzo Settore",
       "url": "https://www.cantiereterzosettore.it/feed/",
       "ente": "Cantiere Terzo Settore",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Regione Sicilia",
       "url": "https://www.regione.sicilia.it/rss.xml",
       "ente": "Regione Siciliana",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Fondazione Carical",
       "url": "https://www.fondazionecarical.it/feed/",
       "ente": "Fondazione Carical",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Fondazione Cariplo",
       "url": "https://www.fondazionecariplo.it/feed/",
       "ente": "Fondazione Cariplo",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "MIMIT - Incentivi",
       "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
       "ente": "MIMIT",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Comune di Vibo Valentia",
       "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
       "ente": "",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "ItaliaFestival",
       "url": "https://www.italiafestival.org/feed/",
       "ente": "ItaliaFestival",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Audizioni - TuttoDanzaWeb",
       "url": "https://tuttodanzaweb.it/category/opportunita/audizioni-danza/feed/",
       "ente": "TuttoDanzaWeb",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Audizioni - Campadidanza",
       "url": "https://www.campadidanza.it/work/audizioni-e-casting/feed/",
       "ente": "Campadidanza",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Audizioni - Dance News",
       "url": "https://dancenews.it/audizioni/feed/",
       "ente": "Dance News",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Auditions - Dancing Opportunities",
       "url": "https://dancingopportunities.com/category/auditions/feed/",
       "ente": "Dancing Opportunities",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Auditions - au-di-tions.com",
       "url": "https://au-di-tions.com/feed/",
       "ente": "au-di-tions.com",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Auditions - The Dance Platform",
       "url": "https://thedanceplatform.com/category/auditions/feed/",
       "ente": "The Dance Platform",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     }
   ],
   "siti": [
@@ -177,109 +238,1532 @@
       "nome": "Con il Sud - pagina bandi",
       "url": "https://www.fondazioneconilsud.it/bandi/",
       "ente": "Fondazione Con il Sud",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Camera di commercio",
       "url": "https://czkrvv.camcom.it/",
       "ente": "",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "regione.calabria.it",
       "url": "https://www.regione.calabria.it/bandi-e-avvisi-di-gara/",
       "ente": "",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Call 7 Interreg Euro-MED",
       "url": "https://interreg-euro-med.eu/en/call-7-mediterranean-multiprogramme-mechanism-coordinated-call",
       "ente": "Interreg Euro-MED Programme",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Bandi Fondazione Cariplo",
       "url": "https://www.fondazionecariplo.it/bandi",
       "ente": "Fondazione Cariplo",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Comune di Tropea - albo",
       "url": "https://www.comune.tropea.vv.it/home/novita.html",
       "ente": "Comune di Tropea",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Chiesa Valdese",
       "url": "https://www.ottopermillevaldese.org/news/",
       "ente": "",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Calabria Europa",
       "url": "https://calabriaeuropa.regione.calabria.it/",
       "ente": "Regione Calabria",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "GrantOffice",
       "url": "https://cultura.gov.it/grantoffice-opportunita-dall-europa",
       "ente": "Ministero della Cultura – Grant Office",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "EU Culture Calls",
       "url": "https://culture.ec.europa.eu/funding/calls",
       "ente": "European Commission – Culture and Creativity Calls",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Spettacolo.gov.it",
       "url": "https://spettacolo.cultura.gov.it",
       "ente": "Spettacolo – Direzione generale",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "PoliticheGiovanili",
       "url": "https://www.politichegiovanili.gov.it",
       "ente": "Dipartimento per le Politiche Giovanili e il Servizio Civile Universale",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Opportunità AIG",
       "url": "https://agenziagioventu.gov.it/news/opportunita-aig",
       "ente": "Agenzia Gioventù",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "NUOVO IMAIE",
       "url": "https://www.nuovoimaie.it",
       "ente": "NUOVO IMAIE",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "PerChiCrea",
       "url": "https://www.perchicrea.it",
       "ente": "SIAE – Per Chi Crea",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     },
     {
       "nome": "Audizioni - DanzaSi",
       "url": "https://www.danzasi.it/audizioni-e-offerte-di-lavoro.php",
       "ente": "DanzaSi",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Audizioni - Casting e Provini (danza)",
       "url": "https://www.castingeprovini.com/tag/danza/",
       "ente": "Casting e Provini",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
     },
     {
       "nome": "Auditions - Centre national de la danse",
       "url": "https://www.cnd.fr/fr/auditions-offres-emploi?f%5B0%5D=type_offre%3Aaudition",
       "ente": "Centre national de la danse",
-      "attivo": true
+      "attivo": true,
+      "profili": [
+        5
+      ]
+    },
+    {
+      "nome": "Ballerini - Casting e Provini",
+      "url": "https://www.castingeprovini.com/ballerini/",
+      "ente": "Casting e Provini",
+      "attivo": true,
+      "profili": [
+        5
+      ]
+    },
+    {
+      "nome": "Casting di danza - DanzApp",
+      "url": "https://www.danzapp.it/casting-di-danza/",
+      "ente": "DanzApp",
+      "attivo": true,
+      "profili": [
+        5
+      ]
+    },
+    {
+      "nome": "Aterballetto - Fondazione Nazionale della Danza",
+      "url": "https://www.fndaterballetto.it/artisti/audizioni",
+      "ente": "Aterballetto - Fondazione Nazionale della Danza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Reggio Emilia",
+      "paese": "IT",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Scenario Pubblico - Compagnia Zappala' Danza",
+      "url": "https://scenariopubblico.com/audizioni-czd/",
+      "ente": "Scenario Pubblico - Compagnia Zappala' Danza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Catania",
+      "paese": "IT",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Compagnia Virgilio Sieni",
+      "url": "https://www.virgiliosieni.it",
+      "ente": "Compagnia Virgilio Sieni",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Firenze",
+      "paese": "IT"
+    },
+    {
+      "nome": "EgriBiancoDanza",
+      "url": "https://www.egribiancodanza.com",
+      "ente": "EgriBiancoDanza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Torino",
+      "paese": "IT"
+    },
+    {
+      "nome": "ASMED Sardegna",
+      "url": "https://www.asmed.it",
+      "ente": "ASMED Sardegna",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Quartu Sant'Elena",
+      "paese": "IT"
+    },
+    {
+      "nome": "Resextensa",
+      "url": "https://www.resextensa.it",
+      "ente": "Resextensa",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bari",
+      "paese": "IT"
+    },
+    {
+      "nome": "Sosta Palmizi",
+      "url": "https://www.sostapalmizi.it",
+      "ente": "Sosta Palmizi",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Cortona",
+      "paese": "IT"
+    },
+    {
+      "nome": "Artemis Danza",
+      "url": "https://www.artemisdanza.com",
+      "ente": "Artemis Danza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Parma",
+      "paese": "IT"
+    },
+    {
+      "nome": "VAN",
+      "url": "https://www.associazioneculturalevan.it",
+      "ente": "VAN",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bologna",
+      "paese": "IT"
+    },
+    {
+      "nome": "Compagnia Simona Bucci",
+      "url": "https://www.compagniadegliistanti.it",
+      "ente": "Compagnia Simona Bucci",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Firenze",
+      "paese": "IT"
+    },
+    {
+      "nome": "Deja Donne",
+      "url": "https://www.dejadonne.com",
+      "ente": "Deja Donne",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Milano",
+      "paese": "IT"
+    },
+    {
+      "nome": "Borderline Danza",
+      "url": "https://www.borderlinedanza.it",
+      "ente": "Borderline Danza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Pontecagnano Faiano",
+      "paese": "IT"
+    },
+    {
+      "nome": "Arearea",
+      "url": "https://arearea.it/",
+      "ente": "Arearea",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Udine",
+      "paese": "IT"
+    },
+    {
+      "nome": "Kinkaleri",
+      "url": "https://www.kinkaleri.it",
+      "ente": "Kinkaleri",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Prato",
+      "paese": "IT"
+    },
+    {
+      "nome": "Con.Cor.D.A.",
+      "url": "https://concorda-danza.it",
+      "ente": "Con.Cor.D.A.",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Pisa",
+      "paese": "IT"
+    },
+    {
+      "nome": "Balletto Civile",
+      "url": "https://www.ballettocivile.org/it/",
+      "ente": "Balletto Civile",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "La Spezia",
+      "paese": "IT"
+    },
+    {
+      "nome": "Sanpapie'",
+      "url": "https://www.sanpapie.com",
+      "ente": "Sanpapie'",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Milano",
+      "paese": "IT"
+    },
+    {
+      "nome": "Tocnadanza",
+      "url": "https://tocnadanzavenezia.com/",
+      "ente": "Tocnadanza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Venezia",
+      "paese": "IT"
+    },
+    {
+      "nome": "Adarte",
+      "url": "https://www.adartecompagnia.it",
+      "ente": "Adarte",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Siena",
+      "paese": "IT"
+    },
+    {
+      "nome": "Balletto di Roma",
+      "url": "https://www.ballettodiroma.com/it/",
+      "ente": "Balletto di Roma",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "TIR Danza",
+      "url": "https://www.tirdanza.it",
+      "ente": "TIR Danza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Modena",
+      "paese": "IT"
+    },
+    {
+      "nome": "Gruppo e-motion",
+      "url": "https://gruppoemotion.app",
+      "ente": "Gruppo e-motion",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "L'Aquila",
+      "paese": "IT"
+    },
+    {
+      "nome": "Opus Ballet",
+      "url": "https://opusballet.it/audizioni/",
+      "ente": "Opus Ballet",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Firenze",
+      "paese": "IT",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Balletto Teatro di Torino",
+      "url": "https://www.ballettoteatroditorino.it",
+      "ente": "Balletto Teatro di Torino",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Torino",
+      "paese": "IT"
+    },
+    {
+      "nome": "Compagnia Enzo Cosimi",
+      "url": "https://enzocosimi.com",
+      "ente": "Compagnia Enzo Cosimi",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "Nanou",
+      "url": "https://www.grupponanou.it",
+      "ente": "Nanou",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Ravenna",
+      "paese": "IT"
+    },
+    {
+      "nome": "XE - Julie Ann Anzilotti",
+      "url": "https://www.compagniaxe.it",
+      "ente": "XE - Julie Ann Anzilotti",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "San Casciano in Val di Pesa",
+      "paese": "IT"
+    },
+    {
+      "nome": "Versiliadanza",
+      "url": "https://www.versiliadanza.it",
+      "ente": "Versiliadanza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Firenze",
+      "paese": "IT"
+    },
+    {
+      "nome": "Fattoria Vittadini",
+      "url": "https://www.fattoriavittadini.it",
+      "ente": "Fattoria Vittadini",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Milano",
+      "paese": "IT"
+    },
+    {
+      "nome": "Ariella Vidach - AiEP",
+      "url": "https://www.aiep.org",
+      "ente": "Ariella Vidach - AiEP",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Milano",
+      "paese": "IT"
+    },
+    {
+      "nome": "Aldes - Roberto Castello",
+      "url": "https://www.aldes.it",
+      "ente": "Aldes - Roberto Castello",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Lucca",
+      "paese": "IT"
+    },
+    {
+      "nome": "Atacama",
+      "url": "https://www.compagniaatacama.it",
+      "ente": "Atacama",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "Ersilia",
+      "url": "https://ersiliadanza.it",
+      "ente": "Ersilia",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Negrar",
+      "paese": "IT"
+    },
+    {
+      "nome": "Nexus",
+      "url": "https://simonabertozzi.it",
+      "ente": "Nexus",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bologna",
+      "paese": "IT"
+    },
+    {
+      "nome": "Estemporada",
+      "url": "https://www.estemporada.com",
+      "ente": "Estemporada",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Sassari",
+      "paese": "IT"
+    },
+    {
+      "nome": "Pindoc",
+      "url": "https://www.pindoc.it",
+      "ente": "Pindoc",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Palermo",
+      "paese": "IT"
+    },
+    {
+      "nome": "Balletto del Sud",
+      "url": "https://www.ballettodelsud.it/produzioni/audizione/",
+      "ente": "Balletto del Sud",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Lecce",
+      "paese": "IT",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Interno5",
+      "url": "https://www.interno5danza.com",
+      "ente": "Interno5",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Napoli",
+      "paese": "IT"
+    },
+    {
+      "nome": "Almatanz",
+      "url": "https://www.almatanz.it",
+      "ente": "Almatanz",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "Artgarage",
+      "url": "https://www.artgaragedancecompany.com",
+      "ente": "Artgarage",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Pozzuoli",
+      "paese": "IT"
+    },
+    {
+      "nome": "Balletto di Toscana",
+      "url": "https://www.ballettoditoscana.it",
+      "ente": "Balletto di Toscana",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Firenze",
+      "paese": "IT"
+    },
+    {
+      "nome": "Codeduomo",
+      "url": "https://www.danieleninarello.it/en/codeduomo/",
+      "ente": "Codeduomo",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Torino",
+      "paese": "IT"
+    },
+    {
+      "nome": "Chiasma",
+      "url": "https://www.chiasma.eu",
+      "ente": "Chiasma",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "mpTRE project",
+      "url": "https://www.mptreproject.it",
+      "ente": "mpTRE project",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "Compagnia Bellanda",
+      "url": "https://compagniabellanda.com",
+      "ente": "Compagnia Bellanda",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Cormons",
+      "paese": "IT"
+    },
+    {
+      "nome": "Compagnia Eleina D.",
+      "url": "https://www.eleinad.org",
+      "ente": "Compagnia Eleina D.",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Castellana Grotte",
+      "paese": "IT"
+    },
+    {
+      "nome": "Equilibrio Dinamico",
+      "url": "https://www.equilibriodinamico.org",
+      "ente": "Equilibrio Dinamico",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Fasano",
+      "paese": "IT"
+    },
+    {
+      "nome": "Cinqueminuti",
+      "url": "https://www.cinqueminuti.eu",
+      "ente": "Cinqueminuti",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Reggio Emilia",
+      "paese": "IT"
+    },
+    {
+      "nome": "Dewey Dell",
+      "url": "https://www.deweydell.com",
+      "ente": "Dewey Dell",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Cesena",
+      "paese": "IT"
+    },
+    {
+      "nome": "Il Balletto di Venezia",
+      "url": "https://www.ballettodivenezia.com",
+      "ente": "Il Balletto di Venezia",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Venezia",
+      "paese": "IT"
+    },
+    {
+      "nome": "Cornelia - Nyko Piscopo",
+      "url": "https://corneliadancecompany.com/it",
+      "ente": "Cornelia - Nyko Piscopo",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Arzano",
+      "paese": "IT"
+    },
+    {
+      "nome": "House of Ivona",
+      "url": "https://ivonaofficial.com",
+      "ente": "House of Ivona",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Fagagna",
+      "paese": "IT"
+    },
+    {
+      "nome": "Twain",
+      "url": "https://cietwain.com",
+      "ente": "Twain",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "Compagnia Abbondanza/Bertoni",
+      "url": "https://www.abbondanzabertoni.it",
+      "ente": "Compagnia Abbondanza/Bertoni",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Rovereto",
+      "paese": "IT"
+    },
+    {
+      "nome": "Compagnia Naturalis Labor",
+      "url": "https://www.naturalislabor.it/it",
+      "ente": "Compagnia Naturalis Labor",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Vicenza",
+      "paese": "IT"
+    },
+    {
+      "nome": "Emox Balletto",
+      "url": "https://www.emox.it",
+      "ente": "Emox Balletto",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Napoli",
+      "paese": "IT"
+    },
+    {
+      "nome": "Mvula Sungani Physical Dance",
+      "url": "https://www.mvulasungani.com/",
+      "ente": "Mvula Sungani Physical Dance",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Roma",
+      "paese": "IT"
+    },
+    {
+      "nome": "Nederlands Dans Theater",
+      "url": "https://www.ndt.nl/nl/",
+      "ente": "Nederlands Dans Theater",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "L'Aia",
+      "paese": "NL"
+    },
+    {
+      "nome": "Scapino Ballet",
+      "url": "https://www.scapinoballet.nl/nl/nieuws/dansersaudities",
+      "ente": "Scapino Ballet",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Rotterdam",
+      "paese": "NL",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Introdans",
+      "url": "https://introdans.nl/vacatures/",
+      "ente": "Introdans",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Arnhem",
+      "paese": "NL",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "ICK Dans Amsterdam",
+      "url": "https://ickamsterdam.nl/audities/",
+      "ente": "ICK Dans Amsterdam",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Amsterdam",
+      "paese": "NL",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Conny Janssen Danst",
+      "url": "https://www.connyjanssendanst.nl/gezelschap/vacatures/",
+      "ente": "Conny Janssen Danst",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Rotterdam",
+      "paese": "NL",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Club Guy & Roni",
+      "url": "https://clubguyandroni.nl/over/vacatures-audities/",
+      "ente": "Club Guy & Roni",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Groningen",
+      "paese": "NL",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Rosas",
+      "url": "https://www.rosas.be/en/",
+      "ente": "Rosas",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bruxelles",
+      "paese": "BE"
+    },
+    {
+      "nome": "Ultima Vez",
+      "url": "https://ultimavez.com/",
+      "ente": "Ultima Vez",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bruxelles",
+      "paese": "BE"
+    },
+    {
+      "nome": "Peeping Tom",
+      "url": "https://www.peepingtom.be",
+      "ente": "Peeping Tom",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bruxelles",
+      "paese": "BE"
+    },
+    {
+      "nome": "Eastman - Sidi Larbi Cherkaoui",
+      "url": "https://www.east-man.be",
+      "ente": "Eastman - Sidi Larbi Cherkaoui",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Anversa",
+      "paese": "BE"
+    },
+    {
+      "nome": "les ballets C de la B",
+      "url": "https://www.lesballetscdela.be/en/",
+      "ente": "les ballets C de la B",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Gand",
+      "paese": "BE"
+    },
+    {
+      "nome": "Charleroi danse",
+      "url": "https://charleroi-danse.be/fr/actualites/jobs",
+      "ente": "Charleroi danse",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Charleroi",
+      "paese": "BE",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Sasha Waltz & Guests",
+      "url": "https://www.sashawaltz.de/startseite",
+      "ente": "Sasha Waltz & Guests",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Berlino",
+      "paese": "DE"
+    },
+    {
+      "nome": "Tanztheater Wuppertal Pina Bausch",
+      "url": "https://www.pina-bausch.de/de",
+      "ente": "Tanztheater Wuppertal Pina Bausch",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Wuppertal",
+      "paese": "DE"
+    },
+    {
+      "nome": "Gauthier Dance",
+      "url": "https://www.theaterhaus.com/de/stellenangebote",
+      "ente": "Gauthier Dance",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Stoccarda",
+      "paese": "DE",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Dresden Frankfurt Dance Company",
+      "url": "https://www.dfdc.de/",
+      "ente": "Dresden Frankfurt Dance Company",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Dresda/Francoforte",
+      "paese": "DE"
+    },
+    {
+      "nome": "Hessisches Staatsballett",
+      "url": "https://www.hessisches-staatsballett.de/de/",
+      "ente": "Hessisches Staatsballett",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Wiesbaden/Darmstadt",
+      "paese": "DE"
+    },
+    {
+      "nome": "tanzmainz",
+      "url": "https://www.staatstheater-mainz.com/service/stellenangebote",
+      "ente": "tanzmainz",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Magonza",
+      "paese": "DE",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Tanzcompagnie Giessen",
+      "url": "https://stadttheater-giessen.de/de/service/jobs/",
+      "ente": "Tanzcompagnie Giessen",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Giessen",
+      "paese": "DE",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Rambert",
+      "url": "https://rambert.org.uk",
+      "ente": "Rambert",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Londra",
+      "paese": "UK"
+    },
+    {
+      "nome": "Akram Khan Company",
+      "url": "https://www.akramkhancompany.net",
+      "ente": "Akram Khan Company",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Londra",
+      "paese": "UK"
+    },
+    {
+      "nome": "Hofesh Shechter Company",
+      "url": "https://hofesh.co.uk/about-us/opportunities-2/",
+      "ente": "Hofesh Shechter Company",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Brighton",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Company Wayne McGregor",
+      "url": "https://waynemcgregor.com/about/auditions-jobs",
+      "ente": "Company Wayne McGregor",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Londra",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Candoco Dance Company",
+      "url": "https://candoco.co.uk/about-us/work-with-us/",
+      "ente": "Candoco Dance Company",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Londra",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Scottish Dance Theatre",
+      "url": "https://dundeerep.co.uk/jobs",
+      "ente": "Scottish Dance Theatre",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Dundee",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "National Dance Company Wales",
+      "url": "https://ndcwales.co.uk/about/jobs-and-opportunities",
+      "ente": "National Dance Company Wales",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Cardiff",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Motionhouse",
+      "url": "https://www.motionhouse.co.uk/contact/work-with-us/",
+      "ente": "Motionhouse",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Leamington Spa",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Phoenix Dance Theatre",
+      "url": "https://www.phoenixdancetheatre.co.uk/vacancies/",
+      "ente": "Phoenix Dance Theatre",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Leeds",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Jasmin Vardimon Company",
+      "url": "https://www.jasminvardimon.com",
+      "ente": "Jasmin Vardimon Company",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Ashford",
+      "paese": "UK"
+    },
+    {
+      "nome": "New Adventures - Matthew Bourne",
+      "url": "https://www.new-adventures.net/opportunities",
+      "ente": "New Adventures - Matthew Bourne",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Londra",
+      "paese": "UK",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Ballet Preljocaj",
+      "url": "http://preljocaj.org/",
+      "ente": "Ballet Preljocaj",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Aix-en-Provence",
+      "paese": "FR"
+    },
+    {
+      "nome": "CCN Ballet de Lorraine",
+      "url": "https://www.ballet-de-lorraine.eu/fr",
+      "ente": "CCN Ballet de Lorraine",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Nancy",
+      "paese": "FR"
+    },
+    {
+      "nome": "Malandain Ballet Biarritz",
+      "url": "https://malandainballet.com/",
+      "ente": "Malandain Ballet Biarritz",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Biarritz",
+      "paese": "FR"
+    },
+    {
+      "nome": "Compania Nacional de Danza",
+      "url": "https://cndanza.inaem.gob.es/en/auditions/",
+      "ente": "Compania Nacional de Danza",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Madrid",
+      "paese": "ES",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "IT Dansa",
+      "url": "https://www.institutdelteatre.cat/ca/itimpulsa/graduatsigraduades/inserciolaboral/itdansa/audicio",
+      "ente": "IT Dansa",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Barcellona",
+      "paese": "ES"
+    },
+    {
+      "nome": "Cullberg",
+      "url": "https://www.cullberg.com",
+      "ente": "Cullberg",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Stoccolma",
+      "paese": "SE"
+    },
+    {
+      "nome": "GoteborgsOperans Danskompani",
+      "url": "https://www.opera.se/upptack/var-organisation/lediga-tjanster-auditions/",
+      "ente": "GoteborgsOperans Danskompani",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Goteborg",
+      "paese": "SE",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Skanes Dansteater",
+      "url": "https://www.skanesdansteater.se/lediga-tjanster",
+      "ente": "Skanes Dansteater",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Malmo",
+      "paese": "SE",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Norrdans",
+      "url": "https://norrdans.se/sv",
+      "ente": "Norrdans",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Harnosand",
+      "paese": "SE"
+    },
+    {
+      "nome": "Carte Blanche",
+      "url": "https://carteblanche.no/",
+      "ente": "Carte Blanche",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Bergen",
+      "paese": "NO"
+    },
+    {
+      "nome": "Danish Dance Theatre",
+      "url": "https://www.danskdanseteater.dk",
+      "ente": "Danish Dance Theatre",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Copenaghen",
+      "paese": "DK"
+    },
+    {
+      "nome": "Tero Saarinen Company",
+      "url": "https://terosaarinen.com/",
+      "ente": "Tero Saarinen Company",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Helsinki",
+      "paese": "FI"
+    },
+    {
+      "nome": "Liquid Loft",
+      "url": "https://liquidloft.at/",
+      "ente": "Liquid Loft",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Vienna",
+      "paese": "AT"
+    },
+    {
+      "nome": "Compagnie Gilles Jobin",
+      "url": "https://www.gillesjobin.com",
+      "ente": "Compagnie Gilles Jobin",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Ginevra",
+      "paese": "CH"
+    },
+    {
+      "nome": "Cie Linga",
+      "url": "https://www.linga.ch",
+      "ente": "Cie Linga",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Pully",
+      "paese": "CH"
+    },
+    {
+      "nome": "Ballet Junior de Geneve",
+      "url": "https://edgeneve.ch/for-the-english-speakers/auditioning-for-ballet-junior/",
+      "ente": "Ballet Junior de Geneve",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Ginevra",
+      "paese": "CH",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Beart Ballet Lausanne",
+      "url": "https://www.bejart.ch/compagnie/auditions/",
+      "ente": "Beart Ballet Lausanne",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Losanna",
+      "paese": "CH",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "CoisCeim Dance Theatre",
+      "url": "https://www.coisceim.com",
+      "ente": "CoisCeim Dance Theatre",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Dublino",
+      "paese": "IE"
+    },
+    {
+      "nome": "Polish Dance Theatre",
+      "url": "https://ptt-poznan.pl",
+      "ente": "Polish Dance Theatre",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Poznan",
+      "paese": "PL"
+    },
+    {
+      "nome": "420PEOPLE",
+      "url": "https://www.420people.org",
+      "ente": "420PEOPLE",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Praga",
+      "paese": "CZ"
+    },
+    {
+      "nome": "GCDANCEVENTS - audizioni multi-compagnia",
+      "url": "https://www.gcdancevents.com/auditions/",
+      "ente": "GCDANCEVENTS - audizioni multi-compagnia",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Napoli/Pozzuoli",
+      "paese": "IT",
+      "pagina_audizioni": true
+    },
+    {
+      "nome": "Les Ballets de Monte-Carlo",
+      "url": "https://www.balletsdemontecarlo.com/fr/compagnie/auditions",
+      "ente": "Les Ballets de Monte-Carlo",
+      "attivo": true,
+      "profili": [
+        5
+      ],
+      "cerca": "audizioni",
+      "citta": "Monaco",
+      "paese": "MC",
+      "pagina_audizioni": true
     }
   ],
   "impostazioni": {

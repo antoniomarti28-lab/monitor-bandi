@@ -74,7 +74,16 @@ COLONNE_NUOVE = {
     # bandi di Fondazione Cariplo la parola «Lombardia» compariva solo dopo il
     # tremillesimo carattere, e sono arrivate due notifiche per bandi di un'altra regione.
     "territorio": "TEXT",
+    # Per le audizioni e i lavori da artista (profilo «Mati», 28 set 2026): chi cerca,
+    # dove, e soprattutto se si viene pagati. Per un bando normale restano vuoti.
+    "compagnia": "TEXT",
+    "citta": "TEXT",
+    "ingaggio": "TEXT",     # pagato | non pagato | stage | a pagamento
+    "lavoro": "TEXT",       # in compagnia | lavoro singolo
 }
+
+VALORI_INGAGGIO = ("pagato", "non pagato", "stage", "a pagamento")
+VALORI_LAVORO = ("in compagnia", "lavoro singolo")
 
 
 def migra(db):
@@ -250,6 +259,23 @@ def chiedi(chiave, modello, sistema, domanda, gettoni_max=700):
 
 # ---------------------------------------------------------------- le domande
 
+CAMPI_ARTISTA = """Solo se e' un'audizione, un casting o un'offerta di lavoro per artisti
+(altrimenti metti null in tutti e quattro):
+  "compagnia"   : il nome della compagnia, del coreografo o di chi cerca, come scritto.
+  "citta"       : la citta' dove si lavora (o, se manca, dove si fa l'audizione);
+                  se e' all'estero aggiungi il paese, es. "Salisburgo, Austria".
+  "ingaggio"    : UNA fra queste parole esatte:
+                  "pagato"      contratto o compenso per l'artista;
+                  "non pagato"  lavoro gratuito, a titolo volontario o solo rimborso spese;
+                  "stage"       tirocinio, apprendistato, junior company, formazione in
+                                compagnia senza vero contratto;
+                  "a pagamento" e' l'artista a dover pagare (workshop-audition, quota
+                                di iscrizione, corso travestito da audizione).
+                  null se il testo non lo dice.
+  "lavoro"      : "in compagnia" se si entra in una compagnia o in una produzione con
+                  piu' date o una stagione; "lavoro singolo" se e' un ingaggio isolato
+                  (una serata, un evento, un video, uno spot, una singola performance)."""
+
 SISTEMA_LETTURA = """Sei un assistente che legge bandi e avvisi pubblici italiani.
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
 
@@ -293,7 +319,16 @@ Campi richiesti:
                   non chieda espressamente di risiedere in un certo posto.
   "riassunto"   : massimo 100 parole, in italiano semplice, su cosa finanzia il bando;
                   per un'audizione: quale compagnia, che genere di danza o spettacolo,
-                  per quale produzione o contratto, dove e quando, e i requisiti."""
+                  per quale produzione o contratto, dove e quando, e i requisiti.
+""" + CAMPI_ARTISTA
+
+# Gli stessi quattro campi servono anche da soli, per completare le audizioni gia'
+# lette prima che esistessero (vedi `completa_audizioni`).
+SISTEMA_ARTISTA = """Leggi un annuncio per artisti (audizione, casting, offerta di lavoro).
+Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo. Non inventare: se un
+dato non c'e' nel testo, metti null.
+
+""" + CAMPI_ARTISTA
 
 SISTEMA_GIUDIZIO = """Valuti se un soggetto puo' partecipare a un bando.
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
@@ -426,7 +461,65 @@ def salva_lettura(db, ident, r):
          (r.get("riassunto") or "").strip() or None,
          json.dumps(r.get("territorio") or [], ensure_ascii=False) if r.get("territorio") else None,
          datetime.now(timezone.utc).isoformat(timespec="seconds"), ident))
+    salva_artista(db, ident, r)
     db.commit()
+
+
+def salva_artista(db, ident, r):
+    """Compagnia, citta', ingaggio e tipo di lavoro. I valori fuori elenco si buttano:
+    un'etichetta «pagato» sbagliata e' peggio di nessuna etichetta."""
+    # Qualche volta il modello risponde con una lista di un solo oggetto invece che con
+    # l'oggetto: il 28 set ha fermato il recupero a meta'.
+    if isinstance(r, list):
+        r = next((x for x in r if isinstance(x, dict)), {})
+    if not isinstance(r, dict):
+        r = {}
+    testo = lambda k: (str(r.get(k) or "").strip()[:120] or None)
+    ingaggio = (r.get("ingaggio") or "").strip().lower()
+    lavoro = (r.get("lavoro") or "").strip().lower()
+    db.execute("UPDATE bandi SET compagnia=?, citta=?, ingaggio=?, lavoro=? WHERE id=?",
+               (testo("compagnia"), testo("citta"),
+                ingaggio if ingaggio in VALORI_INGAGGIO else None,
+                lavoro if lavoro in VALORI_LAVORO else None, ident))
+
+
+def completa_audizioni(db, limite=25, modello=None):
+    """Chiede i quattro campi dell'artista per le audizioni APERTE lette prima che
+    esistessero. Costa poco (titolo, riassunto e un ritaglio corto) e si ferma da sola
+    quando non ne restano: e' un lavoro di recupero, non un passaggio fisso."""
+    imp = impostazioni()
+    migra(db)
+    modello = modello or imp["modello_piccolo"]
+    db.row_factory = sqlite3.Row
+    elenco = [dict(r) for r in db.execute(
+        "SELECT id, titolo, ente, riassunto, testo FROM bandi "
+        "WHERE aperto = 1 AND archiviato = 0 AND analizzato_il IS NOT NULL "
+        "AND compagnia IS NULL AND ingaggio IS NULL "
+        "AND (tipo_aiuto = 'audizione' OR fonte LIKE 'Audizioni -%' OR fonte LIKE 'Auditions -%') "
+        "ORDER BY trovato_il DESC LIMIT ?", (limite,))]
+    fatti = 0
+    speso = consumo_oggi(db, modello)
+    for b in elenco:
+        domanda = "TITOLO: %s\nENTE: %s\nRIASSUNTO: %s\n\nTESTO:\n%s" % (
+            b["titolo"], b["ente"] or "sconosciuto", b["riassunto"] or "",
+            (b["testo"] or "")[:2500])
+        costo = stima_gettoni(SISTEMA_ARTISTA + domanda) + 200
+        if speso + costo > imp["gettoni_al_giorno"]:
+            break
+        try:
+            r, usati = chiedi(imp["chiave"], modello, SISTEMA_ARTISTA, domanda, 1500)
+        except Exception as e:
+            print("  completamento saltato (%s)" % type(e).__name__)
+            break
+        speso += usati or costo
+        segna_consumo(db, modello, usati or costo)
+        salva_artista(db, b["id"], r)
+        db.commit()
+        fatti += 1
+        time.sleep(60.0 * (usati or costo) / imp["gettoni_al_minuto"])
+    if elenco:
+        print("Audizioni completate con compagnia, citta' e ingaggio: %d" % fatti)
+    return fatti
 
 
 # ---------------------------------------------------------------- secondo passaggio

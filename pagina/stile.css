@@ -386,3 +386,15 @@ tr.spenta { opacity: .45; }
   .scheda-profilo dl, .dettaglio dl { grid-template-columns: 1fr; gap: 2px 0; }
   .scheda-profilo dd, .dettaglio dd { margin-bottom: 10px; }
 }
+
+/* Audizioni e lavori da artista: compagnia, citta' e soprattutto il compenso. */
+.artista { margin: 6px 0 10px; font-size: 15px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.ingaggio, .lavoro {
+  display: inline-block; font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .07em; border-radius: 5px; padding: 4px 9px; border: 1px solid currentColor;
+}
+.ingaggio-pagato { color: var(--positivo); }
+.ingaggio-non-pagato { color: var(--tenue); }
+.ingaggio-stage { color: var(--accento); }
+.ingaggio-a-pagamento { color: var(--allarme); }
+.lavoro { color: var(--tenue); border-style: dashed; }

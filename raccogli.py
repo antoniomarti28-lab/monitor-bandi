@@ -380,6 +380,9 @@ def giro():
     import intelligenza
     print()
     intelligenza.leggi_bandi(db)
+    # Le audizioni lette prima del 28 set 2026 non hanno compagnia, citta' e ingaggio:
+    # si recuperano poche alla volta, finche' non ne restano.
+    intelligenza.completa_audizioni(db)
 
     # Con quelle informazioni il punteggio diventa molto piu' preciso.
     import profili

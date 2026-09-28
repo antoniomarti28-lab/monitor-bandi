@@ -13,6 +13,7 @@ Si usa cosi':
   python siti.py --approfondisci  scarica il testo completo dei bandi che ne sono privi
 """
 import hashlib
+import re
 import sqlite3
 import sys
 import time
@@ -67,8 +68,19 @@ def _ident(link):
 
 # ---------------------------------------------------------------- siti a mano
 
-def controlla_sito(db, sito):
-    """Apre la pagina degli elenchi e segue i collegamenti che sembrano bandi."""
+def controlla_sito(db, sito, opzioni=None):
+    """Apre la pagina degli elenchi e segue i collegamenti che sembrano bandi.
+
+    `opzioni` e' la voce della fonte in configurazione.json. Per i siti delle compagnie:
+      "cerca": "audizioni"     si seguono solo i collegamenti su audizioni e lavoro, e
+                               una home senza audizioni oggi e' normale, non un errore;
+      "pagina_audizioni": true l'indirizzo E' la pagina audizioni: molte compagnie la
+                               riscrivono invece di pubblicarne una nuova, quindi si
+                               sorveglia il suo contenuto e ogni versione nuova diventa
+                               un annuncio da leggere.
+    """
+    opzioni = opzioni or {}
+    solo_audizioni = opzioni.get("cerca") == "audizioni"
     url = sito["url"]
     if not robots_permette(url):
         return "vietato da robots.txt", 0
@@ -77,15 +89,28 @@ def controlla_sito(db, sito):
     if pagina["nota"] and not pagina["testo"]:
         return pagina["nota"], 0
 
-    candidati = estrattore.link_interessanti(pagina["link"], url)
-    if not candidati:
-        return "nessun collegamento a bandi trovato in questa pagina", 0
-
     oggi = datetime.now(timezone.utc).isoformat(timespec="seconds")
     nuovi = 0
+    if opzioni.get("pagina_audizioni"):
+        nuovi += versione_nuova(db, sito, pagina, oggi)
+
+    candidati = estrattore.link_interessanti(
+        pagina["link"], url, parole=estrattore.PAROLE_AUDIZIONE if solo_audizioni else None)
+    if not candidati:
+        if solo_audizioni:
+            db.commit()
+            return "ok", nuovi
+        return "nessun collegamento a bandi trovato in questa pagina", 0
+
     for link, testo_link in candidati:
         if nuovi >= MAX_NUOVI_PER_SITO:
             break
+        # Gli archivi delle compagnie elencano anni di audizioni: il 28 set 2026, su 15
+        # collegamenti di Aterballetto, 13 erano del 2020-2025. Se il collegamento cita
+        # solo anni passati si salta, senza spendere una lettura del modello.
+        anni = [int(a) for a in re.findall(r"20\d\d", link + " " + testo_link)]
+        if solo_audizioni and anni and max(anni) < datetime.now().year:
+            continue
         ident = _ident(link)
         if db.execute("SELECT 1 FROM bandi WHERE id=?", (ident,)).fetchone():
             continue
@@ -115,6 +140,28 @@ def controlla_sito(db, sito):
     return "ok", nuovi
 
 
+def versione_nuova(db, sito, pagina, oggi):
+    """La pagina «Audizioni» di una compagnia e' cambiata? Allora e' un annuncio nuovo.
+
+    L'impronta si fa sul testo senza cifre e senza spazi doppi: cosi' un orologio o un
+    contatore nella pagina non fanno scattare un annuncio finto ogni giorno."""
+    testo = pagina["testo"] or ""
+    pulito = " ".join(re.sub(r"\d+", "", testo.lower()).split())
+    if len(pulito) < 200:
+        return 0
+    impronta = hashlib.sha1(pulito.encode("utf-8")).hexdigest()[:16]
+    ident = _ident(sito["url"] + "#" + impronta)
+    if db.execute("SELECT 1 FROM bandi WHERE id=?", (ident,)).fetchone():
+        return 0
+    titolo = (pagina["titolo"] or ("Audizioni - " + sito["nome"])).strip()[:300]
+    db.execute(
+        "INSERT OR IGNORE INTO bandi (id,titolo,link,ente,fonte,sommario,testo,immagine,trovato_il) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (ident, titolo, sito["url"], sito["ente"] or sito["nome"], sito["nome"],
+         testo[:900], testo, pagina.get("immagine") or None, oggi))
+    return 1
+
+
 def giro_siti(db):
     migra(db)
     db.row_factory = sqlite3.Row
@@ -123,11 +170,15 @@ def giro_siti(db):
         print("Nessun sito aggiunto a mano. Si aggiungono dalla pagina, in fondo.")
         return 0
 
+    # Le opzioni di ogni fonte (solo audizioni, pagina da sorvegliare) stanno nel file.
+    import configurazione
+    opzioni = {f["url"]: f for f in configurazione.leggi_file()["siti"]}
+
     totale = 0
     primo_giro = []   # le fonti mai lette prima: su quelle si risponde su Telegram
     for s in elenco:
         mai_letta = not s.get("ultimo_giro")
-        esito, nuovi = controlla_sito(db, s)
+        esito, nuovi = controlla_sito(db, s, opzioni.get(s["url"]))
         totale += nuovi
         if mai_letta:
             primo_giro.append((s["nome"], s["url"], esito, nuovi))
@@ -161,6 +212,15 @@ def racconta_fonti_nuove(db, elenco):
     from html import escape
     a_capo = chr(10)
     righe = ["<b>Fonti nuove: com'e' andata</b>"]
+    # Con molte fonti nuove insieme (109 compagnie di danza il 28 set 2026) un elenco
+    # riga per riga supera il limite di Telegram: si riassume, e si elencano solo
+    # quelle che non hanno funzionato.
+    if len(elenco) > 12:
+        andate = sum(1 for _, _, e, _ in elenco if e == "ok")
+        trovati = sum(n for _, _, e, n in elenco if e == "ok")
+        righe.append("%d fonti lette per la prima volta: %d funzionano, %d annunci trovati."
+                     % (len(elenco), andate, trovati))
+        elenco = [x for x in elenco if x[2] != "ok"][:15]
     for nome, url, esito, nuovi in elenco:
         if esito == "ok" and nuovi:
             coda = "%d bandi trovati: pagina giusta." % nuovi

@@ -226,6 +226,9 @@ let inModifica = null;
 // guarda «tutti i bandi» non lo si registra, cosi' alla riapertura torna sul suo.
 const CHIAVE_PROFILO = "monitor_bandi_profilo";
 let profiloAttivo = "";
+// Una fonte aggiunta (o una proposta accettata) mentre guardi un profilo e' di quel
+// profilo; da «Tutti i bandi» resta di tutti.
+const dueProfili = () => (profiloAttivo ? { profili: [Number(profiloAttivo)] } : {});
 try { profiloAttivo = localStorage.getItem(CHIAVE_PROFILO) || ""; } catch (e) { /* niente */ }
 
 // La copia pubblicata non ha un server dietro. Può però riscrivere il file delle
@@ -329,7 +332,7 @@ async function azione(nome, dati) {
     if (gia) throw new Error("questa fonte c'è già, si chiama «" + gia.nome + "»");
     const dove = dati.tipo === "feed" ? C.feed : C.siti;
     dove.push({ nome: dati.nome || normalizza(url).split("/")[0],
-                url, ente: "", attivo: true });
+                url, ente: "", attivo: true, ...dueProfili() });
     messaggio = "Fonte aggiunta";
 
   } else if (nome === "fonte/attiva") {
@@ -353,6 +356,10 @@ async function azione(nome, dati) {
       .find((x) => x !== vecchia && normalizza(x.url) === normalizza(url));
     if (altra) throw new Error("questo indirizzo ce l'ha già «" + altra.nome + "»");
     const nuova = { ...vecchia, url, nome: (dati.nome || "").trim() || vecchia.nome };
+    // A quali profili serve: nessuna casella spuntata = a tutti.
+    if (Array.isArray(dati.profili)) {
+      if (dati.profili.length) nuova.profili = dati.profili; else delete nuova.profili;
+    }
     C[daDove].splice(i, 1);
     (dati.tipo === "feed" ? C.feed : C.siti).push(nuova);
     messaggio = "Fonte corretta";
@@ -369,7 +376,8 @@ async function azione(nome, dati) {
   } else if (nome === "proposta/accetta") {
     const p = (C.proposte || []).find((x) => x.url === dati.url);
     if (p) {
-      (p.tipo === "feed" ? C.feed : C.siti).push({ nome: p.nome, url: p.url, ente: p.ente || "", attivo: true });
+      (p.tipo === "feed" ? C.feed : C.siti).push({ nome: p.nome, url: p.url, ente: p.ente || "",
+                                                  attivo: true, ...dueProfili() });
       C.proposte = C.proposte.filter((x) => x.url !== dati.url);
     }
     messaggio = "Fonte accettata";
@@ -503,6 +511,7 @@ function disegnaBarraProfili() {
       // non compare mai: restava attaccato al profilo attivo al caricamento.
       disegnaBarraProfili();
       aggiorna();
+      if (CONFIG) caricaFonti();   // le fonti cambiano col profilo
     };
   });
   const nuovo = $("barra-profili").querySelector("[data-nuovo]");
@@ -695,6 +704,17 @@ function disegnaBandi(bandi) {
     const tipo = b.tipo_aiuto
       ? `<span class="tipo-aiuto">${b.tipo_aiuto}</span><br>` : "";
 
+    // Audizioni e lavori da artista: chi cerca, dove, e se si viene pagati. Sono le tre
+    // cose che una danzatrice guarda per prime (richiesta del 28 set 2026).
+    const ingaggio = b.ingaggio
+      ? `<span class="ingaggio ingaggio-${b.ingaggio.replace(/ /g, "-")}">${
+          { "pagato": "pagato", "non pagato": "non pagato", "stage": "stage",
+            "a pagamento": "a pagamento: paghi tu" }[b.ingaggio] || attr(b.ingaggio)}</span>` : "";
+    const artista = (b.compagnia || b.citta || b.ingaggio || b.lavoro)
+      ? `<p class="artista">${ingaggio}${b.lavoro ? `<span class="lavoro">${attr(b.lavoro)}</span>` : ""}${
+          b.compagnia ? `<b>${attr(b.compagnia)}</b>` : ""}${
+          b.compagnia && b.citta ? " · " : ""}${b.citta ? attr(b.citta) : ""}</p>` : "";
+
     const anteprima = b.immagine
       ? `<img class="anteprima" src="${b.immagine}" alt="" loading="lazy"
              referrerpolicy="no-referrer" onerror="this.remove()">` : "";
@@ -703,6 +723,7 @@ function disegnaBandi(bandi) {
       ${anteprima}
       ${tipo}
       <h2>${eNuovo(b) ? '<span class="nuovo">nuovo</span>' : ""}${punteggio}<a href="${b.link}" target="_blank" rel="noopener noreferrer">${b.titolo}</a></h2>
+      ${artista}
       ${verdetto}
       ${motivi}
       ${sommario ? `<p>${sommario}</p>` : ""}
@@ -804,10 +825,15 @@ async function caricaFonti() {
   const perNome = Object.fromEntries(stato.map((f) => [f.nome, f]));
   const perUrl = Object.fromEntries(siti.map((x) => [x.url, x]));
 
+  // Ogni profilo ha le sue fonti (28 set 2026): sotto «Mati» non devono comparire le
+  // fonti dei bandi per le associazioni, e viceversa. Una fonte senza «profili» serve
+  // a tutti; su «Tutti i bandi» si vedono tutte.
+  const mia = (f) => !profiloAttivo || !(f.profili || []).length
+    || f.profili.map(String).includes(String(profiloAttivo));
   const elenco = [
     ...(CONFIG.feed || []).map((f) => ({ ...f, tipo: "feed", stato: perNome[f.nome] })),
     ...(CONFIG.siti || []).map((f) => ({ ...f, tipo: "sito", stato: perUrl[f.url] })),
-  ];
+  ].filter(mia);
 
   $("fonte").innerHTML = '<option value="">Tutte le fonti</option>' +
     stato.filter((f) => f.esito === "ok").map((f) => `<option>${f.nome}</option>`).join("");
@@ -874,6 +900,10 @@ async function caricaFonti() {
             <option value="sito"${f.tipo === "sito" ? " selected" : ""}>pagina di elenco</option>
             <option value="feed"${f.tipo === "feed" ? " selected" : ""}>feed</option>
           </select>
+          <span class="c-profili">Serve a: ${PROFILI.map((p) => `<label class="spunta">
+            <input type="checkbox" class="c-profilo" value="${p.id}"${
+              (f.profili || []).map(String).includes(String(p.id)) ? " checked" : ""}> ${attr(p.nome)}</label>`).join(" ")}
+            <span class="spiega">(nessuna spunta = a tutti)</span></span>
           <button class="c-salva">Salva</button>
           <button class="archivia c-annulla">Annulla</button>
         </div></td>`;
@@ -884,7 +914,8 @@ async function caricaFonti() {
           url_vecchio: f.url, tipo_vecchio: f.tipo,
           url: modulo.querySelector(".c-url").value,
           nome: modulo.querySelector(".c-nome").value,
-          tipo: modulo.querySelector(".c-tipo").value })) return;
+          tipo: modulo.querySelector(".c-tipo").value,
+          profili: [...modulo.querySelectorAll(".c-profilo:checked")].map((x) => Number(x.value)) })) return;
         await caricaFonti();
         avvisa(STATICA
           ? "Fonte corretta: la provo al prossimo giro. " + DOPO_SALVATAGGIO
