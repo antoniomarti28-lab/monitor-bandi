@@ -547,3 +547,14 @@ Il sistema era fatto per i bandi e un'audizione non l'avrebbe riconosciuta. Camb
   vuote al programma).
 - Il filtro vero su «solo contemporanea, solo compagnie» lo fa il giudizio, guidato dal
   racconto: niente parole escluse, per non perdere annunci scritti in modo imprevisto.
+- **Primo giro (28 set)**: 130 annunci dalle 9 fonti, 55 letti (poi il limite
+  giornaliero), 27 audizioni aperte; per Mati 8 «si», 3 «forse», il resto scartato a
+  ragione (musical, K-pop, intensivi a pagamento, balletto classico, bandi SIAE).
+- **Parole troppo generiche in un profilo senza regioni fanno danni**: «compagnia»
+  agganciava «Compagnia di San Paolo» e portava a Mati i bandi MedTech. Tolte. E per un
+  «Artista» un annuncio che non tocca ne' settori ne' parole vale 0 (`valuta`).
+- **Il modello scambia il luogo dell'audizione per un obbligo di residenza** («richiede
+  la residenza a Milano» senza che il testo lo dica). Aggiunta la regola al prompt;
+  due verdetti corretti a mano in «forse». Da ricontrollare nei prossimi giri.
+- Cambiare le parole di un profilo AZZERA i suoi giudizi (voluto): va messo in conto
+  un giro di giudizi sul modello grande.
