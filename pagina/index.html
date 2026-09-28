@@ -16,35 +16,22 @@
 <body>
 <div class="involucro">
 
-  <header>
-    <button class="tema" id="b-tema" title="Chiaro, scuro o come il telefono"></button>
-    <h1>Monitor Bandi</h1>
+  <header class="testata">
+    <div class="testata-riga">
+      <h1>Monitor Bandi</h1>
+      <div class="testata-tasti">
+        <button class="icona tondo" id="b-ricarica" title="Rileggi i dati più recenti" aria-label="Rileggi i dati più recenti"></button>
+        <button class="icona tondo" id="b-tema" title="Chiaro, scuro o come il telefono"></button>
+      </div>
+    </div>
     <p class="sottotitolo" id="sottotitolo">Caricamento…</p>
   </header>
 
-  <div class="collegamento" id="collegamento" hidden>
-    <p id="collegamento-testo"></p>
-    <div class="collegamento-form" id="collegamento-form" hidden>
-      <p class="aiuto-blocco">
-        Incolla qui il codice di accesso che hai creato su GitHub. Resta salvato solo in
-        questo browser: non finisce nella pagina né in nessun altro posto.
-      </p>
-      <div class="aggiungi-sito">
-        <input type="password" id="codice-github" placeholder="Codice che comincia per github_pat_ o ghp_">
-        <button id="b-collega">Collega</button>
-      </div>
-    </div>
-    <div class="collegamento-azioni">
-      <button class="chip fantasma" id="b-apri-collega">Collega per modificare</button>
-      <button class="chip fantasma" id="b-scollega" hidden>Scollega</button>
-    </div>
-  </div>
+  <p class="avviso-salvato" id="avviso-salvato" role="status" hidden></p>
 
-  <p class="avviso-salvato" id="avviso-salvato" hidden></p>
+  <button class="torna-su" id="torna-su" hidden aria-label="Torna in cima"></button>
 
-  <button class="torna-su" id="torna-su" hidden aria-label="Torna in cima">↑</button>
-
-  <nav class="profili" id="barra-profili"></nav>
+  <nav class="profili" id="barra-profili" aria-label="Profili"></nav>
 
   <section class="scheda-profilo" id="scheda-profilo" hidden></section>
 
@@ -111,34 +98,34 @@
     </div>
   </section>
 
-  <div class="riepilogo">
-    <div class="dato"><span class="numero" id="n-aperti">–</span><span class="etichetta">Aperti</span></div>
-    <div class="dato"><span class="numero" id="n-imminenti">–</span><span class="etichetta">Entro 30 giorni</span></div>
-    <div class="dato"><span class="numero" id="n-letti">–</span><span class="etichetta">Letti dal modello</span></div>
-    <div class="dato"><span class="numero" id="n-archiviati">–</span><span class="etichetta">Archiviati</span></div>
+  <!-- Una frase sola al posto dei quattro riquadri: ogni numero e' contato sull'elenco
+       qui sotto, e ogni pezzo porta alla sua sezione (revisione del 28 set 2026). -->
+  <p class="conto" id="conto" aria-live="polite"></p>
+
+  <div class="strumenti">
+    <input type="search" id="cerca" placeholder="Cerca per parola…" aria-label="Cerca per parola">
+    <button class="tasto-filtri" id="b-filtri" aria-expanded="false" aria-controls="pannello-filtri">
+      Filtri<span class="conta-filtri" id="conta-filtri"></span></button>
   </div>
 
-  <div class="filtri">
-    <input type="search" id="cerca" placeholder="Cerca nel titolo, nel testo o nell'ente…">
-    <select id="fonte"><option value="">Tutte le fonti</option></select>
-    <select id="zona" title="Dove vale il bando"><option value="">Dovunque</option></select>
-    <select id="verdetto" title="Il giudizio del modello per questo profilo" hidden>
-      <option value="">Tutti, tranne gli scartati</option>
-      <option value="tutti">…compresi quelli scartati</option>
-      <option value="si">Sì, puoi parteciparci</option>
-      <option value="forse">Forse puoi</option>
-      <option value="no">Non sembra per te</option>
-      <option value="-">Non ancora valutati</option>
-    </select>
-    <label class="spunta"><input type="checkbox" id="nuovi"> Solo i nuovi<span class="conta-nuovi" id="conta-nuovi"></span></label>
-    <label class="spunta"><input type="checkbox" id="chiusi"> Mostra anche i chiusi</label>
-    <label class="spunta"><input type="checkbox" id="archiviati"> Mostra archiviati</label>
-    <button class="chip fantasma" id="b-cerca-adesso" hidden>Cerca adesso</button>
-    <button class="icona ricarica" id="b-ricarica" title="Aggiorna l'elenco" aria-label="Aggiorna l'elenco"></button>
+  <div class="pannello-filtri" id="pannello-filtri" hidden>
+    <label class="campo-filtro">Da quale fonte
+      <select id="fonte"><option value="">Tutte</option></select></label>
+    <label class="campo-filtro">Dove vale
+      <select id="zona"><option value="">Ovunque</option></select></label>
+    <label class="spunta"><input type="checkbox" id="nuovi"><span>Solo i nuovi <span class="fioco" id="conta-nuovi"></span></span></label>
+    <label class="spunta"><input type="checkbox" id="chiusi"><span>Mostra anche i chiusi <span class="fioco" id="conta-chiusi"></span></span></label>
+    <label class="spunta solo-gestione"><input type="checkbox" id="archiviati"><span>Mostra solo gli archiviati</span></label>
+    <div class="pannello-tasti">
+      <button class="tasto" id="b-azzera">Togli tutti i filtri</button>
+      <button class="tasto solo-gestione" id="b-cerca-adesso" hidden>Cerca adesso</button>
+    </div>
   </div>
 
+  <div id="segnalato"></div>
   <div id="elenco"></div>
 
+  <div class="gestione" id="gestione" hidden>
   <details class="fonti">
     <summary>Notifiche che ti ho mandato</summary>
     <table>
@@ -164,7 +151,7 @@
   </details>
 
   <details class="fonti">
-    <summary>Fonti che controllo</summary>
+    <summary>Fonti che controllo <span class="fioco" id="conta-fonti"></span></summary>
     <p class="aiuto-blocco">
       <b>Pagina di elenco</b> è l'indirizzo della pagina «Bandi» di un ente: la stessa che
       guarderesti tu. Io la apro, seguo i collegamenti che trovo dentro, entro in ogni bando
@@ -174,7 +161,7 @@
       solo ed è sempre in ordine di data, ma non tutti i siti ce l'hanno e spesso mescola i
       bandi con le notizie.<br>
       <b>Nel dubbio scegli «pagina di elenco».</b> Se sbagli non si rompe niente: la fonte
-      darà errore e potrai cambiarla col tasto «Correggi» qui sotto.
+      darà errore e potrai correggerla con la matita qui sotto.
     </p>
     <div class="aggiungi-sito" id="form-aggiungi-fonte">
       <input type="url" id="s-url" placeholder="https://…/bandi">
@@ -213,6 +200,27 @@
     </div>
     <div class="azioni"><button class="primario" id="b-salva-impostazioni">Salva</button></div>
   </details>
+  </div>
+
+  <!-- Chi gestisce la pagina entra da qui; chi guarda soltanto non deve leggere per
+       prima cosa che «non puo' fare niente»: l'avviso stava in cima, ora sta in fondo. -->
+  <footer class="piede" id="collegamento" hidden>
+    <p id="collegamento-testo"></p>
+    <div class="collegamento-form" id="collegamento-form" hidden>
+      <p class="aiuto-blocco">
+        Incolla qui il codice di accesso che hai creato su GitHub. Resta salvato solo in
+        questo browser: non finisce nella pagina né in nessun altro posto.
+      </p>
+      <div class="aggiungi-sito">
+        <input type="password" id="codice-github" placeholder="Codice che comincia per github_pat_ o ghp_" aria-label="Codice di accesso a GitHub">
+        <button id="b-collega">Collega</button>
+      </div>
+    </div>
+    <div class="collegamento-azioni">
+      <button class="tasto piccolo" id="b-apri-collega">Entra per modificare</button>
+      <button class="tasto piccolo" id="b-scollega" hidden>Esci</button>
+    </div>
+  </footer>
 
 </div>
 
@@ -457,10 +465,54 @@ const DISEGNO = (percorso) => `<svg viewBox="0 0 16 16" width="15" height="15" f
 const ICONA_MATITA = DISEGNO('<path d="M11.3 2.2l2.5 2.5L6 12.5l-3.2.7.7-3.2z"/>');
 const ICONA_CROCE = DISEGNO('<path d="M4 4l8 8M12 4l-8 8"/>');
 
-// Un bando resta «nuovo» per due giorni da quando l'ho trovato.
+const oggiISO = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * Un annuncio che nel titolo cita solo anni passati («audizioni 2024/2025») e che il
+ * modello non ha ancora letto e' quasi certamente vecchio: il 28 set 2026 a Mati
+ * comparivano come «nuove» e «aperte» audizioni del 2024 appena trovate da noi.
+ */
+function sembraVecchio(b) {
+  const anni = ((b.titolo || "").match(/\b20\d\d\b/g) || []).map(Number);
+  return anni.length > 0 && Math.max(...anni) < new Date().getFullYear();
+}
+
+/** Si puo' ancora partecipare? Il calendario e il buon senso battono il «non so». */
+const eAperto = (b) => b.aperto !== 0 && (!b.scadenza || b.scadenza >= oggiISO())
+  && !(b.aperto == null && sembraVecchio(b));
+
+// «Nuovo» = trovato da me negli ultimi due giorni E non vecchio in se': un annuncio
+// scoperto oggi ma pubblicato mesi fa non e' una novita' per chi legge.
 const ORE_NUOVO = 48 * 3600 * 1000;
 const eNuovo = (b) => Boolean(b.trovato_il)
-  && (Date.now() - new Date(b.trovato_il).getTime()) < ORE_NUOVO;
+  && (Date.now() - new Date(b.trovato_il).getTime()) < ORE_NUOVO
+  && !sembraVecchio(b)
+  && (!b.pubblicato || (Date.now() - new Date(b.pubblicato).getTime()) < 60 * 86400000);
+
+/** In quale sezione va un annuncio, dentro un profilo. */
+const gruppoDi = (b) => ({ si: "si", forse: "forse", no: "no" })[b.llm_verdetto] || "leggere";
+
+/**
+ * Pulisce il testo preso dai siti: menu, avvisi sui cookie e indirizzi email
+ * nascosti dai siti finivano dritti nel «Dal testo» («Skip to content»,
+ * «[email protected]»).
+ */
+function pulisciTesto(t) {
+  return (t || "").split("\n")
+    .filter((r) => !/^\s*(skip to (main )?content|vai al contenuto|salta al contenuto|menu|cerca|search|home)\s*$/i.test(r))
+    .filter((r) => !/cookie/i.test(r))
+    .map((r) => r.replace(/\[email(&#160;|\s)protected\]/gi, "(indirizzo email sul sito)"))
+    .join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** Le parole della pagina cambiano col profilo: a una ballerina non si parla di «bandi». */
+function lessico() {
+  const p = PROFILI.find((x) => String(x.id) === profiloAttivo);
+  const artista = p && /^artista|privato/i.test(p.tipo_ente || "");
+  return artista
+    ? { uno: "annuncio", molti: "annunci", apri: "Apri l'annuncio", si: "Puoi candidarti" }
+    : { uno: "bando", molti: "bandi", apri: "Apri il bando", si: "Puoi parteciparci" };
+}
 
 /** Testo al sicuro dentro un attributo HTML (serve ai campi «Correggi»). */
 const attr = (s) => String(s == null ? "" : s)
@@ -485,19 +537,29 @@ function stessoEnte(a, b) {
 
 // ------------------------------------------------------------------ profili
 
+/**
+ * Quanti annunci ci sono per un profilo: gli stessi che la sua pagina mostra senza
+ * filtri (aperti e non scartati). Prima era il totale di tutto cio' che aveva mai
+ * preso un punteggio, chiusi e scartati compresi: il bottone diceva 104, l'elenco 92.
+ */
+const contaPerProfilo = (pid) =>
+  (LISTE[pid] || []).filter((b) => eAperto(b) && b.llm_verdetto !== "no").length;
+
 function disegnaBarraProfili() {
   const chip = (testo, attivo, extra = "") =>
-    `<button class="chip${attivo ? " attivo" : ""}" ${extra}>${testo}</button>`;
+    `<button class="chip${attivo ? " attivo" : ""}" ${extra}${attivo ? ' aria-current="true"' : ""}>${testo}</button>`;
   const attivo = PROFILI.find((p) => String(p.id) === profiloAttivo);
+  const gestione = scrivibile();
 
+  // Chi guarda senza poter modificare vede solo i profili: «Tutti i bandi» (che
+  // mescola notizie e annunci di tutti) e le impostazioni sono cose da gestione.
   $("barra-profili").innerHTML =
-    chip("Tutti i bandi", profiloAttivo === "", 'data-scegli=""') +
+    (gestione ? chip("Tutti i bandi", profiloAttivo === "", 'data-scegli=""') : "") +
     PROFILI.map((p) => chip(
-      `${p.nome} <span class="conta">${p.quanti}</span>`,
+      `${attr(p.nome)} <span class="conta">${contaPerProfilo(String(p.id))}</span>`,
       String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
-    (attivo ? `<button class="chip fantasma" data-modifica="${attivo.id}">${
-      scrivibile() ? "Modifica" : "Vedi le impostazioni"}</button>` : "") +
-    (scrivibile() ? `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>` : "");
+    (attivo && gestione ? `<button class="chip fantasma" data-modifica="${attivo.id}">Modifica</button>` : "") +
+    (gestione ? `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>` : "");
 
   $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
     b.onclick = () => {
@@ -505,13 +567,16 @@ function disegnaBarraProfili() {
       if (profiloAttivo) {
         try { localStorage.setItem(CHIAVE_PROFILO, profiloAttivo); } catch (e) { /* niente */ }
       }
+      segnalato = null;
+      mostraScartati = false;
+      limiti = {};
       $("editor").hidden = true;
       $("scheda-profilo").hidden = true;
       // Va ridisegnata anche la barra, o il tasto per vedere/modificare il profilo
       // non compare mai: restava attaccato al profilo attivo al caricamento.
       disegnaBarraProfili();
       aggiorna();
-      if (CONFIG) caricaFonti();   // le fonti cambiano col profilo
+      if (CONFIG && scrivibile()) caricaFonti();   // le fonti cambiano col profilo
     };
   });
   const nuovo = $("barra-profili").querySelector("[data-nuovo]");
@@ -613,192 +678,289 @@ $("b-elimina").onclick = async () => {
 async function caricaProfili() {
   PROFILI = await chiedi("/api/profili");
   // Se il profilo ricordato non c'e' piu' (o non ce n'era nessuno) si parte dal primo.
-  if (PROFILI.length && !PROFILI.some((p) => String(p.id) === profiloAttivo)) {
-    profiloAttivo = String(PROFILI[0].id);
-  }
+  // «Tutti i bandi» ("") vale solo per chi gestisce.
+  const valido = PROFILI.some((p) => String(p.id) === profiloAttivo)
+    || (profiloAttivo === "" && scrivibile());
+  if (PROFILI.length && !valido) profiloAttivo = String(PROFILI[0].id);
+  await caricaListe();
   disegnaBarraProfili();
+}
+
+// ------------------------------------------------------------------ gli elenchi
+//
+// Per ogni profilo si chiede UNA volta l'elenco completo (chiusi e scartati
+// compresi); tutto il resto — filtri, sezioni e OGNI numero in pagina — si calcola
+// da li'. E' la cura dei numeri che non tornavano (revisione del 28 set 2026): prima
+// ogni conteggio arrivava da una richiesta diversa e ognuno diceva una cosa sua.
+let LISTE = {};
+let segnalato = null;          // l'annuncio aperto dal link di una notifica
+let mostraScartati = false;
+let limiti = {};               // quante schede si vedono per sezione prima di «Mostra altri»
+const PASSO = 12;
+
+async function caricaListe() {
+  const arch = $("archiviati").checked ? "1" : "0";
+  const chi = PROFILI.map((p) => String(p.id));
+  if (scrivibile()) chi.push("");
+  LISTE = {};
+  await Promise.all(chi.map(async (pid) => {
+    LISTE[pid] = await chiedi("/api/bandi?" + new URLSearchParams({
+      profilo: pid, verdetto: "tutti", chiusi: "1", archiviati: arch }));
+  }));
 }
 
 // ------------------------------------------------------------------ elenco
 
-function disegnaBandi(bandi) {
-  const box = $("elenco");
-  if (!bandi.length) {
-    box.innerHTML = profiloAttivo
-      ? '<p class="vuoto">Nessun bando compatibile con questo profilo.<br>Prova ad allargare i settori o le zone.</p>'
-      : '<p class="vuoto">Nessun bando con questi filtri.</p>';
-    return;
-  }
-  box.innerHTML = bandi.map((b) => {
-    const g = giorniMancanti(b.scadenza);
-    const dati = [];
-    if (b.ente) dati.push(`<span class="etichetta-dato">${b.ente}</span>`);
-    if (b.zone && b.zone.length)
-      dati.push(`<span class="etichetta-dato zona">${b.zone.slice(0, 3).join(" · ")}${
-        b.zone.length > 3 ? " +" + (b.zone.length - 3) : ""}</span>`);
-    if (b.scadenza) {
-      const urgente = g !== null && g <= 30 ? " scade" : "";
-      const coda = g !== null && g >= 0 ? ` · tra ${g} gg` : " · scaduto";
-      dati.push(`<span class="etichetta-dato${urgente}">Scade ${dataItaliana(b.scadenza)}${coda}</span>`);
-    }
-    if (b.contributo) dati.push(`<span class="etichetta-dato soldi">Puoi ottenere: ${b.contributo}</span>`);
-    if (b.importo) dati.push(`<span class="etichetta-dato">Fondi totali ${soldi(b.importo_num, b.importo)}</span>`);
-    if (b.aperto === 0) dati.push(`<span class="etichetta-dato scade">chiuso</span>`);
-    if (b.pubblicato) dati.push(`<span class="etichetta-dato">Pubblicato ${dataItaliana(b.pubblicato)}</span>`);
-    // L'ente che pubblica e la fonte da cui l'ho preso sono quasi sempre la stessa cosa
-    // scritta in due modi: ripeterla riempiva ogni scheda della stessa etichetta due volte.
-    if (!b.ente || !stessoEnte(b.ente, b.fonte))
-      dati.push(`<span class="etichetta-dato">${b.fonte}</span>`);
+/** La scadenza come la si dice a voce, con l'urgenza gia' decisa. */
+function scadenzaDi(b) {
+  if (!b.scadenza) return { testo: "Scadenza non indicata", classe: "" };
+  const g = giorniMancanti(b.scadenza);
+  const data = dataItaliana(b.scadenza);
+  if (g < 0) return { testo: `Scaduto il ${data}`, classe: "passata" };
+  if (g === 0) return { testo: "Scade oggi", classe: "urgente" };
+  if (g === 1) return { testo: `Scade domani · ${data}`, classe: "urgente" };
+  return { testo: `Scade tra ${g} giorni · ${data}`, classe: g <= 7 ? "urgente" : g <= 30 ? "vicina" : "" };
+}
 
-    // Quando il modello ha letto il bando, il suo riassunto vale più del testo del feed.
-    const testo = b.riassunto || b.sommario || "";
-    const sommario = testo.slice(0, 300) + (testo.length > 300 ? "…" : "");
-    // Il punteggio conta le parole che combaciano; il verdetto viene da chi ha letto il
-    // bando intero. Quando il modello dice no, il numero non deve piu' brillare: capitava
-    // di vedere un bel 100 verde su un bando che chiede l'iscrizione al RUNTS.
-    const fascia = b.llm_verdetto === "no" ? "smentito"
-      : b.punteggio >= 70 ? "alto" : b.punteggio >= 55 ? "medio" : "basso";
-    const spiegaPunteggio = b.llm_verdetto === "no"
-      ? ' title="Le parole del tuo profilo combaciano, ma leggendo il bando intero risulta che non puoi parteciparci"'
-      : '';
-    const punteggio = b.punteggio != null
-      ? `<span class="punteggio ${fascia}"${spiegaPunteggio}>${b.punteggio}</span>` : "";
-    const motivi = (b.motivi && b.motivi.length)
-      ? `<p class="motivi">Perché ti riguarda: ${b.motivi.join(" · ")}</p>` : "";
+/**
+ * «Perche' te lo mostro», in parole intere. Serve solo finche' il modello non ha
+ * letto l'annuncio: dopo, parla il suo verdetto. Prima si vedevano i pezzi di parola
+ * usati per il conteggio («contempo, audizion, compagni»).
+ */
+function perche(b) {
+  if (b.llm_verdetto || !b.motivi || !b.motivi.length) return "";
+  const pezzi = b.motivi
+    .filter((m) => !/^dal tuo racconto|confermato dal modello|sembra un bando|nessuna zona/i.test(m))
+    .map((m) => m.replace(/^parole tue: /i, ""));
+  const affinita = b.punteggio >= 70 ? "alta" : b.punteggio >= 55 ? "buona" : "da verificare";
+  return `<p class="perche">Affinità con il profilo: <b>${affinita}</b>${
+    pezzi.length ? " · " + attr(pezzi.join(" · ")) : ""}</p>`;
+}
 
-    const etichette = { si: "Puoi parteciparci", forse: "Forse puoi parteciparci", no: "Non sembra per te" };
-    const verdetto = b.llm_verdetto
-      ? `<p class="verdetto ${b.llm_verdetto}"><strong>${etichette[b.llm_verdetto] || b.llm_verdetto}</strong>${b.llm_motivo ? " — " + b.llm_motivo : ""}</p>`
-      : "";
+function scheda(b) {
+  const L = lessico();
+  const s = scadenzaDi(b);
 
-    let requisiti = [];
-    try { requisiti = JSON.parse(b.requisiti || "[]"); } catch (e) { requisiti = []; }
-    const chiPuo = requisiti.length
-      ? `<p class="requisiti"><span>Chi può partecipare:</span> ${requisiti.slice(0, 4).join(" · ")}</p>` : "";
+  // Riga in cima: cosa e' e quando scade, le due cose che decidono se leggere oltre.
+  const cima = [
+    eNuovo(b) ? '<span class="nuovo">nuovo</span>' : "",
+    b.tipo_aiuto ? `<span class="tipo">${attr(b.tipo_aiuto)}</span>` : "",
+    `<span class="scadenza ${s.classe}">${s.testo}</span>`,
+    b.aperto === 0 || !eAperto(b) ? '<span class="scadenza passata">chiuso</span>' : "",
+  ].filter(Boolean).join("");
 
-    // Il pannello «Leggi di più»: tutto quello che sappiamo, senza uscire dalla pagina.
-    const scheda = [];
-    if (b.riassunto) scheda.push(["Di cosa si tratta", b.riassunto]);
-    if (requisiti.length) scheda.push(["Chi può partecipare", requisiti.join("<br>")]);
-    if (b.contributo) scheda.push(["Quanto puoi ottenere", b.contributo]);
-    if (b.importo) scheda.push(["Fondi messi a disposizione in tutto", soldi(b.importo_num, b.importo)]);
-    if (b.scadenza) scheda.push(["Scadenza", dataItaliana(b.scadenza) +
-      (b.origine_scadenza ? ` <span class="fioco">(${b.origine_scadenza})</span>` : "")]);
-    if (b.zone && b.zone.length) scheda.push(["Dove vale", b.zone.join(" · ")]);
-    if (b.ente) scheda.push(["Chi lo pubblica", b.ente]);
-    if (!b.ente || !stessoEnte(b.ente, b.fonte)) scheda.push(["Dove l'ho trovato", b.fonte]);
-    if (b.pubblicato) scheda.push(["Pubblicato il", dataItaliana(b.pubblicato)]);
-    if (b.nota) scheda.push(["Nota", b.nota]);
-    if (b.aperto === 0) scheda.push(["Stato", "risulta chiuso: le domande non si possono più presentare"]);
-    if (b.analizzato_il) scheda.push(["Letto dal modello il", b.analizzato_il.replace("T", " ").slice(0, 16)]);
+  // Soldi o compenso: «quanto prendo io» viene subito dopo il titolo.
+  const ingaggio = b.ingaggio
+    ? `<span class="ingaggio ingaggio-${b.ingaggio.replace(/ /g, "-")}">${
+        { "a pagamento": "a pagamento: paghi tu" }[b.ingaggio] || attr(b.ingaggio)}</span>` : "";
+  const chiDove = [b.compagnia, b.citta].filter(Boolean).map((x) => `<span class="pezzo">${attr(x)}</span>`).join("");
+  const artista = (b.ingaggio || b.lavoro || chiDove)
+    ? `<p class="artista">${ingaggio}${b.lavoro ? `<span class="lavoro">${attr(b.lavoro)}</span>` : ""}${chiDove}</p>` : "";
+  const soldiRiga = b.contributo
+    ? `<p class="soldi">Puoi ottenere: <b>${attr(b.contributo)}</b></p>` : "";
 
-    const estratto = (b.estratto || "").trim();
-    const dettaglio = `<div class="dettaglio" hidden>
-      <dl>${scheda.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
-      ${estratto ? `<h3>Dal testo del bando</h3><pre class="testo-bando">${estratto
-        .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c])}${
-        b.quanto_testo > 3000 ? "\n\n[…] " + (b.quanto_testo - 3000).toLocaleString("it-IT") + " caratteri in più nel documento originale." : ""}</pre>` : ""}
-      <p><a href="${b.link}" target="_blank" rel="noopener noreferrer">Apri il bando sul sito dell'ente →</a></p>
+  const etichette = { si: L.si, forse: "Forse", no: "Non sembra per te" };
+  const verdetto = b.llm_verdetto
+    ? `<p class="verdetto ${b.llm_verdetto}"><strong>${etichette[b.llm_verdetto] || attr(b.llm_verdetto)}</strong>${
+        b.llm_motivo ? " — " + attr(b.llm_motivo) : ""}</p>`
+    : "";
+
+  const testo = b.riassunto || b.sommario || "";
+  const sommario = testo.length > 220 ? testo.slice(0, 220).replace(/\s+\S*$/, "") + "…" : testo;
+
+  // Chi lo pubblica, una volta sola: ente e fonte sono quasi sempre la stessa cosa.
+  const ente = b.ente || b.fonte || "";
+
+  // «Dettagli»: solo quello che la scheda NON dice gia'.
+  let requisiti = [];
+  try { requisiti = JSON.parse(b.requisiti || "[]"); } catch (e) { requisiti = []; }
+  const righe = [];
+  if (requisiti.length) righe.push(["Chi può partecipare", requisiti.map(attr).join("<br>")]);
+  if (b.importo) righe.push(["Fondi in tutto", soldi(b.importo_num, b.importo)]);
+  if (b.zone && b.zone.length) righe.push(["Dove vale", b.zone.join(" · ")]);
+  if (b.fonte && b.ente && !stessoEnte(b.ente, b.fonte)) righe.push(["Trovato su", attr(b.fonte)]);
+  if (b.pubblicato) righe.push(["Pubblicato il", dataItaliana(b.pubblicato)]);
+  if (b.analizzato_il) righe.push(["Letto per intero il", dataItaliana(b.analizzato_il.slice(0, 10))]);
+  if (b.nota) righe.push(["Nota", attr(b.nota)]);
+  const estratto = pulisciTesto(b.estratto);
+  const dettaglio = `<div class="dettaglio" id="d-${b.id}" hidden>
+      ${righe.length ? `<dl>${righe.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>` : ""}
+      ${estratto ? `<h3>Dal testo del ${L.uno}</h3><pre class="testo-bando">${attr(estratto)}${
+        b.quanto_testo > estratto.length + 50 ? "\n\n[…] il testo continua sul sito." : ""}</pre>` : ""}
+      <button class="tasto piccolo" data-chiudi="${b.id}">Chiudi i dettagli</button>
     </div>`;
 
-    const tipo = b.tipo_aiuto
-      ? `<span class="tipo-aiuto">${b.tipo_aiuto}</span><br>` : "";
+  const anteprima = b.immagine
+    ? `<img class="anteprima" src="${attr(b.immagine)}" alt="" loading="lazy"
+           referrerpolicy="no-referrer" onerror="this.remove()">` : "";
 
-    // Audizioni e lavori da artista: chi cerca, dove, e se si viene pagati. Sono le tre
-    // cose che una danzatrice guarda per prime (richiesta del 28 set 2026).
-    const ingaggio = b.ingaggio
-      ? `<span class="ingaggio ingaggio-${b.ingaggio.replace(/ /g, "-")}">${
-          { "pagato": "pagato", "non pagato": "non pagato", "stage": "stage",
-            "a pagamento": "a pagamento: paghi tu" }[b.ingaggio] || attr(b.ingaggio)}</span>` : "";
-    const artista = (b.compagnia || b.citta || b.ingaggio || b.lavoro)
-      ? `<p class="artista">${ingaggio}${b.lavoro ? `<span class="lavoro">${attr(b.lavoro)}</span>` : ""}${
-          b.compagnia ? `<b>${attr(b.compagnia)}</b>` : ""}${
-          b.compagnia && b.citta ? " · " : ""}${b.citta ? attr(b.citta) : ""}</p>` : "";
-
-    const anteprima = b.immagine
-      ? `<img class="anteprima" src="${b.immagine}" alt="" loading="lazy"
-             referrerpolicy="no-referrer" onerror="this.remove()">` : "";
-
-    return `<article class="bando">
-      ${anteprima}
-      ${tipo}
-      <h2>${eNuovo(b) ? '<span class="nuovo">nuovo</span>' : ""}${punteggio}<a href="${b.link}" target="_blank" rel="noopener noreferrer">${b.titolo}</a></h2>
-      ${artista}
-      ${verdetto}
-      ${motivi}
-      ${sommario ? `<p>${sommario}</p>` : ""}
-      ${chiPuo}
-      <div class="riga-dati">${dati.join("")}
-        <button class="apri" data-apri="${b.id}">Leggi di più</button>
-        ${scrivibile() ? `<button class="archivia" data-id="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
+  return `<article class="bando" id="b-${b.id}">
+    ${anteprima}
+    <div class="cima">${cima}</div>
+    <h2><a href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${attr(b.titolo)}</a></h2>
+    ${artista}${soldiRiga}
+    ${verdetto}
+    ${perche(b)}
+    ${sommario ? `<p class="sommario">${attr(sommario)}</p>` : ""}
+    <div class="piede-scheda">
+      ${ente ? `<span class="ente">${attr(ente)}</span>` : ""}
+      <div class="tasti-scheda">
+        <button class="tasto piccolo" data-apri="${b.id}" aria-expanded="false" aria-controls="d-${b.id}">Dettagli</button>
+        ${scrivibile() ? `<button class="tasto piccolo" data-archivia="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
+        <a class="tasto primario" href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${L.apri}</a>
       </div>
-      <a class="vai" href="${b.link}" target="_blank" rel="noopener noreferrer">Vai al bando &rarr;</a>
-      ${dettaglio}
-    </article>`;
-  }).join("");
+    </div>
+    ${dettaglio}
+  </article>`;
+}
 
-  box.querySelectorAll("[data-apri]").forEach((b) => {
+/** Ordine dentro una sezione: prima quello che scade prima; senza scadenza in fondo. */
+const perScadenza = (a, b) =>
+  (a.scadenza ? 0 : 1) - (b.scadenza ? 0 : 1)
+  || (a.scadenza || "").localeCompare(b.scadenza || "")
+  || (b.punteggio || 0) - (a.punteggio || 0);
+
+/** I filtri scelti, applicati a un elenco. `salta` lascia fuori un filtro (serve ai conteggi). */
+function filtra(lista, salta = "") {
+  const q = $("cerca").value.trim().toLowerCase();
+  const fonte = $("fonte").value, zona = $("zona").value;
+  return lista
+    .filter((b) => salta === "chiusi" || $("chiusi").checked || eAperto(b))
+    .filter((b) => salta === "nuovi" || !$("nuovi").checked || eNuovo(b))
+    .filter((b) => salta === "fonte" || !fonte || b.fonte === fonte)
+    .filter((b) => salta === "zona" || !zona
+      || (zona === "-" ? !(b.zone || []).length : (b.zone || []).includes(zona)))
+    .filter((b) => !q || [b.titolo, b.sommario, b.riassunto, b.ente, b.compagnia, b.citta]
+      .join(" ").toLowerCase().includes(q));
+}
+
+/** Riempie una tendina con i valori presenti davvero, contati sull'elenco di adesso. */
+function riempiTendina(id, voci, tutte, nome = (v) => v) {
+  const conta = {};
+  voci.forEach((v) => { conta[v] = (conta[v] || 0) + 1; });
+  const scelta = $(id).value;
+  const ordinate = Object.keys(conta).sort((a, b) => conta[b] - conta[a] || a.localeCompare(b));
+  if (scelta && !conta[scelta]) ordinate.unshift(scelta);
+  $(id).innerHTML = `<option value="">${tutte}</option>` + ordinate.map((v) =>
+    `<option value="${attr(v)}">${attr(nome(v))} (${conta[v] || 0})</option>`).join("");
+  $(id).value = scelta;
+}
+
+function sezione(chiave, titolo, lista, nota = "") {
+  if (!lista.length) return "";
+  const quante = limiti[chiave] || PASSO;
+  const visibili = lista.slice(0, quante);
+  const resto = lista.length - visibili.length;
+  return `<section class="sezione" id="sez-${chiave}">
+    <h2 class="titolo-sezione">${titolo} <span class="fioco">${lista.length}</span></h2>
+    ${nota ? `<p class="nota-sezione">${nota}</p>` : ""}
+    ${visibili.map(scheda).join("")}
+    ${resto > 0 ? `<button class="tasto altri" data-altri="${chiave}">Mostra altri ${Math.min(resto, PASSO)} (ne restano ${resto})</button>` : ""}
+  </section>`;
+}
+
+function aggiorna() {
+  const L = lessico();
+  const tutta = LISTE[profiloAttivo] || [];
+  const lista = filtra(tutta);
+
+  // Tendine e conteggi dei filtri: ognuno sull'elenco con tutti gli ALTRI filtri attivi.
+  riempiTendina("fonte", filtra(tutta, "fonte").map((b) => b.fonte).filter(Boolean), "Tutte");
+  riempiTendina("zona", filtra(tutta, "zona").flatMap((b) => (b.zone || []).length ? b.zone : ["-"]),
+    "Ovunque", (z) => (z === "-" ? "Zona non indicata" : z));
+  const nuovi = filtra(tutta, "nuovi").filter(eNuovo).length;
+  const chiusi = filtra(tutta, "chiusi").filter((b) => !eAperto(b)).length;
+  $("conta-nuovi").textContent = `(${nuovi})`;
+  $("conta-chiusi").textContent = `(${chiusi})`;
+  const attivi = [$("fonte").value, $("zona").value, $("nuovi").checked, $("chiusi").checked,
+    $("archiviati").checked].filter(Boolean).length;
+  $("conta-filtri").textContent = attivi ? ` · ${attivi}` : "";
+
+  const box = $("elenco");
+  let html = "", frase = [];
+  if (!profiloAttivo) {
+    const ordinati = [...lista].sort(perScadenza);
+    html = sezione("tutti", "Tutti i bandi", ordinati);
+    frase.push(`${ordinati.length} ${ordinati.length === 1 ? "bando" : "bandi"}`);
+  } else {
+    const g = { si: [], forse: [], leggere: [], no: [] };
+    lista.forEach((b) => g[gruppoDi(b)].push(b));
+    Object.values(g).forEach((x) => x.sort(perScadenza));
+    g.leggere.sort((a, b) => (b.punteggio || 0) - (a.punteggio || 0) || perScadenza(a, b));
+    html = sezione("si", L.si, g.si)
+      + sezione("forse", "Forse", g.forse, "Il testo non basta per escluderti: vale la pena guardarli.")
+      + sezione("leggere", "Ancora da leggere", g.leggere,
+        `Li ho trovati ma il modello non li ha ancora letti per intero: ne legge una sessantina al giorno. Sono in ordine di affinità con il profilo.`)
+      + (g.no.length
+        ? (mostraScartati
+          ? sezione("no", "Scartati dal modello", g.no, "Letti per intero: sembrano non fare per te. Il motivo è su ogni scheda.")
+          : `<button class="tasto altri" id="b-scartati">Mostra i ${g.no.length} scartati dal modello</button>`)
+        : "");
+    const link = (k, n, testo) => n ? `<a href="#sez-${k}">${n} ${testo}</a>` : "";
+    frase = [link("si", g.si.length, L.si.toLowerCase()), link("forse", g.forse.length, "forse"),
+      link("leggere", g.leggere.length, "da leggere"),
+      g.no.length ? `<span>${g.no.length} scartati</span>` : ""].filter(Boolean);
+  }
+  if (!lista.length) {
+    const q = $("cerca").value.trim();
+    html = `<div class="vuoto"><p>${q ? `Nessun ${L.uno} contiene «${attr(q)}».`
+      : attivi ? `Nessun ${L.uno} con questi filtri.` : `Per ora nessun ${L.uno} aperto per questo profilo.`}</p>${
+      q || attivi ? '<button class="tasto" data-azzera="1">Togli ricerca e filtri</button>' : ""}</div>`;
+  }
+  box.innerHTML = html;
+  $("conto").innerHTML = frase.length ? frase.join('<span class="sep" aria-hidden="true">·</span>')
+    + (!$("chiusi").checked && chiusi ? `<span class="sep" aria-hidden="true">·</span><span>${chiusi} chiusi, nascosti</span>` : "")
+    : "";
+
+  // L'annuncio aperto dal link di una notifica sta in cima, anche se i filtri o le
+  // sezioni chiuse lo nasconderebbero: e' quello che si e' venuti a vedere.
+  const s = segnalato && (tutta.find((b) => b.id === segnalato)
+    || Object.values(LISTE).flat().find((b) => b.id === segnalato));
+  $("segnalato").innerHTML = s
+    ? `<section class="sezione segnalato"><h2 class="titolo-sezione">L'${L.uno === "bando" ? "avviso" : "annuncio"} che ti ho segnalato</h2>${scheda(s)}</section>` : "";
+
+  collegaSchede(document);
+  $("sottotitolo").textContent = eta().replace(/^ · /, "").replace(/^./, (c) => c.toUpperCase()) || " ";
+}
+
+function collegaSchede(radice) {
+  radice.querySelectorAll("[data-apri]").forEach((b) => {
     b.onclick = () => {
-      const pannello = b.closest("article").querySelector(".dettaglio");
+      const pannello = $("d-" + b.dataset.apri);
       pannello.hidden = !pannello.hidden;
-      b.textContent = pannello.hidden ? "Leggi di più" : "Chiudi";
+      b.setAttribute("aria-expanded", String(!pannello.hidden));
+      b.textContent = pannello.hidden ? "Dettagli" : "Chiudi";
     };
   });
-
-  box.querySelectorAll("button.archivia").forEach((b) => {
+  radice.querySelectorAll("[data-chiudi]").forEach((b) => {
+    b.onclick = () => {
+      $("d-" + b.dataset.chiudi).hidden = true;
+      const art = b.closest("article");
+      const t = art.querySelector("[data-apri]");
+      t.textContent = "Dettagli"; t.setAttribute("aria-expanded", "false");
+      art.scrollIntoView({ block: "nearest" });
+    };
+  });
+  radice.querySelectorAll("[data-altri]").forEach((b) => {
+    b.onclick = () => { limiti[b.dataset.altri] = (limiti[b.dataset.altri] || PASSO) + PASSO; aggiorna(); };
+  });
+  radice.querySelectorAll("[data-azzera]").forEach((b) => { b.onclick = azzeraFiltri; });
+  if ($("b-scartati")) $("b-scartati").onclick = () => { mostraScartati = true; aggiorna(); };
+  radice.querySelectorAll("[data-archivia]").forEach((b) => {
     b.onclick = async () => {
-      if (!await prova("archivia", { id: b.dataset.id, archivia: b.dataset.stato === "0" })) return;
+      if (!await prova("archivia", { id: b.dataset.archivia, archivia: b.dataset.stato === "0" })) return;
       if (STATICA) { b.closest("article").style.opacity = 0.4; avvisa(DOPO_SALVATAGGIO); return; }
-      caricaProfili();
+      await caricaProfili();
       aggiorna();
     };
   });
 }
 
-async function aggiorna() {
-  const p = new URLSearchParams({
-    q: $("cerca").value,
-    fonte: $("fonte").value,
-    profilo: profiloAttivo,
-    chiusi: $("chiusi").checked ? "1" : "0",
-    archiviati: $("archiviati").checked ? "1" : "0",
-    zona: $("zona").value,
-    nuovi: $("nuovi").checked ? "1" : "0",
-    // Il giudizio «puoi parteciparci» esiste solo dentro un profilo: senza profilo
-    // scelto la tendina resta nascosta e il filtro non si applica.
-    // Senza scelta esplicita, i bandi che il modello ha gia' letto e scartato non si
-    // mostrano: restano a un clic di distanza, ma non riempiono l'elenco di roba che
-    // non ti riguarda. «…compresi quelli scartati» li rimette dentro.
-    verdetto: profiloAttivo ? ($("verdetto").value || "-no") : "",
-  });
-  $("verdetto").hidden = !profiloAttivo;
-  // Il numero accanto a «Solo i nuovi» si conta con la STESSA richiesta dell'elenco,
-  // spunta accesa: contandolo a parte ignorava gli altri filtri (i bandi scartati dal
-  // modello, la fonte, la zona) e prometteva 5 bandi dove poi se ne vedeva 1.
-  const pNuovi = new URLSearchParams(p);
-  pNuovi.set("nuovi", "1");
-  const [bandi, riepilogo, nuovi] = await Promise.all([
-    chiedi("/api/bandi?" + p),
-    chiedi("/api/riepilogo?profilo=" + profiloAttivo + "&chiusi=" + ($("chiusi").checked ? "1" : "0")),
-    chiedi("/api/bandi?" + pNuovi),
-  ]);
-  disegnaBandi(bandi);
-  $("n-aperti").textContent = riepilogo.aperti;
-  $("n-imminenti").textContent = riepilogo.in_scadenza;
-  $("n-letti").textContent = riepilogo.letti;
-  $("n-archiviati").textContent = riepilogo.archiviati;
-  // Il numero accanto a «Solo i nuovi»: se non ce n'e' nessuno la spunta resta,
-  // ma senza numero, cosi' si vede subito che oggi non e' arrivato niente.
-  $("conta-nuovi").textContent = nuovi.length ? nuovi.length : "";
-  const nome = PROFILI.find((x) => String(x.id) === profiloAttivo);
-  const restano = riepilogo.da_leggere
-    ? ` · ${riepilogo.da_leggere} ancora da leggere` : "";
-  const scartati = profiloAttivo && riepilogo.scartati && !$("verdetto").value
-    ? ` · ${riepilogo.scartati} scartati dal modello, non mostrati` : "";
-  $("sottotitolo").textContent =
-    (nome ? `Profilo «${nome.nome}» · ` : "") +
-    `${riepilogo.fonti_ok} fonti attive su ${riepilogo.fonti_totali} · ` +
-    `${bandi.length} mostrati${restano}${scartati}` + eta();
+function azzeraFiltri() {
+  $("cerca").value = ""; $("fonte").value = ""; $("zona").value = "";
+  $("nuovi").checked = false; $("chiusi").checked = false;
+  if ($("archiviati").checked) { $("archiviati").checked = false; caricaListe().then(aggiorna); return; }
+  aggiorna();
 }
 
 /** Traduce l'errore tecnico in cosa puoi fare tu. */
@@ -835,8 +997,10 @@ async function caricaFonti() {
     ...(CONFIG.siti || []).map((f) => ({ ...f, tipo: "sito", stato: perUrl[f.url] })),
   ].filter(mia);
 
-  $("fonte").innerHTML = '<option value="">Tutte le fonti</option>' +
-    stato.filter((f) => f.esito === "ok").map((f) => `<option>${f.nome}</option>`).join("");
+  // Il conto delle fonti del profilo, vero: prima diceva «15 attive su 16» contando solo
+  // i feed, mentre le fonti erano 145.
+  const conErrore = elenco.filter((f) => f.attivo && f.stato && f.stato.esito && f.stato.esito !== "ok").length;
+  $("conta-fonti").textContent = `· ${elenco.length}${conErrore ? `, ${conErrore} con problemi` : ", tutte a posto"}`;
 
   $("tabella-fonti").innerHTML = elenco.length ? elenco.map((f) => {
     const st = f.stato || {};
@@ -1007,16 +1171,6 @@ $("b-aggiungi-sito").onclick = async () => {
 
 // ------------------------------------------------------------------ storico notifiche
 
-/** Riempie la tendina «Dove» con le zone che esistono davvero nell'archivio. */
-async function caricaZone() {
-  const zone = await chiedi("/api/zone");
-  const scelta = $("zona").value;
-  $("zona").innerHTML = '<option value="">Dovunque</option>' +
-    zone.map((z) => `<option value="${attr(z.zona)}">${
-      z.zona === "-" ? "Zona non indicata" : z.zona} (${z.quanti})</option>`).join("");
-  $("zona").value = scelta;
-}
-
 async function caricaNotifiche() {
   const elenco = await chiedi("/api/notifiche");
   $("tabella-notifiche").innerHTML = elenco.length ? elenco.map((n) => `<tr>
@@ -1034,16 +1188,24 @@ function disegnaCollegamento() {
   $("collegamento").hidden = false;
   const collegato = Boolean(codice);
   $("collegamento-testo").textContent = collegato
-    ? "Collegato a GitHub: da qui puoi creare e modificare profili, aggiungere fonti e archiviare."
-    : "Questa è la pagina pubblicata: si guarda e basta. Si aggiorna da sola ogni mattina. Per poterla modificare serve un codice di accesso a GitHub.";
+    ? "Sei entrato: puoi modificare profili e fonti, e archiviare."
+    : "Si aggiorna da sola ogni giorno.";
   $("b-apri-collega").hidden = collegato;
   $("b-scollega").hidden = !collegato;
   $("collegamento-form").hidden = true;
 }
 
+/** Fonti, soglie e notifiche sono per chi gestisce; chi guarda vede i suoi annunci. */
+function applicaPermessi() {
+  const gestione = scrivibile();
+  $("gestione").hidden = !gestione;
+  document.querySelectorAll(".solo-gestione").forEach((x) => { x.hidden = !gestione; });
+}
+
 async function ridisegnaTutto() {
+  applicaPermessi();
   await caricaProfili();
-  await caricaFonti();
+  if (scrivibile()) { await caricaFonti(); await caricaNotifiche(); }
   aggiorna();
 }
 
@@ -1079,13 +1241,18 @@ $("b-scollega").onclick = async () => {
 // ------------------------------------------------------------------ giorno e notte
 
 const TEMI = ["automatico", "chiaro", "scuro"];
-const SIMBOLI = { automatico: "◑", chiaro: "☀", scuro: "☾" };
+// Disegni veri al posto dei simboli ◑ ☀ ☾, che ogni telefono disegna a modo suo.
+const SIMBOLI = {
+  automatico: DISEGNO('<circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor"/>'),
+  chiaro: DISEGNO('<circle cx="8" cy="8" r="2.8"/><path d="M8 1.2v1.6M8 13.2v1.6M1.2 8h1.6M13.2 8h1.6M3.2 3.2l1.1 1.1M11.7 11.7l1.1 1.1M3.2 12.8l1.1-1.1M11.7 4.3l1.1-1.1"/>'),
+  scuro: DISEGNO('<path d="M13.2 10.1A5.8 5.8 0 0 1 5.9 2.8a5.8 5.8 0 1 0 7.3 7.3z"/>'),
+};
 let tema = "automatico";
 try { tema = localStorage.getItem("monitor_bandi_tema") || "automatico"; } catch (e) { /* niente */ }
 
 function applicaTema() {
   document.documentElement.dataset.tema = tema;
-  $("b-tema").textContent = SIMBOLI[tema];
+  $("b-tema").innerHTML = SIMBOLI[tema];
   $("b-tema").title = { automatico: "Come il telefono", chiaro: "Sempre chiaro", scuro: "Sempre scuro" }[tema];
 }
 $("b-tema").onclick = () => {
@@ -1098,6 +1265,7 @@ applicaTema();
 // ------------------------------------------------------------------ torna su
 
 const tornaSu = $("torna-su");
+tornaSu.innerHTML = DISEGNO('<path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/>');
 tornaSu.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
 window.addEventListener("scroll", () => { tornaSu.hidden = window.scrollY < 400; }, { passive: true });
 
@@ -1133,9 +1301,8 @@ $("b-ricarica").onclick = async () => {
   }
   await caricaProfili();
   await caricaFonti();
-  await caricaZone();
   await caricaNotifiche();
-  await aggiorna();
+  aggiorna();
   b.classList.remove("gira");
   avvisa("Elenco aggiornato.");
 };
@@ -1256,17 +1423,40 @@ $("b-cerca-fonti").onclick = async () => {
 };
 
 let attesa;
-$("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(aggiorna, 250); };
-["fonte", "zona", "verdetto", "nuovi", "chiusi", "archiviati"].forEach((id) => { $(id).onchange = aggiorna; });
+$("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(() => { limiti = {}; aggiorna(); }, 250); };
+["fonte", "zona", "nuovi", "chiusi"].forEach((id) => { $(id).onchange = () => { limiti = {}; aggiorna(); }; });
+$("archiviati").onchange = async () => { await caricaListe(); disegnaBarraProfili(); aggiorna(); };
+$("b-azzera").onclick = azzeraFiltri;
+$("b-filtri").onclick = () => {
+  const aperto = $("pannello-filtri").hidden;
+  $("pannello-filtri").hidden = !aperto;
+  $("b-filtri").setAttribute("aria-expanded", String(aperto));
+};
+
+// Il link di una notifica Telegram porta qui con ?profilo=…#b-… : si apre il profilo
+// giusto (e lo si ricorda su quel telefono) e l'annuncio segnalato sta in cima.
+function leggiIndirizzo() {
+  const q = new URLSearchParams(location.search);
+  const p = q.get("profilo");
+  if (p) {
+    profiloAttivo = p;
+    try { localStorage.setItem(CHIAVE_PROFILO, p); } catch (e) { /* niente */ }
+  }
+  const m = location.hash.match(/^#b-(.+)$/);
+  if (m) segnalato = decodeURIComponent(m[1]);
+}
 
 (async () => {
+  leggiIndirizzo();
+  applicaPermessi();
   if (STATICA) disegnaCollegamento();
   VOCE = await chiedi("/api/vocabolario");
   await caricaProfili();
-  await caricaFonti();
-  await caricaZone();
-  await caricaNotifiche();
   aggiorna();
+  if (segnalato && $("segnalato").firstElementChild) {
+    $("segnalato").scrollIntoView({ block: "start" });
+  }
+  if (scrivibile()) { await caricaFonti(); await caricaNotifiche(); }
 })();
 </script>
 </body>

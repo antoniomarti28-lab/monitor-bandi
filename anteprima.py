@@ -53,15 +53,38 @@ def costruisci():
     # nessuno apre. Quindi: testo intero per i bandi ancora aperti, niente per gli altri
     # (resta il collegamento al sito dell'ente). Il sommario si taglia a 700 caratteri:
     # nella scheda se ne vedono 300.
+    #
+    # Il 28 set 2026 la pagina era tornata a 2,1 MB: due terzi erano annunci che non
+    # riguardano NESSUN profilo (624 su 780). Ora: quelli chiusi e di nessuno non si
+    # pubblicano proprio; quelli aperti di nessuno (li vede solo «Tutti i bandi»)
+    # viaggiano senza testo; per tutti il sommario si ferma a 300 caratteri (la scheda
+    # ne mostra 220) e non si ripete quando c'e' gia' il riassunto del modello.
     oggi = date.today().isoformat()
+    tenuti = []
     for b in bandi:
         b["punteggi"] = per_bando.get(b["id"], {})
-        b["zone"] = profili.zone(b)     # per il filtro «Dove»: costa niente, e' testo
         aperto = (b["aperto"] in (None, 1)) and (not b["scadenza"] or b["scadenza"] >= oggi)
-        if not aperto or b["archiviato"]:
+        di_qualcuno = bool(b["punteggi"])
+        if not di_qualcuno and (not aperto or b["archiviato"]):
+            continue
+        b["zone"] = profili.zone(b)     # per il filtro «Dove»: costa niente, e' testo
+        # Il testo del bando serve solo dove qualcuno lo leggera': aperto, e non gia'
+        # scartato dal modello per tutti i profili. 1.500 caratteri bastano a capire;
+        # il resto e' a un tocco, sul sito dell'ente.
+        scartato_ovunque = di_qualcuno and all(
+            v.get("llm_verdetto") == "no" for v in b["punteggi"].values())
+        if not aperto or b["archiviato"] or not di_qualcuno or scartato_ovunque:
             b["estratto"] = ""
-        if b.get("sommario") and len(b["sommario"]) > 700:
-            b["sommario"] = b["sommario"][:700] + "…"
+        elif b["estratto"] and len(b["estratto"]) > 1500:
+            b["estratto"] = b["estratto"][:1500]
+        if not di_qualcuno:
+            b["riassunto"] = b["requisiti"] = None
+        if b.get("riassunto"):
+            b["sommario"] = ""
+        elif b.get("sommario") and len(b["sommario"]) > 300:
+            b["sommario"] = b["sommario"][:300] + "…"
+        tenuti.append(b)
+    bandi = tenuti
 
     elenco_profili = profili.leggi_profili(db)
     for p in elenco_profili:
@@ -95,7 +118,6 @@ def costruisci():
     pagina = (BASE / "pagina" / "index.html").read_text(encoding="utf-8")
     stile = (BASE / "pagina" / "stile.css").read_text(encoding="utf-8")
     pagina = pagina.replace('<link rel="stylesheet" href="/stile.css">', "<style>\n" + stile + "\n</style>")
-    pagina = pagina.replace("<title>Monitor Bandi</title>", "<title>Monitor Bandi - anteprima</title>")
 
     finto = """
 <script>

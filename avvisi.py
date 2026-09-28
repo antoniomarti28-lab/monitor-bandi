@@ -163,6 +163,36 @@ def soldi(n, grezzo):
     return "€ " + format(int(n), ",d").replace(",", ".")
 
 
+def pagina_url():
+    """L'indirizzo della pagina pubblicata. Su GitHub Actions lo dice GITHUB_REPOSITORY
+    («utente/repo» -> https://utente.github.io/repo/); in locale lo si legge da git."""
+    import os
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if not repo:
+        try:
+            import anteprima
+            repo = anteprima.repository()
+        except Exception:
+            repo = ""
+    if "/" not in repo:
+        return ""
+    utente, nome = repo.split("/", 1)
+    return "https://%s.github.io/%s/" % (utente.lower(), nome)
+
+
+def link_pagina(profilo_id=None, bando_id=None):
+    """Il link che apre la pagina sul profilo giusto e sull'annuncio segnalato: dal
+    telefono si arriva quasi sempre da qui (revisione del 28 set 2026)."""
+    base = pagina_url()
+    if not base:
+        return ""
+    if profilo_id is not None:
+        base += "?profilo=%s" % profilo_id
+    if bando_id:
+        base += "#b-%s" % bando_id
+    return base
+
+
 def componi(b, profilo_nome):
     righe = ["<b>%s</b>" % escape(b["titolo"])]
     # Audizioni e lavori da artista: compenso, compagnia e citta' vengono prima di tutto.
@@ -194,7 +224,12 @@ def componi(b, profilo_nome):
         motivi = json.loads(b["motivi"] or "[]")
         if motivi:
             righe.append("<i>%s</i>" % escape(" · ".join(motivi)))
-    righe.append("\n" + escape(b["link"]))
+    pagina = link_pagina(b.get("profilo_id"), b.get("id"))
+    if pagina:
+        righe.append('\n<a href="%s">Vedilo nella pagina</a> · <a href="%s">sito dell\'ente</a>'
+                     % (escape(pagina), escape(b["link"])))
+    else:
+        righe.append("\n" + escape(b["link"]))
     righe.append("<i>profilo: %s</i>" % escape(profilo_nome))
     return "\n".join(righe)
 
@@ -206,6 +241,9 @@ def componi_riepilogo(bandi, profilo_nome, mostrati):
         righe.append("• <a href=\"%s\">%s</a>%s" % (escape(b["link"]), escape(b["titolo"]), scad))
     if len(bandi) > mostrati:
         righe.append("\n…e altri %d. Sono tutti nella pagina." % (len(bandi) - mostrati))
+    pagina = link_pagina(bandi[0].get("profilo_id") if bandi else None)
+    if pagina:
+        righe.append('\n<a href="%s">Apri la pagina di «%s»</a>' % (escape(pagina), escape(profilo_nome)))
     return "\n".join(righe)
 
 
