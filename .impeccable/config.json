@@ -1,0 +1,23 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-09-28T18:56:01.532Z",
+        "reason": "Scelta di design del 9 set 2026, presa dal sito di riferimento indicato dall'utente (incentivicalabria.it), scritta in bandi/CLAUDE.md"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "pagina/index.html"
+        ],
+        "createdAt": "2026-09-28T18:56:01.899Z",
+        "reason": "Il punto pulsa solo mentre una ricerca richiesta dall'utente e' davvero in corso su GitHub: e' legato a uno stato vivo"
+      }
+    ]
+  }
+}
