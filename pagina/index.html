@@ -561,6 +561,14 @@ function disegnaBarraProfili() {
     (attivo && gestione ? `<button class="chip fantasma" data-modifica="${attivo.id}">Modifica</button>` : "") +
     (gestione ? `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>` : "");
 
+  // Al telefono la fila dei profili scorre di lato: quello scelto va portato in vista,
+  // o Mati (terzo) restava fuori dallo schermo.
+  const scelto = $("barra-profili").querySelector(".chip.attivo");
+  if (scelto) {
+    const barra = $("barra-profili");
+    barra.scrollLeft = Math.max(0, scelto.offsetLeft - (barra.clientWidth - scelto.offsetWidth) / 2);
+  }
+
   $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
     b.onclick = () => {
       profiloAttivo = b.dataset.scegli;
@@ -849,8 +857,11 @@ function riempiTendina(id, voci, tutte, nome = (v) => v) {
 function sezione(chiave, titolo, lista, nota = "") {
   if (!lista.length) return "";
   const quante = limiti[chiave] || PASSO;
-  const visibili = lista.slice(0, quante);
-  const resto = lista.length - visibili.length;
+  // L'annuncio segnalato sta gia' in cima: ripeterlo qui creerebbe due schede uguali
+  // (e «Dettagli» aprirebbe quella sbagliata). Nel conto della sezione resta.
+  const senza = segnalato ? lista.filter((b) => b.id !== segnalato) : lista;
+  const visibili = senza.slice(0, quante);
+  const resto = senza.length - visibili.length;
   return `<section class="sezione" id="sez-${chiave}">
     <h2 class="titolo-sezione">${titolo} <span class="fioco">${lista.length}</span></h2>
     ${nota ? `<p class="nota-sezione">${nota}</p>` : ""}
@@ -908,8 +919,10 @@ function aggiorna() {
       q || attivi ? '<button class="tasto" data-azzera="1">Togli ricerca e filtri</button>' : ""}</div>`;
   }
   box.innerHTML = html;
-  $("conto").innerHTML = frase.length ? frase.join('<span class="sep" aria-hidden="true">·</span>')
-    + (!$("chiusi").checked && chiusi ? `<span class="sep" aria-hidden="true">·</span><span>${chiusi} chiusi, nascosti</span>` : "")
+  // Pezzi separati dallo spazio, non da puntini: andando a capo al telefono un «·»
+  // restava da solo in testa alla riga.
+  $("conto").innerHTML = frase.length ? frase.join("")
+    + (!$("chiusi").checked && chiusi ? `<span>${chiusi} chiusi, nascosti</span>` : "")
     : "";
 
   // L'annuncio aperto dal link di una notifica sta in cima, anche se i filtri o le

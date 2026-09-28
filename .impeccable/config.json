@@ -17,6 +17,15 @@
         ],
         "createdAt": "2026-09-28T18:56:01.899Z",
         "reason": "Il punto pulsa solo mentre una ricerca richiesta dall'utente e' davvero in corso su GitHub: e' legato a uno stato vivo"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "anteprima.html"
+        ],
+        "createdAt": "2026-09-28T21:10:38.098Z",
+        "reason": "Stesso puntino di pagina/index.html (.battito): pulsa solo mentre una ricerca richiesta e' davvero in corso"
       }
     ]
   }

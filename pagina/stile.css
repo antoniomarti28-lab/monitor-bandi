@@ -112,7 +112,7 @@ button.icona svg { width: 18px; height: 18px; }
 /* ---- barra dei profili: al telefono scorre di lato invece di andare a capo ---- */
 
 .profili {
-  display: flex; gap: 8px; margin: 0 -20px 6px; padding: 2px 20px 8px;
+  display: flex; position: relative; gap: 8px; margin: 0 -20px 6px; padding: 2px 20px 8px;
   overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .profili::-webkit-scrollbar { display: none; }
@@ -129,11 +129,10 @@ button.icona svg { width: 18px; height: 18px; }
 
 /* ---- la frase del conto: ogni numero porta alla sua sezione ---- */
 
-.conto { margin: 14px 0 12px; font-size: 16px; color: var(--tenue); display: flex; flex-wrap: wrap; align-items: center; row-gap: 4px; }
+.conto { margin: 14px 0 12px; font-size: 16px; color: var(--tenue); display: flex; flex-wrap: wrap; align-items: center; gap: 2px 18px; }
 .conto:empty { display: none; }
 .conto a { color: var(--testo); font-weight: 600; text-decoration: none; padding: 6px 0; }
 .conto a:hover { color: var(--accento); }
-.conto .sep { margin: 0 10px; color: var(--bordo-forte); }
 
 /* ---- ricerca e filtri ---- */
 
@@ -202,7 +201,7 @@ label.spunta input { width: 20px; height: 20px; margin: 0; accent-color: var(--a
 
 .bando {
   background: var(--carta); border: 1px solid var(--bordo); border-radius: var(--raggio);
-  padding: 18px 20px; margin-bottom: 12px; box-shadow: var(--ombra);
+  padding: 18px 20px; margin-bottom: 12px;
   transition: border-color .15s; scroll-margin-top: 12px;
 }
 .bando:hover { border-color: var(--bordo-forte); }
@@ -400,11 +399,11 @@ tr.spenta { opacity: .45; }
 .torna-su {
   position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 48px; height: 48px;
   display: grid; place-items: center;
-  border-radius: 50%; border: 1px solid var(--bordo); background: var(--carta);
+  border-radius: 50%; border: 0; background: var(--carta);
   color: var(--accento); cursor: pointer; box-shadow: 0 2px 4px rgba(20,20,15,.08), 0 8px 20px rgba(20,20,15,.12); z-index: 20;
 }
 .torna-su svg { width: 20px; height: 20px; }
-.torna-su:hover { border-color: var(--accento); }
+.torna-su:hover { color: var(--testo); }
 
 /* ---- telefono ---- */
 
