@@ -77,6 +77,8 @@ capisce subito se puo' candidarsi, entro quando, e quanto ottiene o se viene pag
   modelli locali, notifiche solo su Telegram (WhatsApp scartato).
 - Zero dipendenze tranne `pypdf`; pagina in HTML e CSS senza framework.
 - Il peso della pagina conta: e' gia' stata dimezzata una volta (da 1 MB a 504 KB).
+- **Chi guarda senza poter modificare vede solo i suoi annunci** (deciso il 28 set
+  2026): fonti, soglie di avviso e avvisi tecnici su GitHub sono per chi gestisce.
 - Aperto: nessun dato su eta' e citta' di Mati (alcune audizioni li richiedono).
 
 ## Brand Commitments
