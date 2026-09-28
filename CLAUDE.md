@@ -558,3 +558,39 @@ Il sistema era fatto per i bandi e un'audizione non l'avrebbe riconosciuta. Camb
   due verdetti corretti a mano in «forse». Da ricontrollare nei prossimi giri.
 - Cambiare le parole di un profilo AZZERA i suoi giudizi (voluto): va messo in conto
   un giro di giudizi sul modello grande.
+
+
+## Ogni profilo le sue fonti, e le compagnie di danza (28 set 2026, sera)
+
+- **Ogni fonte dichiara a quali profili serve** (`"profili": [id, ...]` in
+  configurazione.json; assente = tutti). `profili.riabbina` da' 0 punti («fonte di un
+  altro profilo») agli annunci di fonti non sue; la pagina mostra sotto ogni profilo
+  solo le sue fonti e la matita ha le caselle «Serve a». Una fonte aggiunta o una
+  proposta accettata mentre guardi un profilo e' di quel profilo. Lui l'ha chiesto
+  vedendo le fonti dei bandi sotto Mati. `configurazione.esporta` ora ricopia dal file
+  le voci che il database non conosce, altrimenti `profili` spariva dai siti.
+- **109 compagnie di danza contemporanea come fonti di Mati**: i 78 organismi danza
+  ammessi dal MiC al FNSV 2025-2027 (D.D. 658 del 17/06/2025, PDF su
+  spettacolo.cultura.gov.it) meno i classici e chi non ha sito, piu' le principali
+  europee. Ogni sito aperto e controllato; 29 con la pagina audizioni/lavoro precisa,
+  le altre dalla home. Lista e verifica: script nello scratchpad della sessione,
+  riproducibile cercando di nuovo il decreto.
+- **Opzioni per fonte**: `"cerca": "audizioni"` = si seguono solo i collegamenti con
+  `estrattore.PAROLE_AUDIZIONE` (niente ripiego sui titoli lunghi) e «nessun
+  collegamento» non e' un errore; `"pagina_audizioni": true` = la pagina si sorveglia
+  (`siti.versione_nuova`: impronta del testo senza cifre, ogni versione nuova e' un
+  annuncio). Sui siti in modalita' audizioni, i collegamenti che citano solo anni
+  passati si saltano (Aterballetto: da 15 a 3).
+- **Siti che respingono i programmi (429 anche piano)**: Zerogrammi, NoGravity,
+  CollettivO CineticO, BalletBoyz, La Veronal. Non si forzano; le loro audizioni
+  arrivano dai portali. Balletto di Milano, MM Company, DaCru non rispondevano.
+- **Compagnia, citta', ingaggio, lavoro**: 4 colonne nuove lette dal modello
+  (`CAMPI_ARTISTA` in `intelligenza.py`, dentro la lettura normale);
+  `completa_audizioni` recupera quelle lette prima, poche per giro. Valori fuori
+  elenco scartati. Sulla pagina una riga sotto il titolo, il compenso colorato
+  («a pagamento: paghi tu» in rosso); su Telegram la prima riga dopo il titolo.
+- Trappola: le istruzioni al modello contengono «80%»: incollarci testo con `%`
+  le rompe (`%d format`). Si concatena con `+`.
+- Trappola: con `git pull --autostash` e `dati.db` cambiato su tutti e due i lati, il
+  pull finisce in conflitto e lascia lo stash. Si fonde a mano: base = archivio di
+  GitHub, sopra i bandi solo locali, i campi completati, il consumo massimo.
