@@ -48,7 +48,7 @@ PREDEFINITE = {
     "modello_grande": "openai/gpt-oss-120b",
     "gettoni_al_giorno": 140000,   # se il vero limite arriva prima, il 429 ci ferma da solo
     "gettoni_al_minuto": 7000,     # il limite vero e' 8.000: si tiene un margine
-    "letture_per_giro": 40,
+    "letture_per_giro": 60,       # 40 fino al 28 set 2026: le audizioni di «Mati» ne portano tante
 }
 
 SCHEMA = """
@@ -257,12 +257,17 @@ Non inventare mai nulla: se un dato non c'e' nel testo, metti null.
 In particolare NON dedurre la scadenza da date generiche: deve essere il termine
 per presentare la domanda, scritto nel testo.
 
+Il testo puo' anche essere un'AUDIZIONE o un casting (una compagnia che cerca danzatori,
+attori, musicisti), in italiano o in un'altra lingua: per un artista vale come un bando.
+
 Campi richiesti:
-  "e_un_bando"  : true se e' un bando/avviso/concorso a cui ci si puo' candidare;
+  "e_un_bando"  : true se e' un bando/avviso/concorso a cui ci si puo' candidare, oppure
+                  un'audizione, un casting o una open call per artisti;
                   false se e' una notizia, un articolo, una graduatoria o un resoconto.
   "aperto"      : true se le domande si possono ancora presentare, false se e' chiuso
                   o gia' assegnato, null se non si capisce.
-  "scadenza"    : data in formato AAAA-MM-GG, oppure null.
+  "scadenza"    : data in formato AAAA-MM-GG, oppure null. Per un'audizione: il termine
+                  per mandare la candidatura; se non c'e', il giorno dell'audizione.
   "importo"     : la dotazione COMPLESSIVA del bando, cioe' quanto mette a disposizione
                   l'ente in tutto, come testo (es. "3.000.000 €"), oppure null.
   "contributo"  : quanto puo' ottenere al massimo UN SINGOLO richiedente per il suo
@@ -272,28 +277,39 @@ Campi richiesti:
   "tipo_aiuto"  : che forma ha l'aiuto, UNA sola fra queste parole esatte:
                   "fondo perduto" (non si restituisce), "prestito agevolato",
                   "voucher", "premio", "servizi" (consulenza, spazi, formazione),
-                  "misto". Se dal testo non si capisce, metti null.
+                  "misto", "audizione" (una compagnia o produzione cerca artisti).
+                  Se dal testo non si capisce, metti null.
   "settori"     : da 1 a 4 parole sull'ambito (es. ["cultura", "teatro"]).
   "destinatari" : elenco breve di chi puo' partecipare, come scritto nel testo
-                  (es. ["associazioni di promozione sociale", "ODV iscritte al RUNTS"]).
+                  (es. ["associazioni di promozione sociale", "ODV iscritte al RUNTS"],
+                  o per un'audizione ["danzatrici 20-30 anni", "tecnica contemporanea"]).
   "territorio"  : DOVE vale il bando, cioe' dove devono avere sede o operare i
                   partecipanti. Elenco di nomi di regioni italiane (es. ["Lombardia"],
                   ["Calabria", "Puglia"]), oppure ["Italia"] se vale su tutto il
                   territorio nazionale, oppure ["Europa"] per i programmi europei.
                   Attenzione: molti enti finanziano SOLO la propria zona anche quando
                   non lo ripetono a ogni riga. Metti null solo se dal testo non si
-                  capisce proprio.
-  "riassunto"   : massimo 100 parole, in italiano semplice, su cosa finanzia il bando."""
+                  capisce proprio. Per un'audizione metti null, a meno che il testo
+                  non chieda espressamente di risiedere in un certo posto.
+  "riassunto"   : massimo 100 parole, in italiano semplice, su cosa finanzia il bando;
+                  per un'audizione: quale compagnia, che genere di danza o spettacolo,
+                  per quale produzione o contratto, dove e quando, e i requisiti."""
 
 SISTEMA_GIUDIZIO = """Valuti se un soggetto puo' partecipare a un bando.
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
 
 Se il profilo racconta cosa fa a parole sue, tienine conto: un soggetto puo' rientrare
 per quello che fa davvero anche se la sua categoria formale non e' nominata nel bando.
+Se il racconto dice COSA cerca (per esempio solo audizioni di un certo genere), un
+annuncio di altro genere e' "no" anche se formalmente potrebbe candidarsi.
+Per un'audizione, la citta' o il paese dove si svolge NON e' un requisito di residenza:
+chiunque puo' andarci. E' un requisito solo se il testo chiede espressamente di
+risiedere li' o di avere un permesso di lavoro che il profilo non ha.
 
   "verdetto" : "si" se il profilo rientra chiaramente tra i destinatari,
                "forse" se il testo non basta per escluderlo,
-               "no" se il profilo e' escluso (tipo di ente sbagliato, territorio sbagliato).
+               "no" se il profilo e' escluso (tipo di ente sbagliato, territorio sbagliato,
+               requisiti che non ha, oppure non e' quello che il profilo cerca).
   "motivo"   : una frase breve in italiano, che cita il punto del bando da cui si capisce."""
 
 
@@ -303,11 +319,16 @@ def domanda_lettura(b):
 
 
 def domanda_giudizio(b, profilo):
-    return ("PROFILO\n  tipo: %s\n  settori: %s\n  territori: %s\n\n"
+    # Il racconto libero si manda davvero: il prompt diceva al modello di tenerne conto,
+    # ma fino al 28 set 2026 non gli arrivava. Per un profilo come «Mati» (cerca SOLO
+    # audizioni di compagnie contemporanee) e' la parte che decide.
+    racconto = " ".join((profilo.get("racconto") or "").split())[:600]
+    return ("PROFILO\n  tipo: %s\n  settori: %s\n  territori: %s\n  racconto: %s\n\n"
             "BANDO\n  titolo: %s\n  destinatari: %s\n  riassunto: %s") % (
         profilo.get("tipo_ente") or "non specificato",
         ", ".join(profilo.get("settori", [])) or "qualsiasi",
         ", ".join(profilo.get("regioni", [])) or "qualsiasi",
+        racconto or "non scritto",
         b["titolo"],
         "; ".join(json.loads(b["requisiti"] or "[]")) or "non indicati",
         (b["riassunto"] or "")[:800])

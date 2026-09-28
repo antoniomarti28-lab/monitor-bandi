@@ -22,6 +22,8 @@ SETTORI = {
                        "mostra", "beni culturali", "creativ"],
     "Teatro e spettacolo": ["teatro", "teatral", "spettacolo", "scena", "danza", "circo",
                             "performing", "drammaturg", "festival"],
+    "Danza": ["danza", "danzator", "danzatric", "ballerin", "coreograf", "dance", "dancer",
+              "choreograph", "tanz", "danse", "danseu"],
     "Musica": ["musica", "musical", "concerto", "banda", "coro", "orchestra", "discografic"],
     "Cinema e audiovisivo": ["cinema", "audiovisiv", "documentari", "cortometraggi", "film"],
     "Sociale e terzo settore": ["sociale", "solidariet", "volontariat", "terzo settore",
@@ -100,7 +102,8 @@ TIPI_ENTE = [
     "Associazione non riconosciuta", "Associazione di promozione sociale (APS)",
     "Organizzazione di volontariato (ODV)", "Ente del Terzo Settore (ETS/ONLUS)",
     "Fondazione", "Impresa sociale", "Cooperativa", "Societa' (SRL, SPA)",
-    "Ditta individuale / libero professionista", "Privato cittadino",
+    "Ditta individuale / libero professionista", "Artista (persona singola)",
+    "Privato cittadino",
     "Comune o ente pubblico", "Scuola o universita'",
 ]
 
@@ -109,7 +112,10 @@ INDIZI_BANDO = ["bando", "avviso pubblico", "avviso", "contributo", "contributi"
                 "finanziament", "sovvenzion", "call for", "concorso", "premio",
                 "borsa di studio", "candidatur", "domanda di partecipazione", "scadenz",
                 "dotazione finanziaria", "plafond", "presentare domanda",
-                "sostegno economico", "voucher", "manifestazione di interesse"]
+                "sostegno economico", "voucher", "manifestazione di interesse",
+                # Per un artista l'annuncio che conta e' l'audizione, spesso in inglese.
+                "audizion", "audition", "casting", "provini", "open call",
+                "cerchiamo danzat", "looking for dancers", "seeking dancers"]
 
 # Parole che tradiscono un articolo di giornale invece di un bando aperto.
 # Attenzione: 'graduatoria' e 'vincitori' stanno QUI, non sopra: se c'e' la graduatoria
@@ -300,6 +306,12 @@ def valuta(bando, profilo):
     if colpiti:
         punti += min(len(colpiti) * PESI["settore"], PESI["settore_max"])
         motivi.append(", ".join(colpiti).lower())
+    elif (profilo.get("tipo_ente") or "").startswith("Artista") and not any(
+            p and contiene(testo, p) for p in profilo.get("parole", [])):
+        # Un artista singolo senza regioni (le audizioni sono ovunque) non ha altri
+        # filtri: senza questa regola a «Mati» arrivavano i contributi per la pesca,
+        # perche' un bando aperto e confermato vale gia' 40 punti da solo.
+        return 0, ["non parla del tuo campo"]
 
     # 4. Territorio.
     regioni_profilo = profilo.get("regioni", [])

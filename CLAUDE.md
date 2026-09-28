@@ -517,3 +517,33 @@ link). Se si', cercare il feed: `/rss.xml`, `/feed/`, `?format=feed&type=rss` (J
   a capo, una barra doppia prima dell'apostrofo sparisce). Ha rotto una
   riga di Python e un apostrofo in JavaScript. Per modifiche con barre rovesciate usare
   lo strumento Edit, e dopo ogni modifica alla pagina `node --check` sugli script.
+
+
+## Profilo «Mati»: una persona che cerca audizioni (28 set 2026)
+
+Primo profilo che non e' un ente: una ballerina di danza contemporanea che vuole TUTTI
+gli annunci di audizioni di COMPAGNIE di danza CONTEMPORANEA, in Italia e all'estero.
+Il sistema era fatto per i bandi e un'audizione non l'avrebbe riconosciuta. Cambiato:
+
+- **Parole**: «audizion», «audition», «casting», «provini», «open call» in
+  `estrattore.PAROLE_BANDO` (i collegamenti da seguire), `profili.INDIZI_BANDO` (i punti),
+  `ripara.PAROLE_SEZIONE`. Nuovo settore **«Danza»** (anche dance/tanz/danse) e nuovo
+  tipo **«Artista (persona singola)»**.
+- **Il modello**: la lettura sa che un'audizione vale come un bando (anche in inglese o
+  francese), la scadenza e' il termine di candidatura o il giorno dell'audizione,
+  `tipo_aiuto` puo' essere «audizione», il territorio di un'audizione e' null.
+- **Il giudizio ora riceve il racconto del profilo.** Il prompt diceva di tenerne conto
+  ma `domanda_giudizio` non lo mandava: vale per tutti i profili, non solo per Mati. Ed
+  e' «no» anche un annuncio che non e' quello che il racconto dice di cercare.
+- **Mati non ha regioni** (lista vuota = ovunque): con una regione, un'audizione a Milano
+  o a Berlino sarebbe stata scartata come «altra zona».
+- **Letture al giorno da 40 a 60** (e approfondimenti da 40 a 60): le fonti di audizioni
+  portano molti annunci. ~72.000 gettoni, dentro il limite.
+- **Fonti** (tutte aperte e provate il 28 set): feed di categoria, i piu' puliti perche'
+  contengono solo audizioni (TuttoDanzaWeb, Campadidanza, Dance News, Dancing
+  Opportunities, au-di-tions.com, The Dance Platform); pagine DanzaSi, Casting e Provini
+  (tag danza), CND con il filtro `type_offre:audition`. Scartate: Partenaire Danse (flash
+  mob, balli amatoriali), Dance Europe, tanznetz e Tanzbuero Berlin (pagine che arrivano
+  vuote al programma).
+- Il filtro vero su «solo contemporanea, solo compagnie» lo fa il giudizio, guidato dal
+  racconto: niente parole escluse, per non perdere annunci scritti in modo imprevisto.

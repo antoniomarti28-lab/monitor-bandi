@@ -49,7 +49,8 @@ PERCORSI_FEED = ["/feed/", "/rss.xml", "/rss", "/feed.xml", "/feed",
 
 # Parole che, in un collegamento, fanno pensare alla sezione dei bandi del sito.
 PAROLE_SEZIONE = ["bandi", "avvisi", "contributi", "finanziament", "opportunit",
-                  "agevolazion", "incentivi", "call", "sovvenzion"]
+                  "agevolazion", "incentivi", "call", "sovvenzion", "audizion",
+                  "audition", "casting"]
 
 MAX_PROVE = 10          # indirizzi aperti al massimo per ogni fonte rotta
 GIORNI_RICORDO = 14     # per quanto la pagina mostra una riparazione riuscita

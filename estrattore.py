@@ -177,7 +177,10 @@ def leggi(url):
 
 PAROLE_BANDO = ["bando", "avviso", "contribut", "concors", "finanziam", "call",
                 "premio", "candidatur", "selezione", "sovvenzion", "voucher",
-                "manifestazione-di-interesse", "manifestazione di interesse"]
+                "manifestazione-di-interesse", "manifestazione di interesse",
+                # Le audizioni (profilo «Mati», 28 set 2026): per un artista l'annuncio
+                # che conta non e' un bando ma un'audizione, spesso scritta in inglese.
+                "audizion", "audition", "casting", "provini", "open-call", "open call"]
 
 SCARTA = ["facebook.", "twitter.", "x.com", "instagram.", "linkedin.", "youtube.",
           "whatsapp.", "mailto:", "javascript:", "/privacy", "/cookie", "/accessibilit",

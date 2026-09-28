@@ -29,7 +29,7 @@ BASE = Path(__file__).parent
 DB = BASE / "dati.db"
 PAUSA = 2.0
 MAX_NUOVI_PER_SITO = 15
-MAX_APPROFONDIMENTI = 40
+MAX_APPROFONDIMENTI = 60   # come le letture del modello: senza testo non si legge
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS siti (

@@ -148,7 +148,9 @@ pubblicare qualcosa di utile, anche una volta l'anno o in futuro. Per esempio:
   - ministeri e direzioni generali del loro settore, agenzie e programmi regionali;
   - GAL, parchi, province, comuni e unioni di comuni della loro zona;
   - programmi europei e i loro sportelli italiani;
-  - reti, festival, teatri e centri che fanno call per artisti, residenze, premi.
+  - reti, festival, teatri e centri che fanno call per artisti, residenze, premi;
+  - se un profilo e' un ARTISTA (una persona), soprattutto le compagnie del suo genere
+    che fanno audizioni e i portali che raccolgono audizioni, in Italia e all'estero.
 
 Regole: solo enti veri; indirizzi che credi esistano davvero; niente aggregatori
 commerciali o consulenti a pagamento; niente enti che finanziano solo altre regioni."""
@@ -278,7 +280,7 @@ def verifica(url):
 SISTEMA_SCOPERTA = """Guardi la pagina di un ente e decidi se vale la pena sorvegliarla
 per i profili descritti: non conta solo se oggi c'e' un bando aperto, conta se
 quell'ente pubblica, o potrebbe pubblicare in futuro, bandi, contributi, premi, call
-o residenze a cui questi profili potrebbero candidarsi.
+o residenze a cui questi profili potrebbero candidarsi (per un artista: audizioni).
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
 
   "utile"  : "ora"       se ci sono gia' bandi aperti adatti a loro;

@@ -51,6 +51,27 @@
       "escluse": [],
       "importo_min": null,
       "importo_max": null
+    },
+    {
+      "id": 5,
+      "nome": "Mati",
+      "tipo_ente": "Artista (persona singola)",
+      "racconto": "Mati e' una ballerina di danza contemporanea. Cerca TUTTI gli annunci di audizioni di COMPAGNIE di danza CONTEMPORANEA, in Italia e all'estero: audizioni per entrare in compagnia, per una produzione, per una tournee o per una sostituzione. Non le interessano: balletto classico puro, musical, hip hop e danze commerciali, casting per TV o pubblicita', concorsi e premi per scuole, e 'audizioni' che sono in realta' corsi, stage o intensivi a pagamento.",
+      "settori": [
+        "Danza"
+      ],
+      "regioni": [],
+      "parole": [
+        "audizione",
+        "audition",
+        "danza contemporanea",
+        "contemporary dance",
+        "danzatrici",
+        "dancers"
+      ],
+      "escluse": [],
+      "importo_min": null,
+      "importo_max": null
     }
   ],
   "feed": [
@@ -112,6 +133,42 @@
       "nome": "ItaliaFestival",
       "url": "https://www.italiafestival.org/feed/",
       "ente": "ItaliaFestival",
+      "attivo": true
+    },
+    {
+      "nome": "Audizioni - TuttoDanzaWeb",
+      "url": "https://tuttodanzaweb.it/category/opportunita/audizioni-danza/feed/",
+      "ente": "TuttoDanzaWeb",
+      "attivo": true
+    },
+    {
+      "nome": "Audizioni - Campadidanza",
+      "url": "https://www.campadidanza.it/work/audizioni-e-casting/feed/",
+      "ente": "Campadidanza",
+      "attivo": true
+    },
+    {
+      "nome": "Audizioni - Dance News",
+      "url": "https://dancenews.it/audizioni/feed/",
+      "ente": "Dance News",
+      "attivo": true
+    },
+    {
+      "nome": "Auditions - Dancing Opportunities",
+      "url": "https://dancingopportunities.com/category/auditions/feed/",
+      "ente": "Dancing Opportunities",
+      "attivo": true
+    },
+    {
+      "nome": "Auditions - au-di-tions.com",
+      "url": "https://au-di-tions.com/feed/",
+      "ente": "au-di-tions.com",
+      "attivo": true
+    },
+    {
+      "nome": "Auditions - The Dance Platform",
+      "url": "https://thedanceplatform.com/category/auditions/feed/",
+      "ente": "The Dance Platform",
       "attivo": true
     }
   ],
@@ -204,6 +261,24 @@
       "nome": "PerChiCrea",
       "url": "https://www.perchicrea.it",
       "ente": "SIAE – Per Chi Crea",
+      "attivo": true
+    },
+    {
+      "nome": "Audizioni - DanzaSi",
+      "url": "https://www.danzasi.it/audizioni-e-offerte-di-lavoro.php",
+      "ente": "DanzaSi",
+      "attivo": true
+    },
+    {
+      "nome": "Audizioni - Casting e Provini (danza)",
+      "url": "https://www.castingeprovini.com/tag/danza/",
+      "ente": "Casting e Provini",
+      "attivo": true
+    },
+    {
+      "nome": "Auditions - Centre national de la danse",
+      "url": "https://www.cnd.fr/fr/auditions-offres-emploi?f%5B0%5D=type_offre%3Aaudition",
+      "ente": "Centre national de la danse",
       "attivo": true
     }
   ],
