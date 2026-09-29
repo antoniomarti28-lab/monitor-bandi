@@ -231,6 +231,52 @@
       "profili": [
         5
       ]
+    },
+    {
+      "nome": "Con i Bambini",
+      "url": "https://www.conibambini.org/feed/",
+      "ente": "Impresa sociale Con i Bambini",
+      "attivo": true,
+      "profili": [
+        2
+      ]
+    },
+    {
+      "nome": "Fondazione Alta Mane Italia",
+      "url": "https://www.altamaneitalia.org/feed/",
+      "ente": "Fondazione Alta Mane Italia",
+      "attivo": true,
+      "profili": [
+        2
+      ]
+    },
+    {
+      "nome": "Fondazione Terzo Pilastro",
+      "url": "https://www.fondazioneterzopilastrointernazionale.it/feed/",
+      "ente": "Fondazione Terzo Pilastro - Internazionale",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "Erasmus+ INDIRE",
+      "url": "https://www.erasmusplus.it/feed/",
+      "ente": "Agenzia Erasmus+ INDIRE",
+      "attivo": true,
+      "profili": [
+        2
+      ]
+    },
+    {
+      "nome": "Fondazione Mission Bambini",
+      "url": "https://missionbambini.org/feed/",
+      "ente": "Fondazione Mission Bambini",
+      "attivo": true,
+      "profili": [
+        2
+      ]
     }
   ],
   "siti": [
@@ -1764,6 +1810,128 @@
       "citta": "Monaco",
       "paese": "MC",
       "pagina_audizioni": true
+    },
+    {
+      "nome": "MiC Creativita' Contemporanea",
+      "url": "https://creativitacontemporanea.cultura.gov.it/bandi/",
+      "ente": "MiC - Direzione Generale Creativita' Contemporanea",
+      "attivo": true,
+      "profili": [
+        1
+      ]
+    },
+    {
+      "nome": "European Cultural Foundation",
+      "url": "https://culturalfoundation.eu/communities/open-calls",
+      "ente": "European Cultural Foundation",
+      "attivo": true,
+      "profili": [
+        1
+      ]
+    },
+    {
+      "nome": "GAL Terre Vibonesi",
+      "url": "https://www.galterrevibonesi.org/archives/category/bandi",
+      "ente": "GAL Terre Vibonesi",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "CSV Calabria Centro",
+      "url": "https://www.csvcalabriacentro.it/",
+      "ente": "CSV Calabria Centro",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "Premio Scenario",
+      "url": "https://www.associazionescenario.it/",
+      "ente": "Associazione Scenario",
+      "attivo": true,
+      "profili": [
+        1
+      ]
+    },
+    {
+      "nome": "In-Box teatro",
+      "url": "https://www.inboxproject.it/",
+      "ente": "In-Box",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "Fondazione Nuovi Mecenati",
+      "url": "https://www.nuovimecenati.org/bandi/",
+      "ente": "Fondazione Nuovi Mecenati",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "Fondazione Unipolis",
+      "url": "https://www.fondazioneunipolis.org/",
+      "ente": "Fondazione Unipolis (culturability)",
+      "attivo": true,
+      "profili": [
+        1
+      ]
+    },
+    {
+      "nome": "Unione Buddhista 8x1000",
+      "url": "https://8xmilleunionebuddhista.it/",
+      "ente": "Unione Buddhista Italiana",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "Soka Gakkai 8x1000",
+      "url": "https://ottopermille.sgi-italia.org/",
+      "ente": "Istituto Buddista Italiano Soka Gakkai",
+      "attivo": true,
+      "profili": [
+        2
+      ]
+    },
+    {
+      "nome": "Disabilita' - avvisi e bandi",
+      "url": "https://disabilita.governo.it/it/avvisi-e-bandi",
+      "ente": "Ufficio per le politiche in favore delle persone con disabilita'",
+      "attivo": true,
+      "profili": [
+        2
+      ]
+    },
+    {
+      "nome": "Politiche della famiglia",
+      "url": "https://famiglia.governo.it/it/notizie/",
+      "ente": "Dipartimento per le politiche della famiglia",
+      "attivo": true,
+      "profili": [
+        2
+      ]
+    },
+    {
+      "nome": "UniCredit Foundation",
+      "url": "https://www.unicreditfoundation.org/",
+      "ente": "UniCredit Foundation",
+      "attivo": true,
+      "profili": [
+        2
+      ]
     }
   ],
   "impostazioni": {
