@@ -1912,6 +1912,26 @@
       "profili": [
         2
       ]
+    },
+    {
+      "nome": "Perform Europe",
+      "url": "https://performeurope.eu/open-call",
+      "ente": "Perform Europe (Creative Europe)",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
+    },
+    {
+      "nome": "Portale Terzo Settore Calabria",
+      "url": "https://terzosettore.regione.calabria.it/",
+      "ente": "Regione Calabria - Terzo Settore",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     }
   ],
   "impostazioni": {
