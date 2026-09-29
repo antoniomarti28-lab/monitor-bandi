@@ -139,16 +139,6 @@
       ]
     },
     {
-      "nome": "Fondazione Cariplo",
-      "url": "https://www.fondazionecariplo.it/feed/",
-      "ente": "Fondazione Cariplo",
-      "attivo": true,
-      "profili": [
-        1,
-        2
-      ]
-    },
-    {
       "nome": "MIMIT - Incentivi",
       "url": "https://www.mimit.gov.it/it/incentivi-aggiornamenti?format=feed&type=rss",
       "ente": "MIMIT",
@@ -314,16 +304,6 @@
       "nome": "Call 7 Interreg Euro-MED",
       "url": "https://interreg-euro-med.eu/en/call-7-mediterranean-multiprogramme-mechanism-coordinated-call",
       "ente": "Interreg Euro-MED Programme",
-      "attivo": true,
-      "profili": [
-        1,
-        2
-      ]
-    },
-    {
-      "nome": "Bandi Fondazione Cariplo",
-      "url": "https://www.fondazionecariplo.it/bandi",
-      "ente": "Fondazione Cariplo",
       "attivo": true,
       "profili": [
         1,
@@ -1971,6 +1951,8 @@
     }
   },
   "proposte_scartate": [
+    "https://www.fondazionecariplo.it/bandi",
+    "https://www.fondazionecariplo.it/feed/",
     "https://www.fondazionecaritro.it/bandi",
     "https://www.fondazionemediterraneo.org/index.php/attivita/amministrazione-trasparente-avvisi-bandi-e-gare"
   ],
