@@ -647,3 +647,16 @@ e dei 593 bandi letti fino ad allora solo 96 erano bandi aperti.
   questo profilo?» e' stata tolta: su Garage68/Labo Art il conteggio di parole va meglio.
 - Documentazione TypeSafe: Jev e' debole su date e numeri (il calendario resta al codice),
   sui testi lunghi pieni di rumore (si mandano 1.500 caratteri) e fuori dall'inglese.
+
+**Stesso giorno, due correzioni:**
+- **Un giro programmato sovrascriveva l'archivio.** Un evento `schedule` fa il checkout
+  del commit del momento in cui GitHub l'ha messo in coda, non di quando parte: il giro
+  delle 7, partito alle 12:18 dopo un giro chiesto dalla pagina, ha salvato sopra il
+  lavoro di quello (persi 204 bandi guardati da Jev e 60 letti da Groq; `salva.sh` usa
+  `-X theirs` su un file binario = vince l'ultimo). Ora ogni lavoro fa `checkout` con
+  `ref: main`: essendo in fila nello stesso gruppo, parte dall'archivio del precedente.
+- **Letture: da 60 a 160 al giorno, sempre gratis.** Il limite vero di Groq e' 200.000
+  gettoni al giorno PER MODELLO (console.groq.com/docs/rate-limits). Legge il piccolo fino
+  a 190.000, poi il grande fino a 190.000 meno `scorta_giudizi` (70.000). Un giro pieno
+  dura ~45 minuti per via del limite al minuto.
+- `jev.smista` non si ferma piu' al primo errore: salta il bando, si arrende dopo tre di fila.

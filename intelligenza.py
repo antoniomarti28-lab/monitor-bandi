@@ -46,9 +46,17 @@ PREDEFINITE = {
     "chiave": "",
     "modello_piccolo": "openai/gpt-oss-20b",
     "modello_grande": "openai/gpt-oss-120b",
-    "gettoni_al_giorno": 140000,   # se il vero limite arriva prima, il 429 ci ferma da solo
-    "gettoni_al_minuto": 7000,     # il limite vero e' 8.000: si tiene un margine
-    "letture_per_giro": 60,       # 40 fino al 28 set 2026: le audizioni di «Mati» ne portano tante
+    # Limite vero del piano gratuito (console.groq.com/docs/rate-limits, 29 set 2026):
+    # 200.000 gettoni al giorno PER MODELLO, 8.000 al minuto. Si tiene un margine.
+    "gettoni_al_giorno": 190000,   # 140.000 fino al 29 set 2026
+    "gettoni_al_minuto": 7000,
+    # 60 fino al 29 set 2026. Con 148 bandi in coda leggeva solo il modello piccolo;
+    # ora quando lui finisce i gettoni continua il grande (vedi `leggi_bandi`).
+    "letture_per_giro": 160,
+    # Il grande legge solo fino a lasciare questa scorta per i giudizi di «puoi
+    # parteciparci?», che contano di piu'. Di solito ne usano 5.000-25.000; il 28 set,
+    # con le parole di un profilo cambiate, 121.000 (e quel giorno il grande non legge).
+    "scorta_giudizi": 70000,
 }
 
 SCHEMA = """
@@ -387,10 +395,11 @@ def da_leggere(db, limite):
 
 
 def leggi_bandi(db, prova=False):
-    """Primo passaggio: il modello piccolo legge ogni bando UNA volta sola."""
+    """Primo passaggio: ogni bando si legge UNA volta sola. Legge il modello piccolo;
+    quando finisce i suoi gettoni del giorno continua il grande, che ha una quota sua
+    e di solito la usa poco, lasciandogli una scorta per i giudizi."""
     imp = impostazioni()
     migra(db)
-    modello = imp["modello_piccolo"]
     if not prova:
         # Il portiere guarda i bandi nuovi prima di Groq. Se non c'e' la chiave o
         # Jev non risponde, non cambia niente: si legge nell'ordine di sempre.
@@ -401,13 +410,21 @@ def leggi_bandi(db, prova=False):
         print("Nessun bando nuovo da leggere.")
         return 0
 
+    # I modelli in ordine, ognuno col suo tetto per le letture di oggi.
+    turni = [(imp["modello_piccolo"], imp["gettoni_al_giorno"]),
+             (imp["modello_grande"], imp["gettoni_al_giorno"] - imp["scorta_giudizi"])]
+    modello, tetto = turni.pop(0)
     speso = consumo_oggi(db, modello)
     letti = 0
+    per_modello = {}
     for b in elenco:
         domanda = domanda_lettura(b)
         # Misurato sui bandi veri: ~1.160 gettoni in tutto, di cui ~215 di risposta.
         costo = stima_gettoni(SISTEMA_LETTURA + domanda) + 250
-        if speso + costo > imp["gettoni_al_giorno"]:
+        while speso + costo > tetto and turni:
+            modello, tetto = turni.pop(0)
+            speso = consumo_oggi(db, modello)
+        if speso + costo > tetto:
             print("Limite giornaliero vicino: mi fermo, gli altri li leggo domani.")
             break
 
@@ -426,6 +443,13 @@ def leggi_bandi(db, prova=False):
         try:
             risposta, usati = chiedi(imp["chiave"], modello, SISTEMA_LETTURA, domanda)
         except HTTPError as e:
+            # Un 429 qui vuol dire che il conto di oggi e' finito davvero (quello al
+            # minuto lo gestisce `chiedi`): si passa al modello dopo, se c'e'.
+            if e.code == 429 and turni:
+                print("  %s ha finito i gettoni di oggi: continuo con il modello dopo." % modello)
+                modello, tetto = turni.pop(0)
+                speso = consumo_oggi(db, modello)
+                continue
             print("  Groq ha risposto %s: mi fermo qui." % e.code)
             break
         except Exception as e:
@@ -436,6 +460,7 @@ def leggi_bandi(db, prova=False):
         segna_consumo(db, modello, usati or costo)
         salva_lettura(db, b["id"], risposta)
         letti += 1
+        per_modello[modello] = per_modello.get(modello, 0) + 1
         # Si aspetta in proporzione a quanto si e' appena consumato, per restare
         # sotto il limite al minuto invece di sbatterci contro e prendere un 429.
         time.sleep(60.0 * (usati or costo) / imp["gettoni_al_minuto"])
@@ -444,8 +469,8 @@ def leggi_bandi(db, prova=False):
         print("=" * 66)
         print("\nProva: %d bandi pronti da leggere, ~%d gettoni in tutto." % (letti, speso))
     else:
-        print("Bandi letti: %d   Gettoni usati oggi su %s: %d / %d"
-              % (letti, modello, speso, imp["gettoni_al_giorno"]))
+        print("Bandi letti: %d (%s)" % (letti, ", ".join(
+            "%d da %s" % (n, m) for m, n in per_modello.items()) or "nessuno"))
     return letti
 
 

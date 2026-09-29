@@ -33,6 +33,12 @@ jobs:
       url: ${{ steps.pubblica.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Il ramo, non il commit: un giro programmato si porta dietro la versione del
+          # momento in cui GitHub l'ha messo in coda, e partendo ore dopo sovrascriveva
+          # l'archivio salvato nel frattempo da un altro giro (29 set 2026: persi i 204
+          # bandi guardati da Jev e i 60 letti da Groq in un giro chiesto dalla pagina).
+          ref: main
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"

@@ -188,17 +188,24 @@ def smista(db, imp=None):
     if not elenco:
         return 0
     adesso = date.today().isoformat()
-    fatti = notizie = 0
+    fatti = notizie = errori = 0
     for b in elenco:
         try:
             risposte, _ = chiedi(db, stato_bando(b), {"bando": DOMANDA_BANDO}, imp)
+            errori = 0
         except Tetto as e:
             print("Jev: mi fermo, %s." % e)
             break
         except (HTTPError, URLError, OSError, KeyError, ValueError) as e:
-            print("Jev non risponde (%s): gli altri si leggono nell'ordine di sempre."
-                  % type(e).__name__)
-            break
+            # Un errore su un bando non ferma il giro (il 29 set 2026 uno si e' fermato
+            # dopo 25 bandi su 150): ci si arrende solo dopo tre errori di fila.
+            errori += 1
+            print("Jev: errore su un bando (%s)." % type(e).__name__)
+            if errori >= 3:
+                print("Jev non risponde: gli altri si leggono nell'ordine di sempre.")
+                break
+            time.sleep(3 * errori)
+            continue
         p = risposte["bando"]["noul"]
         db.execute("UPDATE bandi SET jev_bando=?, jev_il=? WHERE id=?", (p, adesso, b["id"]))
         db.commit()
