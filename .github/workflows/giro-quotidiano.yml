@@ -36,6 +36,7 @@ jobs:
           MONITOR_TELEGRAM_TOKEN: ${{ secrets.MONITOR_TELEGRAM_TOKEN }}
           MONITOR_TELEGRAM_CHAT: ${{ secrets.MONITOR_TELEGRAM_CHAT }}
           MONITOR_GROQ_CHIAVE: ${{ secrets.MONITOR_GROQ_CHIAVE }}
+          MONITOR_JEV_CHIAVE: ${{ secrets.MONITOR_JEV_CHIAVE }}
           PYTHONIOENCODING: utf-8
         run: python raccogli.py
 

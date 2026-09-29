@@ -80,6 +80,10 @@ COLONNE_NUOVE = {
     "citta": "TEXT",
     "ingaggio": "TEXT",     # pagato | non pagato | stage | a pagamento
     "lavoro": "TEXT",       # in compagnia | lavoro singolo
+    # Il portiere (jev.py, 29 set 2026): probabilita' che sia davvero un bando a cui
+    # candidarsi e non una notizia. Decide solo l'ORDINE di lettura di Groq.
+    "jev_bando": "REAL",
+    "jev_il": "TEXT",
 }
 
 VALORI_INGAGGIO = ("pagato", "non pagato", "stage", "a pagamento")
@@ -376,7 +380,10 @@ def da_leggere(db, limite):
     return [dict(r) for r in db.execute(
         "SELECT id,titolo,ente,testo FROM bandi "
         "WHERE analizzato_il IS NULL AND testo IS NOT NULL AND testo <> '' "
-        "AND archiviato = 0 ORDER BY trovato_il DESC LIMIT ?", (limite,))]
+        "AND archiviato = 0 "
+        # Prima quelli che Jev riconosce come bandi veri; chi non e' passato dal
+        # portiere (niente chiave, credito finito) sta a meta', come prima.
+        "ORDER BY COALESCE(jev_bando, 0.5) DESC, trovato_il DESC LIMIT ?", (limite,))]
 
 
 def leggi_bandi(db, prova=False):
@@ -384,6 +391,11 @@ def leggi_bandi(db, prova=False):
     imp = impostazioni()
     migra(db)
     modello = imp["modello_piccolo"]
+    if not prova:
+        # Il portiere guarda i bandi nuovi prima di Groq. Se non c'e' la chiave o
+        # Jev non risponde, non cambia niente: si legge nell'ordine di sempre.
+        import jev
+        jev.smista(db)
     elenco = da_leggere(db, imp["letture_per_giro"])
     if not elenco:
         print("Nessun bando nuovo da leggere.")

@@ -627,3 +627,23 @@ Revisione del design 21/40 (in `.impeccable/critique/`), poi tutto rifatto in un
 - Verifica: il browser integrato non apre file locali e non si usa localhost; si
   controlla la pagina PUBBLICATA (si ripubblica in ~30 s dopo il push). Le catture a
   pagina scorsa escono bianche: difetto dello strumento, non della pagina.
+
+
+## Il portiere Jev (29 set 2026)
+
+`jev.py`: prima che Groq legga, Jev (TypeSafe, `POST api.typesafe.ai/v1/systemone`)
+risponde a UNA domanda chiusa per bando: «bando a cui candidarsi o notizia?». La
+probabilita' va in `bandi.jev_bando` e decide solo l'ORDINE di `intelligenza.da_leggere`
+(nessun bando saltato; senza chiave o con Jev giu' si legge come prima). Motivo: il 28
+set il modello piccolo di Groq ha usato 139.919 gettoni su 140.000 con 148 bandi in coda,
+e dei 593 bandi letti fino ad allora solo 96 erano bandi aperti.
+
+- **Soldi veri: credito prepagato di 5 $**, prezzo ufficiale 0,042 $/M gettoni in ingresso
+  (uscita gratis). ~820 gettoni a bando = 0,003 centesimi. Tetti in `jev.PREDEFINITE`:
+  400.000 gettoni al giorno, 100 milioni in tutto (4,20 $). Conto: `python jev.py --conto`.
+- Chiave: `impostazioni.json` → `jev.chiave` in locale, secret `MONITOR_JEV_CHIAVE` su GitHub.
+- **La prova (217 bandi gia' letti, 1,7 centesimi, non contati nel conto dell'archivio)**:
+  sotto 0,1 finiscono 61 notizie su 121 e nessun bando vero. La domanda «interessa a
+  questo profilo?» e' stata tolta: su Garage68/Labo Art il conteggio di parole va meglio.
+- Documentazione TypeSafe: Jev e' debole su date e numeri (il calendario resta al codice),
+  sui testi lunghi pieni di rumore (si mandano 1.500 caratteri) e fuori dall'inglese.
