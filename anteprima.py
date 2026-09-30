@@ -252,7 +252,7 @@ def condivise(pagina, finto_modello, dati, adesso, oggi):
                               "window.SOLA_LETTURA = true;\nwindow.CONDIVISO = %s;"
                               % json.dumps({"profilo": pid, "nome": profilo["nome"]}, ensure_ascii=False), 1)
         # I commenti del codice nominano gli altri profili: a chi guarda non servono.
-        html = re.sub(r"Mati", "un altro profilo", pagina).replace("<script>", finto + "<script>", 1)
+        html = re.sub(r"\bMati\b", "un altro profilo", pagina).replace("<script>", finto + "<script>", 1)
         html = html.replace("<title>Monitor Bandi</title>",
                             '<meta name="robots" content="noindex, nofollow">\n  <title>Bandi per %s</title>'
                             % profilo["nome"].replace("<", ""), 1)
