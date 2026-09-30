@@ -119,7 +119,7 @@ def costruisci():
     stile = (BASE / "pagina" / "stile.css").read_text(encoding="utf-8")
     pagina = pagina.replace('<link rel="stylesheet" href="/stile.css">', "<style>\n" + stile + "\n</style>")
 
-    finto = """
+    finto_modello = """
 <script>
 // Copia da guardare: al posto del server risponde questo, con i dati gia' in pagina.
 // SOLA_LETTURA toglie i pulsanti che scrivono, invece di lasciarli fingere.
@@ -204,12 +204,61 @@ window.fetch = async (url, opzioni) => {
   return { json: async () => out };
 };
 </script>
-""" % (repository(), datetime.now(timezone.utc).isoformat(timespec="seconds"),
-           json.dumps(dati, ensure_ascii=False))
+"""
+    adesso = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    finto = finto_modello % (repository(), adesso, json.dumps(dati, ensure_ascii=False))
 
-    pagina = pagina.replace("<script>", finto + "<script>", 1)
-    (BASE / "anteprima.html").write_text(pagina, encoding="utf-8")
+    completa = pagina.replace("<script>", finto + "<script>", 1)
+    (BASE / "anteprima.html").write_text(completa, encoding="utf-8")
+    condivise(pagina, finto_modello, dati, adesso, oggi)
     return len(bandi), len(elenco_profili)
+
+
+def condivise(pagina, finto_modello, dati, adesso, oggi):
+    """Una pagina a parte per ogni profilo che Antonio vuole mostrare a qualcuno
+    (`condivisi` in configurazione.json: [{"profilo": 1, "codice": "..."}]).
+
+    Dentro c'e' SOLO quel profilo e SOLO cio' che puo' fare o forse puo' fare: nessun
+    altro profilo, nessuna fonte, nessuna notifica, nessun codice di accesso. Il
+    repository e' pubblico, quindi questa e' una separazione di comodita', non di
+    segretezza: il codice nell'indirizzo serve solo a non farla trovare per caso.
+    Finiscono in `condivisi/<codice>/index.html`, che non si salva su git: li pubblicano
+    i lavori insieme alla pagina principale."""
+    import re
+    import shutil
+    cartella = BASE / "condivisi"
+    if cartella.exists():
+        shutil.rmtree(cartella)
+    for voce in dati["configurazione"].get("condivisi", []) or []:
+        pid, codice = str(voce.get("profilo")), str(voce.get("codice") or "")
+        profilo = next((p for p in dati["profili"] if str(p["id"]) == pid), None)
+        if not profilo or len(codice) < 8 or not codice.replace("-", "").replace("_", "").isalnum():
+            continue
+        bandi = []
+        for b in dati["bandi"]:
+            mio = b["punteggi"].get(pid)
+            if not mio or b["archiviato"] or mio.get("llm_verdetto") not in ("si", "forse"):
+                continue
+            if b["aperto"] not in (None, 1) or (b["scadenza"] and b["scadenza"] < oggi):
+                continue
+            bandi.append(dict(b, punteggi={pid: mio}))
+        profilo = dict(profilo, quanti=len(bandi))
+        d = {"bandi": bandi, "profili": [profilo], "fonti": [], "siti": [], "notifiche": [],
+             "configurazione": {"profili": [], "feed": [], "siti": [], "proposte": [],
+                                "archiviati": [], "impostazioni": {}},
+             "vocabolario": dati["vocabolario"]}
+        finto = finto_modello % ("", adesso, json.dumps(d, ensure_ascii=False))
+        finto = finto.replace("window.SOLA_LETTURA = true;",
+                              "window.SOLA_LETTURA = true;\nwindow.CONDIVISO = %s;"
+                              % json.dumps({"profilo": pid, "nome": profilo["nome"]}, ensure_ascii=False), 1)
+        # I commenti del codice nominano gli altri profili: a chi guarda non servono.
+        html = re.sub(r"Mati", "un altro profilo", pagina).replace("<script>", finto + "<script>", 1)
+        html = html.replace("<title>Monitor Bandi</title>",
+                            '<meta name="robots" content="noindex, nofollow">\n  <title>Bandi per %s</title>'
+                            % profilo["nome"].replace("<", ""), 1)
+        (cartella / codice).mkdir(parents=True, exist_ok=True)
+        (cartella / codice / "index.html").write_text(html, encoding="utf-8")
+        print("pagina condivisa per %s: %d bandi" % (profilo["nome"], len(bandi)))
 
 
 if __name__ == "__main__":

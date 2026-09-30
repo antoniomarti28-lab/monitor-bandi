@@ -248,6 +248,10 @@ const CHIAVE_CODICE = "monitor_bandi_codice";
 
 let codice = null;
 try { codice = localStorage.getItem(CHIAVE_CODICE); } catch (e) { codice = null; }
+// Pagina condivisa con qualcuno (un solo profilo, solo lettura): non legge mai il codice
+// di accesso, nemmeno se questo browser lo ha salvato entrando nella pagina principale.
+const CONDIVISO = window.CONDIVISO || null;
+if (CONDIVISO) codice = null;
 
 let CONFIG = null, CONFIG_SHA = null;
 
@@ -1198,6 +1202,7 @@ async function caricaNotifiche() {
 // ------------------------------------------------------------------ collegamento
 
 function disegnaCollegamento() {
+  if (CONDIVISO) return;   // chi guarda una pagina condivisa non ha niente da collegare
   $("collegamento").hidden = false;
   const collegato = Boolean(codice);
   $("collegamento-testo").textContent = collegato
@@ -1461,6 +1466,10 @@ function leggiIndirizzo() {
 
 (async () => {
   leggiIndirizzo();
+  if (CONDIVISO) {
+    profiloAttivo = String(CONDIVISO.profilo);   // e nessun altro: non si cambia con l'indirizzo
+    document.querySelector("h1").textContent = "Bandi per " + CONDIVISO.nome;
+  }
   applicaPermessi();
   if (STATICA) disegnaCollegamento();
   VOCE = await chiedi("/api/vocabolario");

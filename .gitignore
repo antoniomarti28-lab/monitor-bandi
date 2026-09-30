@@ -5,3 +5,5 @@ impostazioni.json
 __pycache__/
 *.pyc
 anteprima-*.html
+# Pagine condivise: le genera anteprima.py e le pubblicano i lavori, non si salvano
+condivisi/
