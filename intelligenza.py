@@ -110,6 +110,10 @@ def migra(db):
         db.execute("ALTER TABLE abbinamenti ADD COLUMN llm_verdetto TEXT")
     if "llm_motivo" not in colonne_abb:
         db.execute("ALTER TABLE abbinamenti ADD COLUMN llm_motivo TEXT")
+    # 1 = il giudizio c'e' ma va rifatto con le istruzioni nuove. Fino a quel momento resta
+    # quello vecchio (non si azzera: i bandi non devono sparire dalla pagina per qualche giorno).
+    if "rigiudica" not in colonne_abb:
+        db.execute("ALTER TABLE abbinamenti ADD COLUMN rigiudica INTEGER DEFAULT 0")
     db.commit()
     migrazioni_una_tantum(db)
 
@@ -148,12 +152,27 @@ def migrazioni_una_tantum(db):
     k = "migr_2026-09-30_rigiudizio_no"
     if da_fare(k):
         n = db.execute(
-            "UPDATE abbinamenti SET llm_verdetto=NULL, llm_motivo=NULL "
+            "UPDATE abbinamenti SET rigiudica=1 "
             "WHERE llm_verdetto='no' AND profilo_id IN (1,2) AND avvisato=0 AND bando_id IN ("
             "SELECT id FROM bandi WHERE aperto=1 AND archiviato=0 "
             "AND (scadenza IS NULL OR scadenza >= date('now')))").rowcount
         fatta(k, n)
         print("Da rigiudicare con le istruzioni nuove: %d abbinamenti." % n)
+
+    # 1 ott 2026: il giudice guardava la forma giuridica ma non l'ambito del progetto, e
+    # dava «si» a un bando di conformita' normativa per un'associazione culturale. Il
+    # controllo dell'ambito e' nelle istruzioni nuove: anche «si» e «forse» si rifanno. Chi
+    # e' gia' stato avvisato non riceve un secondo avviso, ma se il giudizio cambia in «no»
+    # sparisce dai bandi a cui si puo' partecipare.
+    k = "migr_2026-10-01_rigiudizio_si_forse"
+    if da_fare(k):
+        n = db.execute(
+            "UPDATE abbinamenti SET rigiudica=1 "
+            "WHERE llm_verdetto IN ('si','forse') AND profilo_id IN (1,2) AND bando_id IN ("
+            "SELECT id FROM bandi WHERE aperto=1 AND archiviato=0 "
+            "AND (scadenza IS NULL OR scadenza >= date('now')))").rowcount
+        fatta(k, n)
+        print("Da rigiudicare anche i si e i forse: %d abbinamenti." % n)
 
 
 def impostazioni():
@@ -447,6 +466,13 @@ solo enti iscritti a un albo che il profilo non ha). Un bando per «compagnie te
 Il territorio del profilo e' l'elenco «territori»: un bando di un paese o di una citta'
 che compare li' (per esempio Spagna, Regno Unito, Europa) e' valido per il profilo.
 
+Conta anche l'AMBITO: il profilo deve poter presentare un progetto della sua attivita'
+(settori e racconto). Se l'oggetto del bando e' lontano da cio' che il profilo fa
+(informatica e conformita' normativa, agricoltura, imprese e filiere industriali, sanita',
+lavori pubblici, consumatori privati), e' «no» anche se la forma giuridica sarebbe
+ammessa. Se l'oggetto e' vicino (cultura, arti, sociale, giovani, comunita', territorio)
+o il testo non basta per capirlo, e' «si» o «forse».
+
   "verdetto" : "si" se il profilo rientra chiaramente tra chi puo' presentare domanda,
                "forse" se il testo non basta per escluderlo,
                "no" se il profilo e' escluso (tipo di ente sbagliato, territorio sbagliato,
@@ -666,9 +692,10 @@ def giudica_finalisti(db, prova=False, soglia=40):
     candidati = [dict(r) for r in db.execute(
         "SELECT b.*, a.profilo_id, a.punteggio FROM abbinamenti a "
         "JOIN bandi b ON b.id = a.bando_id "
-        "WHERE a.llm_verdetto IS NULL AND a.punteggio >= ? AND b.aperto = 1 "
-        "AND b.analizzato_il IS NOT NULL AND b.archiviato = 0 "
-        "ORDER BY a.punteggio DESC LIMIT 40", (soglia,))]
+        "WHERE ((a.llm_verdetto IS NULL AND a.punteggio >= ?) OR (a.rigiudica = 1 AND a.punteggio > 0)) "
+        "AND b.aperto = 1 AND b.analizzato_il IS NOT NULL AND b.archiviato = 0 "
+        # Prima quelli mai giudicati, poi i rifacimenti; dentro ognuno i piu' promettenti.
+        "ORDER BY (a.llm_verdetto IS NULL) DESC, a.punteggio DESC LIMIT 40", (soglia,))]
     if not candidati:
         print("Nessun finalista da giudicare.")
         return 0
@@ -701,7 +728,7 @@ def giudica_finalisti(db, prova=False, soglia=40):
             break
         speso += usati or costo
         segna_consumo(db, modello, usati or costo)
-        db.execute("UPDATE abbinamenti SET llm_verdetto=?, llm_motivo=? "
+        db.execute("UPDATE abbinamenti SET llm_verdetto=?, llm_motivo=?, rigiudica=0 "
                    "WHERE bando_id=? AND profilo_id=?",
                    (risposta.get("verdetto"), risposta.get("motivo"),
                     b["id"], b["profilo_id"]))

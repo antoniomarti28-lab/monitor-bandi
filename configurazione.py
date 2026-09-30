@@ -192,10 +192,15 @@ def importa(db):
     for ident in dati["archiviati"]:
         db.execute("UPDATE bandi SET archiviato=1 WHERE id=?", (ident,))
 
-    # I giudizi dei profili cambiati non valgono piu'.
+    # I giudizi dei profili cambiati vanno rifatti. Si segnano (`rigiudica`) invece di
+    # azzerarli: fino a quando il modello non li sostituisce restano quelli vecchi, e
+    # l'elenco non si svuota per qualche giorno (il 30 set 2026, cambiando Garage 68,
+    # la sua pagina sarebbe rimasta senza bandi fino a meta' settimana).
+    if cambiati and "rigiudica" not in {r[1] for r in db.execute("PRAGMA table_info(abbinamenti)")}:
+        db.execute("ALTER TABLE abbinamenti ADD COLUMN rigiudica INTEGER DEFAULT 0")
     for ident in cambiati:
-        db.execute("UPDATE abbinamenti SET llm_verdetto=NULL, llm_motivo=NULL "
-                   "WHERE profilo_id=?", (ident,))
+        db.execute("UPDATE abbinamenti SET rigiudica=1 "
+                   "WHERE profilo_id=? AND llm_verdetto IS NOT NULL", (ident,))
     db.commit()
     return cambiati
 

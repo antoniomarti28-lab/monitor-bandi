@@ -43,10 +43,20 @@ def costruisci():
     per_bando = {}
     for r in db.execute("SELECT * FROM abbinamenti"):
         chiavi = r.keys()
+        motivi = json.loads(r["motivi"] or "[]")
+        verdetto = r["llm_verdetto"] if "llm_verdetto" in chiavi else None
+        motivo = r["llm_motivo"] if "llm_motivo" in chiavi else None
+        # Punteggio 0 = escluso da una regola (territorio, fonte di un altro profilo, parole
+        # escluse, importo). Un «si» o «forse» dato PRIMA di quella regola non si cancella
+        # dall'archivio (e' costato gettoni e potrebbe tornare valido se il profilo cambia),
+        # ma in pagina non puo' comparire fra i bandi a cui si puo' partecipare: il 30 set
+        # 2026 un bando di Cariplo «solo Lombardia» era ancora fra i «Puoi parteciparci».
+        if r["punteggio"] == 0 and verdetto in ("si", "forse"):
+            verdetto = "no"
+            motivo = motivi[0] if motivi else "escluso dalle regole del profilo"
         per_bando.setdefault(r["bando_id"], {})[str(r["profilo_id"])] = {
-            "punteggio": r["punteggio"], "motivi": json.loads(r["motivi"] or "[]"),
-            "llm_verdetto": r["llm_verdetto"] if "llm_verdetto" in chiavi else None,
-            "llm_motivo": r["llm_motivo"] if "llm_motivo" in chiavi else None}
+            "punteggio": r["punteggio"], "motivi": motivi,
+            "llm_verdetto": verdetto, "llm_motivo": motivo}
     # La pagina pubblicata si porta dentro tutti i dati, quindi ogni carattere pesa sul
     # tempo di apertura. Misurato sull'archivio vero: il testo dei bandi era il 58% del
     # file (503 KB su 865), e per cinque sesti era testo di bandi gia' CHIUSI, che
