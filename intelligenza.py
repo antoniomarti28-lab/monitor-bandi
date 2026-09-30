@@ -21,6 +21,7 @@ Si usa cosi':
   python intelligenza.py             legge i bandi non ancora letti
 """
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -110,6 +111,49 @@ def migra(db):
     if "llm_motivo" not in colonne_abb:
         db.execute("ALTER TABLE abbinamenti ADD COLUMN llm_motivo TEXT")
     db.commit()
+    migrazioni_una_tantum(db)
+
+
+def migrazioni_una_tantum(db):
+    """Cose da rifare UNA volta dopo aver migliorato il lettore o il giudice.
+
+    Girano solo su GitHub: in locale toccherebbero una copia dell'archivio che poi non
+    coincide piu' con quella buona (regola d'oro: l'archivio vero e' quello su GitHub).
+    Ognuna si segna in `telegram_stato` e non si ripete."""
+    if not os.environ.get("GITHUB_ACTIONS"):
+        return
+    db.executescript("CREATE TABLE IF NOT EXISTS telegram_stato "
+                     "(chiave TEXT PRIMARY KEY, valore TEXT);")
+
+    def da_fare(chiave):
+        return db.execute("SELECT 1 FROM telegram_stato WHERE chiave=?", (chiave,)).fetchone() is None
+
+    def fatta(chiave, n):
+        db.execute("INSERT OR REPLACE INTO telegram_stato (chiave,valore) VALUES (?,?)", (chiave, str(n)))
+        db.commit()
+
+    # 30 set 2026: il ritaglio non conosceva le parole inglesi e buttava il paragrafo con la
+    # scadenza («Perform Europe»). I bandi aperti, lunghi e senza scadenza si rileggono.
+    k = "migr_2026-09-30_rilettura_scadenze"
+    if da_fare(k):
+        n = db.execute(
+            "UPDATE bandi SET analizzato_il=NULL WHERE aperto=1 AND archiviato=0 "
+            "AND scadenza IS NULL AND length(testo) > ?", (BUDGET_CARATTERI,)).rowcount
+        fatta(k, n)
+        print("Da rileggere per la scadenza: %d bandi." % n)
+
+    # 30 set 2026: il giudice scambiava i beneficiari con chi presenta la domanda e leggeva
+    # «compagnie teatrali» come escluso per un'associazione che fa teatro. Le istruzioni sono
+    # cambiate: i «no» di Garage68 e Labo Art sui bandi ancora aperti si rigiudicano.
+    k = "migr_2026-09-30_rigiudizio_no"
+    if da_fare(k):
+        n = db.execute(
+            "UPDATE abbinamenti SET llm_verdetto=NULL, llm_motivo=NULL "
+            "WHERE llm_verdetto='no' AND profilo_id IN (1,2) AND avvisato=0 AND bando_id IN ("
+            "SELECT id FROM bandi WHERE aperto=1 AND archiviato=0 "
+            "AND (scadenza IS NULL OR scadenza >= date('now')))").rowcount
+        fatta(k, n)
+        print("Da rigiudicare con le istruzioni nuove: %d abbinamenti." % n)
 
 
 def impostazioni():
@@ -131,16 +175,38 @@ PESI_PARAGRAFO = [
          "contributo di", "contributo pari a", "contributo massimo", "richiesta di contributo",
          "non superiore a", "fino a un massimo", "massimo erogabile", "cofinanziamento"]),
     (3, ["scadenz", "entro il", "entro e non oltre", "termine per", "presentazione delle domand",
-         "chiusura", "apertura", "finestra"]),
+         "chiusura", "apertura", "finestra",
+         # Pagine in inglese, francese, spagnolo, tedesco: fino al 30 set 2026 solo le
+         # parole italiane davano punti, e in «Perform Europe» il paragrafo con
+         # «submit ... before 22 October 2026» valeva zero e veniva buttato: la pagina
+         # aveva la scadenza e l'app non la riportava.
+         "deadline", "closing date", "closes on", "close on", "apply by", "apply before",
+         "submit", "before 2", "until 2", "due date", "call opens", "application period",
+         "conditions of the call", "how to apply", "timeline",
+         "date limite", "date de cloture", "fecha limite", "plazo", "convocatoria abierta",
+         "bewerbungsfrist", "einsendeschluss", "anmeldeschluss"]),
     (3, ["possono partecipare", "possono presentare", "destinatari", "beneficiari",
-         "soggetti ammissibili", "requisiti", "chi puo", "sono ammessi", "ammissibilita"]),
+         "soggetti ammissibili", "requisiti", "chi puo", "sono ammessi", "ammissibilita",
+         "eligib", "who can apply", "applicants", "open to", "criteria",
+         "admissible", "elegible", "pueden presentar", "teilnahmeberechtigt"]),
     (2, ["importo", "dotazione", "stanziament", "risorse", "contributo massimo",
-         "budget", "plafond", "euro"]),
+         "budget", "plafond", "euro", "grant", "funding", "maximum", "subvenci"]),
     (2, ["oggetto", "finalit", "obiettiv", "il presente bando", "il presente avviso",
          "interventi ammissibili"]),
 ]
 
 SEPARA = re.compile(r"\n\s*\n|\n(?=[A-ZÀ-Ü0-9])")
+
+
+# Una data di quest'anno o del prossimo, scritta con il nome del mese (in piu' lingue) o
+# come 22/10/2026: un paragrafo che ne ha una e' il candidato naturale per la scadenza.
+MESI = (r"gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|"
+        r"novembre|dicembre|january|february|march|april|may|june|july|august|september|"
+        r"october|november|december|janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t|"
+        r"octobre|d[eé]cembre|enero|febrero|abril|mayo|junio|julio|septiembre|octubre|"
+        r"noviembre|diciembre|januar|februar|m[aä]rz|juni|juli|oktober|dezember")
+DATA_VICINA = re.compile(
+    r"(?i)\b(?:%s)\b[^\n]{0,12}\b(?:2026|2027)\b|\b\d{1,2}[/.-]\d{1,2}[/.-](?:2026|2027)\b" % MESI)
 
 
 MARCATORE = "--- dalla pagina web ---"
@@ -179,6 +245,8 @@ def ritaglia(testo, budget=BUDGET_CARATTERI):
         basso = p.lower()
         punti = sum(peso for peso, parole in PESI_PARAGRAFO
                     if any(k in basso for k in parole))
+        if DATA_VICINA.search(p):
+            punti += 3
         if i < 2:
             punti += 5  # l'inizio dice quasi sempre di cosa si tratta
         punteggiati.append((punti, i, p))
@@ -304,8 +372,12 @@ Campi richiesti:
                   false se e' una notizia, un articolo, una graduatoria o un resoconto.
   "aperto"      : true se le domande si possono ancora presentare, false se e' chiuso
                   o gia' assegnato, null se non si capisce.
-  "scadenza"    : data in formato AAAA-MM-GG, oppure null. Per un'audizione: il termine
-                  per mandare la candidatura; se non c'e', il giorno dell'audizione.
+  "scadenza"    : data in formato AAAA-MM-GG, oppure null. Il testo puo' essere in
+                  inglese, francese, spagnolo o tedesco: «submit before 22 October 2026,
+                  23:59» vale 2026-10-22, «deadline: 3 March» con l'anno del bando vale
+                  quella data. Cerca in particolare sotto titoli come «Conditions of the
+                  call», «Deadline», «How to apply», «Scadenza». Per un'audizione: il
+                  termine per mandare la candidatura; se non c'e', il giorno dell'audizione.
   "importo"     : la dotazione COMPLESSIVA del bando, cioe' quanto mette a disposizione
                   l'ente in tutto, come testo (es. "3.000.000 €"), oppure null.
   "contributo"  : quanto puo' ottenere al massimo UN SINGOLO richiedente per il suo
@@ -318,13 +390,22 @@ Campi richiesti:
                   "misto", "audizione" (una compagnia o produzione cerca artisti).
                   Se dal testo non si capisce, metti null.
   "settori"     : da 1 a 4 parole sull'ambito (es. ["cultura", "teatro"]).
-  "destinatari" : elenco breve di chi puo' partecipare, come scritto nel testo
+  "destinatari" : elenco breve di CHI PUO' PRESENTARE LA DOMANDA, come scritto nel testo
                   (es. ["associazioni di promozione sociale", "ODV iscritte al RUNTS"],
                   o per un'audizione ["danzatrici 20-30 anni", "tecnica contemporanea"]).
+                  Attenzione: non scambiare chi presenta la domanda con chi beneficia dei
+                  progetti. In un bando che finanzia progetti per ragazzi, anziani o
+                  famiglie, i ragazzi sono i beneficiari: chi fa domanda sono gli enti
+                  (associazioni, cooperative, partenariati). Se il testo non dice che enti
+                  possono candidarsi, scrivi i beneficiari ma aggiungi «enti proponenti non
+                  specificati».
   "territorio"  : DOVE vale il bando, cioe' dove devono avere sede o operare i
                   partecipanti. Elenco di nomi di regioni italiane (es. ["Lombardia"],
                   ["Calabria", "Puglia"]), oppure ["Italia"] se vale su tutto il
                   territorio nazionale, oppure ["Europa"] per i programmi europei.
+                  Per un bando di un altro paese metti il nome del paese in italiano
+                  (["Spagna"], ["Regno Unito"], ["Francia"]) e, se e' di una citta', il
+                  paese e la citta' (["Spagna", "Barcellona"]).
                   Attenzione: molti enti finanziano SOLO la propria zona anche quando
                   non lo ripetono a ogni riga. Metti null solo se dal testo non si
                   capisce proprio. Per un'audizione metti null, a meno che il testo
@@ -353,7 +434,20 @@ Per un'audizione, la citta' o il paese dove si svolge NON e' un requisito di res
 chiunque puo' andarci. E' un requisito solo se il testo chiede espressamente di
 risiedere li' o di avere un permesso di lavoro che il profilo non ha.
 
-  "verdetto" : "si" se il profilo rientra chiaramente tra i destinatari,
+Distingui CHI PRESENTA LA DOMANDA da CHI BENEFICIA. Se il bando finanzia progetti rivolti
+a ragazzi, anziani, famiglie o scuole, i destinatari elencati sono spesso i beneficiari:
+a candidarsi sono enti, associazioni, cooperative o partenariati. In quel caso un ente
+che lavora davvero con quelle persone non e' «no»: e' «si» o «forse».
+
+Sei tu a dover essere preciso sulla forma giuridica: e' «no» per questo motivo solo se il
+testo la esclude espressamente (solo enti pubblici, solo imprese, solo persone fisiche,
+solo enti iscritti a un albo che il profilo non ha). Un bando per «compagnie teatrali» o
+«organizzazioni culturali» non esclude un'associazione che fa teatro e cultura.
+
+Il territorio del profilo e' l'elenco «territori»: un bando di un paese o di una citta'
+che compare li' (per esempio Spagna, Regno Unito, Europa) e' valido per il profilo.
+
+  "verdetto" : "si" se il profilo rientra chiaramente tra chi puo' presentare domanda,
                "forse" se il testo non basta per escluderlo,
                "no" se il profilo e' escluso (tipo di ente sbagliato, territorio sbagliato,
                requisiti che non ha, oppure non e' quello che il profilo cerca).
@@ -574,7 +668,7 @@ def giudica_finalisti(db, prova=False, soglia=40):
         "JOIN bandi b ON b.id = a.bando_id "
         "WHERE a.llm_verdetto IS NULL AND a.punteggio >= ? AND b.aperto = 1 "
         "AND b.analizzato_il IS NOT NULL AND b.archiviato = 0 "
-        "ORDER BY a.punteggio DESC LIMIT 20", (soglia,))]
+        "ORDER BY a.punteggio DESC LIMIT 40", (soglia,))]
     if not candidati:
         print("Nessun finalista da giudicare.")
         return 0

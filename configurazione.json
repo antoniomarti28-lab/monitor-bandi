@@ -4,7 +4,7 @@
       "id": 1,
       "nome": "Garage68",
       "tipo_ente": "Associazione non riconosciuta",
-      "racconto": "Garage 68 è un’associazione culturale con sede a Vibo Valentia (VV) che si occupa di rigenerazione urbana, arte contemporanea, musica sperimentale e teatro. Il collettivo trasforma spazi pubblici o dimenticati della città in luoghi di produzione e fruizione culturale, promuovendo una programmazione dal basso e partecipata.\n\nTra le sue attività principali spicca Riemersa Festival, un progetto che “riemerge” luoghi poco conosciuti o abbandonati di Vibo Valentia (come Porta del Conte d’Apice, il Parco Archeologico Sant’Aloe e altri spazi urbani) attraverso performance, installazioni, concerti e incontri. Garage 68 produce inoltre spettacoli teatrali e performativi che affrontano temi sociali e politici, come la guerra vista attraverso gli occhi di un bambino.",
+      "racconto": "Garage 68 è un’associazione culturale con sede a Vibo Valentia (VV) che si occupa di rigenerazione urbana, arte contemporanea, musica sperimentale e teatro. Il collettivo trasforma spazi pubblici o dimenticati della città in luoghi di produzione e fruizione culturale, promuovendo una programmazione dal basso e partecipata.\n\nTra le sue attività principali spicca Riemersa Festival, un progetto che “riemerge” luoghi poco conosciuti o abbandonati di Vibo Valentia (come Porta del Conte d’Apice, il Parco Archeologico Sant’Aloe e altri spazi urbani) attraverso performance, installazioni, concerti e incontri. Garage 68 produce inoltre spettacoli teatrali e performativi che affrontano temi sociali e politici, come la guerra vista attraverso gli occhi di un bambino.\n\nGarage 68 opera anche a Barcellona e a Londra: sono aperti a bandi, residenze, premi e progetti internazionali, anche fuori dall'Italia, ai quali l'associazione puo' candidarsi.",
       "settori": [
         "Cultura e arte",
         "Teatro e spettacolo",
@@ -18,7 +18,9 @@
       "regioni": [
         "Calabria",
         "Tutta Italia",
-        "Europa"
+        "Europa",
+        "Spagna",
+        "Regno Unito"
       ],
       "parole": [
         "residenza artistica",
@@ -228,6 +230,7 @@
       "ente": "Impresa sociale Con i Bambini",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },
@@ -237,6 +240,7 @@
       "ente": "Fondazione Alta Mane Italia",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },
@@ -256,6 +260,7 @@
       "ente": "Agenzia Erasmus+ INDIRE",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },
@@ -265,6 +270,7 @@
       "ente": "Fondazione Mission Bambini",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     }
@@ -1797,7 +1803,8 @@
       "ente": "MiC - Direzione Generale Creativita' Contemporanea",
       "attivo": true,
       "profili": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -1806,7 +1813,8 @@
       "ente": "European Cultural Foundation",
       "attivo": true,
       "profili": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -1835,7 +1843,8 @@
       "ente": "Associazione Scenario",
       "attivo": true,
       "profili": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -1864,7 +1873,8 @@
       "ente": "Fondazione Unipolis (culturability)",
       "attivo": true,
       "profili": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -1883,6 +1893,7 @@
       "ente": "Istituto Buddista Italiano Soka Gakkai",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },
@@ -1892,6 +1903,7 @@
       "ente": "Ufficio per le politiche in favore delle persone con disabilita'",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },
@@ -1901,6 +1913,7 @@
       "ente": "Dipartimento per le politiche della famiglia",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },
@@ -1910,6 +1923,7 @@
       "ente": "UniCredit Foundation",
       "attivo": true,
       "profili": [
+        1,
         2
       ]
     },

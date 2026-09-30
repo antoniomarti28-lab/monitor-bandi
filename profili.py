@@ -56,7 +56,18 @@ REGIONI = {
     "Tutta Italia": ["nazionale", "tutto il territorio nazionale", "italia"],
     "Europa": ["europea", "europeo", "unione europea", "erasmus", "horizon", "interreg",
                "creative europe"],
+    # Garage 68 lavora anche a Barcellona e a Londra (30 set 2026): i bandi di quei paesi
+    # valgono per lui. Si dichiarano come «regioni» per poterle spuntare nel profilo.
+    "Spagna": ["spagna", "spagnol", "spain", "spanish", "catalogna", "catalunya", "catalonia",
+               "barcellona", "barcelona", "madrid"],
+    "Regno Unito": ["regno unito", "united kingdom", "britanni", "londra", "london", "inghilterra",
+                    "england", "scozia", "scotland", "galles", "wales"],
 }
+
+# Paesi stranieri: non servono a scartare un bando «perche' parla di un'altra zona»
+# (un testo europeo cita mille paesi), ma solo a riconoscere dove vale quando il modello
+# lo dichiara, e a far risultare in regola chi ci lavora.
+ESTERI = ("Spagna", "Regno Unito")
 
 # Il modello, quando dice dove vale un bando, non usa sempre i nostri nomi: ha risposto
 # «Piedmont» (in inglese) e «Vibo Valentia» (una provincia). Senza questa tabella quei
@@ -67,6 +78,8 @@ ALTRI_NOMI = {
     "aosta valley": "Valle d'Aosta", "south tyrol": "Trentino-Alto Adige",
     "trentino south tyrol": "Trentino-Alto Adige", "friuli venezia giulia": "Friuli-Venezia Giulia",
     "emilia romagna": "Emilia-Romagna", "the marches": "Marche",
+    "uk": "Regno Unito", "u k": "Regno Unito", "great britain": "Regno Unito",
+    "gran bretagna": "Regno Unito", "britain": "Regno Unito",
 }
 
 # Le province, raggruppate per regione: se un bando vale «a Vibo Valentia», vale in Calabria.
@@ -332,7 +345,8 @@ def valuta(bando, profilo):
             motivi.append(trovata)
         else:
             citate = [r for r, chiavi in REGIONI.items()
-                      if r not in ("Tutta Italia", "Europa") and any(contiene(testo, k) for k in chiavi)]
+                      if r not in ("Tutta Italia", "Europa") + ESTERI
+                      and any(contiene(testo, k) for k in chiavi)]
             if citate:
                 return 0, ["riguarda un'altra zona (%s)" % citate[0]]
             punti += PESI["regione_generica"]
