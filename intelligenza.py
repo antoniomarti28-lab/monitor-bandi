@@ -174,6 +174,24 @@ def migrazioni_una_tantum(db):
         fatta(k, n)
         print("Da rigiudicare anche i si e i forse: %d abbinamenti." % n)
 
+    # 1 ott 2026: «Per Chi Crea» (SIAE) e' rivolto a soggetti pubblici o privati che presentano
+    # un progetto a sostegno di artisti under 35. Il lettore aveva scritto gli artisti come
+    # destinatari e il giudice aveva dato «no» ad associazioni che possono candidarsi. Si
+    # rileggono i bandi aperti con un «no» di questo tipo e si rifanno i giudizi.
+    k = "migr_2026-10-01_artisti_under35"
+    if da_fare(k):
+        cond = ("llm_verdetto='no' AND avvisato=0 AND bando_id IN ("
+                "SELECT id FROM bandi WHERE aperto=1 AND archiviato=0 "
+                "AND (scadenza IS NULL OR scadenza >= date('now'))) "
+                "AND (llm_motivo LIKE '%persone fisiche%' OR llm_motivo LIKE '%under%' "
+                "OR llm_motivo LIKE '%35 anni%' OR llm_motivo LIKE '%giovani autori%' "
+                "OR llm_motivo LIKE '%individual%')")
+        db.execute("UPDATE bandi SET analizzato_il=NULL WHERE id IN "
+                   "(SELECT bando_id FROM abbinamenti WHERE " + cond + ")")
+        n = db.execute("UPDATE abbinamenti SET rigiudica=1 WHERE " + cond).rowcount
+        fatta(k, n)
+        print("Rilettura e nuovo giudizio per i bandi per artisti: %d abbinamenti." % n)
+
 
 def impostazioni():
     imp = avvisi.carica()
@@ -417,7 +435,10 @@ Campi richiesti:
                   famiglie, i ragazzi sono i beneficiari: chi fa domanda sono gli enti
                   (associazioni, cooperative, partenariati). Se il testo non dice che enti
                   possono candidarsi, scrivi i beneficiari ma aggiungi «enti proponenti non
-                  specificati».
+                  specificati». Vale anche per gli artisti: se il testo dice «rivolto a
+                  soggetti pubblici o privati (incluse persone fisiche) che presentano un
+                  progetto a sostegno di artisti under 35», chi fa domanda sono «soggetti
+                  pubblici o privati», e gli artisti under 35 sono i beneficiari del progetto.
   "territorio"  : DOVE vale il bando, cioe' dove devono avere sede o operare i
                   partecipanti. Elenco di nomi di regioni italiane (es. ["Lombardia"],
                   ["Calabria", "Puglia"]), oppure ["Italia"] se vale su tutto il
@@ -457,6 +478,13 @@ Distingui CHI PRESENTA LA DOMANDA da CHI BENEFICIA. Se il bando finanzia progett
 a ragazzi, anziani, famiglie o scuole, i destinatari elencati sono spesso i beneficiari:
 a candidarsi sono enti, associazioni, cooperative o partenariati. In quel caso un ente
 che lavora davvero con quelle persone non e' «no»: e' «si» o «forse».
+Lo stesso per gli artisti: «progetto a sostegno di artisti under 35», «opere di giovani
+autori», «tour, festival o rassegne che coinvolgano artisti under 35» sono bandi per
+chi presenta un PROGETTO (anche un'associazione o un festival) con quegli artisti dentro;
+l'eta' e la cittadinanza riguardano gli artisti coinvolti, non chi fa domanda. In quel
+caso un'associazione che organizza festival o spettacoli non e' «no»: e' «si» o «forse».
+Non e' «no» solo perche' il testo cita persone fisiche fra i soggetti ammessi: se accanto
+ci sono anche soggetti pubblici o privati, un'associazione e' fra loro.
 
 Sei tu a dover essere preciso sulla forma giuridica: e' «no» per questo motivo solo se il
 testo la esclude espressamente (solo enti pubblici, solo imprese, solo persone fisiche,

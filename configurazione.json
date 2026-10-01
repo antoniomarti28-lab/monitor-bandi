@@ -4,7 +4,7 @@
       "id": 1,
       "nome": "Garage68",
       "tipo_ente": "Associazione non riconosciuta",
-      "racconto": "Garage 68 è un’associazione culturale con sede a Vibo Valentia (VV) che si occupa di rigenerazione urbana, arte contemporanea, musica sperimentale e teatro. Il collettivo trasforma spazi pubblici o dimenticati della città in luoghi di produzione e fruizione culturale, promuovendo una programmazione dal basso e partecipata.\n\nTra le sue attività principali spicca Riemersa Festival, un progetto che “riemerge” luoghi poco conosciuti o abbandonati di Vibo Valentia (come Porta del Conte d’Apice, il Parco Archeologico Sant’Aloe e altri spazi urbani) attraverso performance, installazioni, concerti e incontri. Garage 68 produce inoltre spettacoli teatrali e performativi che affrontano temi sociali e politici, come la guerra vista attraverso gli occhi di un bambino.\n\nGarage 68 opera anche a Barcellona e a Londra: sono aperti a bandi, residenze, premi e progetti internazionali, anche fuori dall'Italia, ai quali l'associazione puo' candidarsi.",
+      "racconto": "Garage 68 è un’associazione culturale con sede a Vibo Valentia (VV) che si occupa di rigenerazione urbana, arte contemporanea, musica sperimentale e teatro. Il collettivo trasforma spazi pubblici o dimenticati della città in luoghi di produzione e fruizione culturale, promuovendo una programmazione dal basso e partecipata.\n\nTra le sue attività principali spicca Riemersa Festival, un progetto che “riemerge” luoghi poco conosciuti o abbandonati di Vibo Valentia (come Porta del Conte d’Apice, il Parco Archeologico Sant’Aloe e altri spazi urbani) attraverso performance, installazioni, concerti e incontri. Garage 68 produce inoltre spettacoli teatrali e performativi che affrontano temi sociali e politici, come la guerra vista attraverso gli occhi di un bambino.\n\nGarage 68 opera anche a Barcellona e a Londra: sono aperti a bandi, residenze, premi e progetti internazionali, anche fuori dall'Italia, ai quali l'associazione puo' candidarsi.\n\nGarage 68 si presenta di solito come associazione, ma puo' candidarsi anche come gruppo informale o come impresa: un bando riservato a gruppi informali o a imprese non e' un «no» automatico. Organizza molti festival ed eventi e cerca fondi per produrli (Riemersa Festival): i bandi per festival, rassegne ed eventi sono fra i piu' importanti.",
       "settori": [
         "Cultura e arte",
         "Teatro e spettacolo",
@@ -35,7 +35,7 @@
       "id": 2,
       "nome": "Labo Art Tropea",
       "tipo_ente": "Associazione di promozione sociale (APS)",
-      "racconto": "LaboArt Tropea è un’associazione culturale, iscritta al RUNTS, che usa soprattutto teatro, danza e arti performative come strumenti di inclusione, cura e partecipazione sociale.\n\nIn pratica, organizza:\n\nlaboratori e workshop teatrali per bambini, giovani e adulti;\n\nattività rivolte a persone con disabilità, fragilità o rischio di marginalità;\n\npercorsi di teatro sociale e di comunità;\n\nspettacoli, performance, incontri e iniziative culturali;\n\nil festival “Teatro d’aMare”, con teatro, danza, musica, installazioni, dibattiti e laboratori nel centro storico di Tropea.",
+      "racconto": "LaboArt Tropea è un’associazione culturale, iscritta al RUNTS, che usa soprattutto teatro, danza e arti performative come strumenti di inclusione, cura e partecipazione sociale.\n\nIn pratica, organizza:\n\nlaboratori e workshop teatrali per bambini, giovani e adulti;\n\nattività rivolte a persone con disabilità, fragilità o rischio di marginalità;\n\npercorsi di teatro sociale e di comunità;\n\nspettacoli, performance, incontri e iniziative culturali;\n\nil festival “Teatro d’aMare”, con teatro, danza, musica, installazioni, dibattiti e laboratori nel centro storico di Tropea.\n\nIl festival «Teatro d'aMare» e' importante per LaboArt e ha bisogno di fondi: i bandi per festival, rassegne ed eventi culturali sono fra i piu' importanti.",
       "settori": [
         "Cultura e arte",
         "Teatro e spettacolo",
@@ -58,7 +58,7 @@
       "id": 5,
       "nome": "Mati",
       "tipo_ente": "Artista (persona singola)",
-      "racconto": "Mati e' una ballerina di danza contemporanea. Cerca due cose.\n\n1. TUTTI gli annunci di audizioni di COMPAGNIE di danza CONTEMPORANEA, in Italia e all'estero: per entrare in compagnia, per una produzione, per una tournee o per una sostituzione.\n\n2. In ITALIA, anche i lavori singoli adatti a una ballerina contemporanea, pure se non vengono da una compagnia: una performance, un evento, un video o un videoclip, un'installazione, una singola produzione teatrale o di un coreografo.\n\nPer lei conta sapere se e' pagato, non pagato o uno stage, chi cerca e in che citta'.\n\nNon le interessano: balletto classico puro, musical, hip hop e danze commerciali, animazione in villaggi e discoteche, casting per TV o talent, concorsi e premi per scuole, posti da insegnante, e 'audizioni' che sono in realta' corsi, stage formativi o intensivi a pagamento.",
+      "racconto": "Mati e' una ballerina di danza contemporanea: 24 anni, italiana, 18 anni di esperienza, di cui 3 in compagnia. Va bene lavorare in tutta Europa.\n\nCerca tutte le opportunita' per una danzatrice contemporanea che NON chiedono di pagare per partecipare: audizioni, residenze, bandi, premi, borse, progetti, lavori singoli, training gratuito. La PRIORITA' sono le audizioni di COMPAGNIE di danza CONTEMPORANEA (per entrare in compagnia, per una produzione, una tournee o una sostituzione).\n\nIn ITALIA le interessano anche i lavori singoli adatti a una ballerina contemporanea, pure se non vengono da una compagnia: una performance, un evento, un video o un videoclip, un'installazione, una singola produzione teatrale o di un coreografo.\n\nPer lei conta sapere se e' pagato, non pagato o uno stage, chi cerca e in che citta'.\n\nNon le interessa nulla che richieda un pagamento per partecipare (corsi, stage formativi o intensivi a pagamento, 'audizioni' che in realta' sono corsi). Non le interessano nemmeno balletto classico puro, musical, animazione in villaggi e discoteche, posti da insegnante.",
       "settori": [
         "Danza"
       ],
@@ -72,7 +72,9 @@
         "dancers",
         "ballerine",
         "danzatrice",
-        "performer contemporanea"
+        "performer contemporanea",
+        "residenza",
+        "open call"
       ],
       "escluse": [],
       "importo_min": null,
