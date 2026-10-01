@@ -503,15 +503,78 @@ def domanda_giudizio(b, profilo):
 
 # ---------------------------------------------------------------- primo passaggio
 
-def profilo_prioritario():
-    """Il profilo che passa avanti nelle code di lettura e di giudizio: `profilo_prioritario`
-    in configurazione.json (assente = nessuno). Lo ha chiesto Antonio il 1 ott 2026 per LaboArt."""
+def _priorita_configurata():
+    """(profilo, data di attivazione) da `profilo_prioritario` in configurazione.json: un numero
+    oppure {"profilo": 2, "dal": "2026-10-01"}. (None, '') se non c'e'."""
     try:
         import configurazione
         v = configurazione.leggi_file().get("profilo_prioritario")
-        return int(v) if v else None
+        if isinstance(v, dict):
+            return (int(v["profilo"]) if v.get("profilo") else None), str(v.get("dal") or "")
+        return (int(v) if v else None), ""
     except Exception:
+        return None, ""
+
+
+def profilo_prioritario():
+    """Il profilo che passa avanti nelle code di lettura e di giudizio, FINCHE' HA ARRETRATI.
+    Lo ha chiesto Antonio il 1 ott 2026 per LaboArt, con questa condizione: smaltito il
+    blocco, le code tornano bilanciate. Quando `controlla_priorita` vede che l'arretrato e'
+    finito segna «esaurita» nel database, e da quel momento qui torna None. Per riattivarla
+    basta cambiare la data «dal» nella configurazione."""
+    prio, dal = _priorita_configurata()
+    if not prio:
         return None
+    try:
+        con = sqlite3.connect(DB)
+        r = con.execute("SELECT valore FROM telegram_stato WHERE chiave='priorita_esaurita'").fetchone()
+        con.close()
+        if r and r[0] == "%s@%s" % (prio, dal):
+            return None
+    except Exception:
+        pass   # tabella ancora assente: la priorita' non e' mai stata chiusa
+    return prio
+
+
+def controlla_priorita(db):
+    """Se il profilo prioritario non ha piu' niente da leggere ne' da giudicare, chiude la
+    priorita' e lo dice su Telegram: da domani le code sono di nuovo bilanciate."""
+    prio = profilo_prioritario()
+    if not prio:
+        return False
+    try:
+        import profili
+        padroni = profili.profili_delle_fonti()
+        da_leggere_suoi = sum(1 for b in da_leggere(db, 10 ** 6)
+                              if padroni.get(b["fonte"]) is None or prio in padroni[b["fonte"]])
+        da_giudicare = db.execute(
+            "SELECT COUNT(*) FROM abbinamenti a JOIN bandi b ON b.id=a.bando_id "
+            "WHERE a.profilo_id=? AND ((a.llm_verdetto IS NULL AND a.punteggio >= 40) "
+            "OR (a.rigiudica = 1 AND a.punteggio > 0)) "
+            "AND b.aperto = 1 AND b.analizzato_il IS NOT NULL AND b.archiviato = 0",
+            (prio,)).fetchone()[0]
+    except Exception as e:
+        print("Priorita': non riesco a contare l'arretrato (%s)." % type(e).__name__)
+        return False
+    if da_leggere_suoi or da_giudicare:
+        print("Priorita' profilo %s: restano %d da leggere e %d da giudicare." % (prio, da_leggere_suoi, da_giudicare))
+        return False
+    _, dal = _priorita_configurata()
+    db.executescript("CREATE TABLE IF NOT EXISTS telegram_stato (chiave TEXT PRIMARY KEY, valore TEXT);")
+    db.execute("INSERT OR REPLACE INTO telegram_stato (chiave,valore) VALUES ('priorita_esaurita',?)",
+               ("%s@%s" % (prio, dal),))
+    db.commit()
+    print("Priorita' profilo %s: arretrato smaltito, le code tornano bilanciate." % prio)
+    try:
+        imp = avvisi.carica()
+        t = imp.get("telegram", {})
+        if t.get("token") and t.get("chat_id"):
+            avvisi.manda_telegram(t["token"].strip(), t["chat_id"].strip(),
+                                  "Arretrato smaltito: le code di lettura e di giudizio tornano "
+                                  "bilanciate fra i profili.")
+    except Exception:
+        pass   # l'avviso e' un di piu': la priorita' si e' chiusa comunque
+    return True
 
 
 def da_leggere(db, limite):
@@ -703,6 +766,13 @@ def completa_audizioni(db, limite=25, modello=None):
 # ---------------------------------------------------------------- secondo passaggio
 
 def giudica_finalisti(db, prova=False, soglia=40):
+    fatti = _giudica_finalisti(db, prova, soglia)
+    if not prova:
+        controlla_priorita(db)   # a fine lavoro: l'arretrato del profilo prioritario e' finito?
+    return fatti
+
+
+def _giudica_finalisti(db, prova=False, soglia=40):
     """Secondo passaggio: il modello grande solo sui pochi gia' promossi dal filtro."""
     import profili as mod_profili
     imp = impostazioni()

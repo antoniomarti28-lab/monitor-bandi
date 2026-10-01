@@ -2005,5 +2005,8 @@
       "codice": "KZUWl5IleRzr"
     }
   ],
-  "profilo_prioritario": 2
+  "profilo_prioritario": {
+    "profilo": 2,
+    "dal": "2026-10-01"
+  }
 }
