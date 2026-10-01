@@ -1982,6 +1982,18 @@
         "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
         "tipo": "feed"
       }
+    },
+    "Audizioni - TuttoDanzaWeb": {
+      "quando": "2026-10-01T11:44:53+00:00",
+      "riuscita": false,
+      "errore": "non e' un feed valido",
+      "provati": 8
+    },
+    "Unione Buddhista 8x1000": {
+      "quando": "2026-10-01T11:45:15+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
     }
   },
   "proposte_scartate": [
