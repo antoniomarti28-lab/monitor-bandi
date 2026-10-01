@@ -660,3 +660,29 @@ e dei 593 bandi letti fino ad allora solo 96 erano bandi aperti.
   a 190.000, poi il grande fino a 190.000 meno `scorta_giudizi` (70.000). Un giro pieno
   dura ~45 minuti per via del limite al minuto.
 - `jev.smista` non si ferma piu' al primo errore: salta il bando, si arrende dopo tre di fila.
+
+
+## «Riesamina» e giudice «su misura» (1 ott 2026)
+
+Lui: «non essere pignolo, una volta trovato un bando ci si cuce qualcosa su misura» e
+«un tasto Riesamina sugli esclusi, assolutamente critico, niente contentino».
+- **Giudice**: requisiti FISSI (territorio, forma esclusa espressamente, albo, si paga,
+  requisiti personali di chi fa domanda) = «no»; requisiti ADATTABILI (artisti con certe
+  caratteristiche, partenariato, presentarsi come gruppo informale/impresa) = «forse» con
+  «Per rientrare: …» in coda al motivo (`con_servirebbe`). Vale per i giudizi nuovi.
+- **Riesame** (`intelligenza.riesamina_richiesti`, chiamato all'inizio di
+  `_giudica_finalisti`, max 8 per giro): la pagina scrive `riesami: [{bando, profilo,
+  quando}]` in configurazione.json; il modello grande con `reasoning_effort: medium` legge
+  il TESTO INTERO (16.000 caratteri) e deve citare la frase alla lettera; `citazione_vera`
+  la cerca nel testo (perdona maiuscole, spazi, virgolette, «è»/«e'», tagli con «...»).
+  Regole fisse (`decidi_riesame`): «no» adattabile → «forse»; «si» senza citazione →
+  «forse»; «no» senza citazione → resta «no», «da controllare». Una seconda richiesta se
+  la frase manca o non compare. Esito in `abbinamenti.riesame_il` / `riesame` (JSON), la
+  scheda lo mostra con la frase; chi e' riesaminato non torna al primo giudice quando il
+  profilo cambia. Senza testo (<300 caratteri) non si riesamina e lo si dice.
+- **Prova vera (6+2 riesami, ~31k gettoni, ~4k a riesame)**: Per Chi Crea Live → si
+  (frase giusta); Scenario → forse adattabile; Ballet Milano → no (classico); CieLAROQUE →
+  si («Preference … based in Austria» = preferenza, non requisito); compliance → no ambito.
+  **Errore mio trovato dalla prova**: la prima regola trasformava un «no» senza frase in
+  «forse»; su «Festival, cori e bande» lo scarto era vero («singole associazioni» escluse).
+  Ora resta «no». Stessa prova: LaboArt aveva un «si» SBAGLIATO su quel bando.

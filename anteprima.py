@@ -41,9 +41,24 @@ def costruisci():
         "substr(testo,1,3000) AS estratto, length(testo) AS quanto_testo "
         "FROM bandi ORDER BY pubblicato DESC, trovato_il DESC")]
     per_bando = {}
+    # Riesami chiesti dalla pagina e non ancora fatti: la scheda dice «in attesa» invece di
+    # rimettere il tasto, cosi' non lo si preme due volte.
+    try:
+        import configurazione
+        chiesti = {(str(x.get("bando")), str(x.get("profilo"))): str(x.get("quando") or "")
+                   for x in (configurazione.leggi_file().get("riesami") or []) if isinstance(x, dict)}
+    except Exception:
+        chiesti = {}
     for r in db.execute("SELECT * FROM abbinamenti"):
         chiavi = r.keys()
         motivi = json.loads(r["motivi"] or "[]")
+        riesame_il = r["riesame_il"] if "riesame_il" in chiavi else None
+        try:
+            riesame = json.loads(r["riesame"]) if "riesame" in chiavi and r["riesame"] else None
+        except ValueError:
+            riesame = None
+        quando = chiesti.get((r["bando_id"], str(r["profilo_id"])))
+        in_attesa = bool(quando) and not (riesame_il and riesame_il >= quando)
         verdetto = r["llm_verdetto"] if "llm_verdetto" in chiavi else None
         motivo = r["llm_motivo"] if "llm_motivo" in chiavi else None
         # Punteggio 0 = escluso da una regola (territorio, fonte di un altro profilo, parole
@@ -57,6 +72,10 @@ def costruisci():
         per_bando.setdefault(r["bando_id"], {})[str(r["profilo_id"])] = {
             "punteggio": r["punteggio"], "motivi": motivi,
             "llm_verdetto": verdetto, "llm_motivo": motivo}
+        if riesame:
+            per_bando[r["bando_id"]][str(r["profilo_id"])]["riesame"] = riesame
+        if in_attesa:
+            per_bando[r["bando_id"]][str(r["profilo_id"])]["riesame_chiesto"] = True
     # La pagina pubblicata si porta dentro tutti i dati, quindi ogni carattere pesa sul
     # tempo di apertura. Misurato sull'archivio vero: il testo dei bandi era il 58% del
     # file (503 KB su 865), e per cinque sesti era testo di bandi gia' CHIUSI, che

@@ -114,6 +114,11 @@ def migra(db):
     # quello vecchio (non si azzera: i bandi non devono sparire dalla pagina per qualche giorno).
     if "rigiudica" not in colonne_abb:
         db.execute("ALTER TABLE abbinamenti ADD COLUMN rigiudica INTEGER DEFAULT 0")
+    # Il «Riesamina» della pagina: quando e com'e' andato il secondo esame (vedi `riesamina`).
+    if "riesame_il" not in colonne_abb:
+        db.execute("ALTER TABLE abbinamenti ADD COLUMN riesame_il TEXT")
+    if "riesame" not in colonne_abb:
+        db.execute("ALTER TABLE abbinamenti ADD COLUMN riesame TEXT")
     db.commit()
     migrazioni_una_tantum(db)
 
@@ -333,7 +338,7 @@ def elenca_modelli(chiave):
         return [m["id"] for m in json.loads(r.read())["data"]]
 
 
-def chiedi(chiave, modello, sistema, domanda, gettoni_max=700):
+def chiedi(chiave, modello, sistema, domanda, gettoni_max=700, sforzo="low"):
     corpo = json.dumps({
         "model": modello,
         "messages": [{"role": "system", "content": sistema},
@@ -345,8 +350,9 @@ def chiedi(chiave, modello, sistema, domanda, gettoni_max=700):
         #    resta a meta' e Groq risponde 400 "json_validate_failed". Successo di nuovo
         #    con 2500 quando ho aggiunto un campo alla risposta: alzato a 4000. Non costa
         #    nulla tenerlo alto, si paga solo quello che il modello scrive davvero.
-        "reasoning_effort": "low",
-        "max_completion_tokens": max(gettoni_max, 4000),
+        # Il riesame chiede "medium": deve ragionare di piu' sul testo intero.
+        "reasoning_effort": sforzo,
+        "max_completion_tokens": max(gettoni_max, 4000 if sforzo == "low" else 8000),
         "response_format": {"type": "json_object"},
     }).encode("utf-8")
     req = Request(API + "/chat/completions", data=corpo, headers=dict(
@@ -501,11 +507,24 @@ lavori pubblici, consumatori privati), e' «no» anche se la forma giuridica sar
 ammessa. Se l'oggetto e' vicino (cultura, arti, sociale, giovani, comunita', territorio)
 o il testo non basta per capirlo, e' «si» o «forse».
 
-  "verdetto" : "si" se il profilo rientra chiaramente tra chi puo' presentare domanda,
-               "forse" se il testo non basta per escluderlo,
-               "no" se il profilo e' escluso (tipo di ente sbagliato, territorio sbagliato,
-               requisiti che non ha, oppure non e' quello che il profilo cerca).
-  "motivo"   : una frase breve in italiano, che cita il punto del bando da cui si capisce."""
+Il profilo e' disposto a costruire un progetto SU MISURA per il bando. Quindi distingui:
+- requisiti FISSI, che il profilo non puo' cambiare: territorio, forma giuridica esclusa
+  espressamente, albo che non ha, si paga per partecipare, eta' o requisiti personali di
+  chi fa domanda quando e' una persona. Questi danno «no».
+- requisiti ADATTABILI, che si soddisfano costruendo il progetto apposta: coinvolgere
+  artisti o persone con certe caratteristiche, fare un partenariato, presentarsi come
+  gruppo informale o impresa se il racconto dice che puo', aggiungere un'attivita'
+  coerente con cio' che fa. Questi NON danno «no»: danno «forse», e in "servirebbe"
+  scrivi cosa dovrebbe fare il profilo per rientrare.
+
+  "verdetto"   : "si" se il profilo rientra chiaramente tra chi puo' presentare domanda,
+                 "forse" se il testo non basta per escluderlo o l'ostacolo e' adattabile,
+                 "no" se il profilo e' escluso da un requisito fisso (tipo di ente
+                 sbagliato, territorio sbagliato, requisiti che non puo' avere) oppure
+                 non e' quello che il profilo cerca.
+  "motivo"     : una frase breve in italiano, che cita il punto del bando da cui si capisce.
+  "servirebbe" : solo per un «forse» con un ostacolo adattabile, cosa dovrebbe fare il
+                 profilo per rientrare (una frase); altrimenti null."""
 
 
 def domanda_lettura(b):
@@ -806,6 +825,9 @@ def _giudica_finalisti(db, prova=False, soglia=40):
     imp = impostazioni()
     migra(db)
     modello = imp["modello_grande"]
+    # Prima i riesami chiesti a mano dalla pagina: sono richieste sue, passano avanti.
+    if not prova and imp["chiave"]:
+        riesamina_richiesti(db)
     db.row_factory = sqlite3.Row
 
     candidati = [dict(r) for r in db.execute(
@@ -850,7 +872,7 @@ def _giudica_finalisti(db, prova=False, soglia=40):
         segna_consumo(db, modello, usati or costo)
         db.execute("UPDATE abbinamenti SET llm_verdetto=?, llm_motivo=?, rigiudica=0 "
                    "WHERE bando_id=? AND profilo_id=?",
-                   (risposta.get("verdetto"), risposta.get("motivo"),
+                   (risposta.get("verdetto"), con_servirebbe(risposta),
                     b["id"], b["profilo_id"]))
         db.commit()
         fatti += 1
@@ -858,6 +880,229 @@ def _giudica_finalisti(db, prova=False, soglia=40):
 
     print("Giudizi %s: %d" % ("simulati" if prova else "dati", fatti))
     return fatti
+
+
+def con_servirebbe(risposta):
+    """Il motivo del giudice, piu' «cosa servirebbe» quando l'ostacolo si puo' aggirare."""
+    motivo = (risposta.get("motivo") or "").strip()
+    servirebbe = (risposta.get("servirebbe") or "").strip()
+    if servirebbe and risposta.get("verdetto") != "no":
+        motivo = (motivo + " Per rientrare: " + servirebbe).strip()
+    return motivo or None
+
+
+# ---------------------------------------------------------------- il riesame
+#
+# 1 ott 2026, chiesto da lui: un tasto «Riesamina» sugli annunci scartati. Il riesame deve
+# essere critico, non un contentino: il primo giudice vede solo «destinatari» e riassunto
+# (aveva scartato i tre bandi «Per Chi Crea» scambiando gli artisti under 35 per chi fa
+# domanda), il riesame legge il testo intero e deve CITARE alla lettera la frase su cui si
+# basa. La citazione si controlla nel testo: uno scarto che non si dimostra con una frase
+# del bando era una deduzione, non una regola, e non regge.
+
+RIESAME_CARATTERI = 16000   # ~4.300 gettoni di testo
+RIESAMI_PER_GIRO = 8
+
+SISTEMA_RIESAME = """Riesamini un bando che un primo giudice ha SCARTATO per un profilo.
+Il profilo ha chiesto un secondo esame. Non sei il suo avvocato: devi capire se lo scarto
+regge, leggendo con attenzione il testo intero (il primo giudice ne aveva visto solo un
+riassunto). Confermare lo scarto e' una risposta normale; ribaltarlo senza una base nel
+testo e' un errore grave.
+Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
+
+Come ragionare:
+1. Trova chi puo' presentare la domanda e cosa si finanzia. Distingui chi PRESENTA la
+   domanda da chi BENEFICIA: ragazzi, scuole, famiglie, «artisti under 35», «giovani
+   autori» sono spesso i beneficiari di un progetto presentato da un ente.
+2. Cerca il motivo per cui il profilo sarebbe escluso. Ci sono tre tipi:
+   - "fisso": un fatto che il profilo non puo' cambiare: territorio, forma giuridica
+     esclusa espressamente senza alternative, iscrizione a un albo che non ha, si paga per
+     partecipare, eta' o requisiti personali di chi fa domanda quando e' una persona.
+   - "ambito": l'oggetto del bando e' lontano da cio' che il profilo fa o dice di cercare
+     nel racconto.
+   - "adattabile": un requisito che il profilo puo' soddisfare costruendo il progetto
+     apposta: coinvolgere artisti o persone con certe caratteristiche, fare un partenariato,
+     presentarsi come gruppo informale o impresa se il racconto dice che puo', aggiungere
+     un'attivita' coerente con cio' che fa. Il profilo e' disposto a cucire un progetto su
+     misura: un requisito adattabile NON e' motivo di scarto.
+3. Decidi:
+   - "no" solo per un motivo fisso o di ambito, dimostrato con una frase del testo;
+   - "forse" se l'unico ostacolo e' adattabile, o se il testo non basta per decidere;
+   - "si" se il testo ammette chiaramente il profilo, dimostrato con una frase del testo.
+
+  "frase"      : la frase del testo su cui ti basi, COPIATA ESATTAMENTE, carattere per
+                 carattere, senza cambiare o togliere parole (al massimo 300 caratteri:
+                 se e' piu' lunga copiane un pezzo continuo). Un programma controlla che
+                 compaia nel testo: se non compare, la tua risposta non vale. null solo
+                 se non esiste una frase che sostenga la tua decisione.
+  "tipo"       : "fisso", "ambito", "adattabile" oppure "nessuno".
+  "verdetto"   : "si", "forse" o "no".
+  "motivo"     : al massimo due frasi in italiano semplice: perche'.
+  "servirebbe" : per un "forse" con ostacolo adattabile, cosa dovrebbe fare il profilo
+                 per rientrare (una frase); altrimenti null."""
+
+
+_VIRGOLETTE = str.maketrans({"’": "'", "‘": "'", "´": "'", "`": "'",
+                             "“": '"', "”": '"', "«": '"', "»": '"',
+                             "–": "-", "—": "-", " ": " "})
+
+
+_ACCENTI = {"à": "a'", "è": "e'", "é": "e'", "ì": "i'", "ò": "o'", "ù": "u'"}
+
+
+def _normale(s):
+    s = " ".join((s or "").translate(_VIRGOLETTE).lower().split())
+    # «è» e «e'» sono la stessa parola: il modello a volte riscrive l'una con l'altra.
+    for accentata, apostrofo in _ACCENTI.items():
+        s = s.replace(accentata, apostrofo)
+    return s
+
+
+def citazione_vera(frase, testo):
+    """La frase compare nel testo? Si perdonano maiuscole, spazi, tipi di virgolette e
+    apostrofi, e i tagli segnati con «...»: ogni pezzo lungo deve esserci davvero."""
+    frase, testo = _normale(frase), _normale(testo)
+    if len(frase) < 15:
+        return False
+    pezzi = [p.strip(" .,;:\"'") for p in re.split(r"\.\.\.|…|\[\s*\]", frase)]
+    pezzi = [p for p in pezzi if len(p) >= 15]
+    return bool(pezzi) and all(p in testo for p in pezzi)
+
+
+def domanda_riesame(b, profilo, testo):
+    racconto = " ".join((profilo.get("racconto") or "").split())[:1500]
+    return ("PROFILO\n  tipo: %s\n  settori: %s\n  territori: %s\n  racconto: %s\n\n"
+            "PRIMO GIUDIZIO: scartato. Motivo dato: %s\n\n"
+            "BANDO\n  titolo: %s\n  ente: %s\n  scadenza: %s\n\nTESTO INTERO:\n%s") % (
+        profilo.get("tipo_ente") or "non specificato",
+        ", ".join(profilo.get("settori", [])) or "qualsiasi",
+        ", ".join(profilo.get("regioni", [])) or "qualsiasi",
+        racconto or "non scritto",
+        b["llm_motivo"] or "non indicato",
+        b["titolo"], b["ente"] or "sconosciuto", b["scadenza"] or "non indicata", testo)
+
+
+def decidi_riesame(r, verificata):
+    """Le regole che il modello non puo' scavalcare. Restituisce (verdetto, motivo)."""
+    verdetto, tipo = r.get("verdetto"), r.get("tipo")
+    motivo = con_servirebbe(r) or ""
+    if verdetto == "no":
+        # Prova sul vero (1 ott 2026, «Festival, cori e bande»): il modello aveva ragione,
+        # il bando esclude «singole associazioni», ma non ha copiato la frase. Trasformarlo
+        # in «forse» sarebbe stato il contentino. Senza frase lo scarto resta, e lo si dice.
+        if not verificata:
+            return "no", ("Scarto confermato, ma senza una frase del bando verificata: da "
+                          "controllare. " + motivo).strip()
+        if tipo == "adattabile":
+            return "forse", con_servirebbe(dict(r, verdetto="forse"))
+        return "no", motivo
+    if verdetto == "si" and not verificata:
+        return "forse", motivo
+    if verdetto in ("si", "forse"):
+        return verdetto, motivo
+    return None, None
+
+
+def richieste_riesame():
+    """Le richieste scritte dalla pagina in configurazione.json: [{bando, profilo, quando}]."""
+    try:
+        import configurazione
+        return [x for x in (configurazione.leggi_file().get("riesami") or [])
+                if isinstance(x, dict) and x.get("bando") and x.get("profilo")]
+    except Exception:
+        return []
+
+
+def riesamina_richiesti(db, limite=RIESAMI_PER_GIRO):
+    """Fa i riesami chiesti e non ancora fatti (riesame_il piu' vecchio della richiesta)."""
+    imp = impostazioni()
+    modello = imp["modello_grande"]
+    vecchio = db.row_factory
+    db.row_factory = sqlite3.Row
+    fatti = 0
+    try:
+        for x in richieste_riesame():
+            if fatti >= limite:
+                print("Riesami: altri restano per il prossimo giro.")
+                break
+            b = db.execute(
+                "SELECT b.*, a.llm_verdetto, a.llm_motivo, a.riesame_il FROM abbinamenti a "
+                "JOIN bandi b ON b.id = a.bando_id WHERE a.bando_id=? AND a.profilo_id=?",
+                (x["bando"], int(x["profilo"]))).fetchone()
+            if not b or (b["riesame_il"] and b["riesame_il"] >= str(x.get("quando") or "")):
+                continue
+            esito = riesamina(db, imp, modello, dict(b), int(x["profilo"]))
+            if esito is None:
+                break   # limite dei gettoni o errore: si riprova al prossimo giro
+            fatti += 1
+    finally:
+        db.row_factory = vecchio
+    if fatti:
+        print("Riesami fatti: %d" % fatti)
+    return fatti
+
+
+def riesamina(db, imp, modello, b, profilo_id):
+    import profili as mod_profili
+    profilo = {p["id"]: p for p in mod_profili.leggi_profili(db)}.get(profilo_id)
+    if not profilo:
+        return False
+    testo = (b["testo"] or "").strip()
+    adesso = datetime.now(timezone.utc).isoformat()
+    if len(testo) < 300:
+        # Senza testo non si riesamina niente: un «forse» per mancanza di prove sarebbe
+        # proprio il contentino che non vuole. Il giudizio resta com'era, e lo si dice.
+        nota = {"il": adesso, "senza_testo": True, "verdetto": b["llm_verdetto"]}
+        db.execute("UPDATE abbinamenti SET riesame_il=?, riesame=? WHERE bando_id=? AND profilo_id=?",
+                   (adesso, json.dumps(nota), b["id"], profilo_id))
+        db.commit()
+        return True
+    if len(testo) > RIESAME_CARATTERI:
+        testo = ritaglia(testo, RIESAME_CARATTERI)
+    domanda = domanda_riesame(b, profilo, testo)
+
+    risposta, verificata = None, False
+    for tentativo in (1, 2):
+        costo = stima_gettoni(SISTEMA_RIESAME + domanda) + 1500
+        if consumo_oggi(db, modello) + costo > imp["gettoni_al_giorno"]:
+            print("Riesame: limite giornaliero vicino sul modello grande, riprovo domani.")
+            return None
+        try:
+            risposta, usati = chiedi(imp["chiave"], modello, SISTEMA_RIESAME, domanda, 600, "medium")
+        except Exception as e:
+            print("  errore sul riesame: %s" % type(e).__name__)
+            return None
+        segna_consumo(db, modello, usati or costo)
+        frase = (risposta.get("frase") or "").strip()
+        verificata = bool(frase) and citazione_vera(frase, testo)
+        if verificata or risposta.get("verdetto") not in ("si", "no") or tentativo == 2:
+            break
+        # Una seconda possibilita', una sola: spesso e' una parola cambiata, non un'invenzione.
+        if frase:
+            domanda += ("\n\nATTENZIONE: la frase che hai citato prima («%s») NON compare nel "
+                        "testo. Ricopiala esattamente dal testo, oppure cambia decisione." % frase[:300])
+        else:
+            domanda += ("\n\nATTENZIONE: prima hai deciso «%s» senza citare la frase. Copia dal "
+                        "testo, esattamente, la frase che lo dimostra, oppure cambia decisione."
+                        % risposta.get("verdetto"))
+        time.sleep(60.0 * (usati or costo) / imp["gettoni_al_minuto"])
+
+    verdetto, motivo = decidi_riesame(risposta, verificata)
+    if not verdetto:
+        # Risposta senza un verdetto valido: resta il giudizio di prima, ma il riesame si
+        # segna lo stesso, altrimenti la richiesta si ripeterebbe a ogni giro.
+        verdetto, motivo = b["llm_verdetto"], b["llm_motivo"]
+    nota = {"il": adesso, "prima": {"verdetto": b["llm_verdetto"], "motivo": b["llm_motivo"]},
+            "frase": risposta.get("frase") if verificata else None,
+            "citazione_trovata": verificata, "tipo": risposta.get("tipo"), "verdetto": verdetto}
+    db.execute("UPDATE abbinamenti SET llm_verdetto=?, llm_motivo=?, rigiudica=0, "
+               "riesame_il=?, riesame=? WHERE bando_id=? AND profilo_id=?",
+               (verdetto, motivo, adesso, json.dumps(nota, ensure_ascii=False),
+                b["id"], profilo_id))
+    db.commit()
+    print("  riesame «%s»: %s -> %s%s" % (b["titolo"][:50], b["llm_verdetto"], verdetto,
+                                          "" if verificata else " (citazione non trovata)"))
+    return True
 
 
 # ---------------------------------------------------------------- giro completo

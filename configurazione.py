@@ -198,9 +198,13 @@ def importa(db):
     # la sua pagina sarebbe rimasta senza bandi fino a meta' settimana).
     if cambiati and "rigiudica" not in {r[1] for r in db.execute("PRAGMA table_info(abbinamenti)")}:
         db.execute("ALTER TABLE abbinamenti ADD COLUMN rigiudica INTEGER DEFAULT 0")
+    # Chi e' gia' stato riesaminato a mano (testo intero, citazione controllata) non torna
+    # al primo giudice, che vede solo un riassunto: lo rifarebbe peggio.
+    riesame = ("riesame_il" in {r[1] for r in db.execute("PRAGMA table_info(abbinamenti)")})
     for ident in cambiati:
         db.execute("UPDATE abbinamenti SET rigiudica=1 "
-                   "WHERE profilo_id=? AND llm_verdetto IS NOT NULL", (ident,))
+                   "WHERE profilo_id=? AND llm_verdetto IS NOT NULL"
+                   + (" AND riesame_il IS NULL" if riesame else ""), (ident,))
     db.commit()
     return cambiati
 

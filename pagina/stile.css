@@ -250,6 +250,9 @@ label.spunta input { width: 20px; height: 20px; margin: 0; accent-color: var(--a
 .verdetto.no { background: var(--allarme-tenue); border-color: transparent; }
 .verdetto.no strong { color: var(--allarme); }
 
+.riesame { font-size: 14px; color: var(--tenue); }
+.riesame b { color: var(--testo); font-weight: 500; }
+.riesame q { color: var(--testo); font-style: italic; }
 .perche { font-size: 14px; color: var(--tenue); }
 .perche b { color: var(--testo); font-weight: 500; }
 .sommario { color: var(--tenue); font-size: 16px; }

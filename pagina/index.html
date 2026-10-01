@@ -408,6 +408,15 @@ async function azione(nome, dati) {
     C.richiesta_giro = dati.quando;
     messaggio = "Scansione richiesta";
 
+  } else if (nome === "riesame") {
+    // Il lavoro automatico la vede (push su configurazione.json) e fa il secondo esame.
+    // Si tengono le richieste degli ultimi 60 giorni: le piu' vecchie sono gia' fatte.
+    const limite = new Date(Date.now() - 60 * 86400000).toISOString();
+    C.riesami = (C.riesami || [])
+      .filter((x) => x.quando >= limite && !(x.bando === dati.bando && x.profilo === dati.profilo));
+    C.riesami.push({ bando: dati.bando, profilo: dati.profilo, quando: new Date().toISOString() });
+    messaggio = "Riesame richiesto";
+
   } else if (nome === "archivia") {
     C.archiviati = dati.archivia
       ? [...new Set([...C.archiviati, dati.id])]
@@ -777,6 +786,23 @@ function scheda(b) {
         b.llm_motivo ? " — " + attr(b.llm_motivo) : ""}</p>`
     : "";
 
+  // Il secondo esame chiesto col tasto «Riesamina»: com'e' andato e su quale frase si basa.
+  const r = b.riesame;
+  let riesame = "";
+  if (r && r.senza_testo) {
+    riesame = `<p class="riesame">Riesame impossibile: non ho il testo intero di questo ${L.uno}, il giudizio resta quello di prima.</p>`;
+  } else if (r) {
+    const quando = r.il ? " il " + dataItaliana(r.il.slice(0, 10)) : "";
+    const esito = r.prima && r.prima.verdetto === r.verdetto
+      ? `Riesaminato${quando}: <b>scarto confermato</b>.`
+      : `Riesaminato${quando}: <b>prima era scartato</b>, ora «${attr(etichette[r.verdetto] || r.verdetto)}».`;
+    riesame = `<p class="riesame">${esito}${r.frase ? ` Dal testo: <q>${attr(r.frase)}</q>` : ""}</p>`;
+  } else if (b.riesame_chiesto) {
+    riesame = `<p class="riesame">Riesame chiesto: lo faccio al prossimo giro.</p>`;
+  }
+  const tastoRiesame = scrivibile() && profiloAttivo && b.llm_verdetto === "no" && !r && !b.riesame_chiesto
+    ? `<button class="tasto piccolo" data-riesamina="${b.id}">Riesamina</button>` : "";
+
   const testo = b.riassunto || b.sommario || "";
   const sommario = testo.length > 220 ? testo.slice(0, 220).replace(/\s+\S*$/, "") + "…" : testo;
 
@@ -812,6 +838,7 @@ function scheda(b) {
     <h2><a href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${attr(b.titolo)}</a></h2>
     ${artista}${soldiRiga}
     ${verdetto}
+    ${riesame}
     ${perche(b)}
     ${sommario ? `<p class="sommario">${attr(sommario)}</p>` : ""}
     <div class="piede-scheda">
@@ -819,6 +846,7 @@ function scheda(b) {
       <div class="tasti-scheda">
         <button class="tasto piccolo" data-apri="${b.id}" aria-expanded="false" aria-controls="d-${b.id}">Dettagli</button>
         ${scrivibile() ? `<button class="tasto piccolo" data-archivia="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
+        ${tastoRiesame}
         <a class="tasto primario" href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${L.apri}</a>
       </div>
     </div>
@@ -969,6 +997,18 @@ function collegaSchede(radice) {
       if (STATICA) { b.closest("article").style.opacity = 0.4; avvisa(DOPO_SALVATAGGIO); return; }
       await caricaProfili();
       aggiorna();
+    };
+  });
+  radice.querySelectorAll("[data-riesamina]").forEach((b) => {
+    b.onclick = async () => {
+      b.disabled = true;
+      if (!await prova("riesame", { bando: b.dataset.riesamina, profilo: Number(profiloAttivo) })) {
+        b.disabled = false;
+        return;
+      }
+      b.textContent = "Riesame chiesto";
+      avvisa("Riesame chiesto. Lo fa il prossimo lavoro automatico: rileggo il " + lessico().uno
+             + " per intero e ti mostro la frase del testo su cui mi baso. Ricarica la pagina fra qualche minuto.");
     };
   });
 }
