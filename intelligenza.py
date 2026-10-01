@@ -503,15 +503,36 @@ def domanda_giudizio(b, profilo):
 
 # ---------------------------------------------------------------- primo passaggio
 
+def profilo_prioritario():
+    """Il profilo che passa avanti nelle code di lettura e di giudizio: `profilo_prioritario`
+    in configurazione.json (assente = nessuno). Lo ha chiesto Antonio il 1 ott 2026 per LaboArt."""
+    try:
+        import configurazione
+        v = configurazione.leggi_file().get("profilo_prioritario")
+        return int(v) if v else None
+    except Exception:
+        return None
+
+
 def da_leggere(db, limite):
     db.row_factory = sqlite3.Row
-    return [dict(r) for r in db.execute(
-        "SELECT id,titolo,ente,testo FROM bandi "
+    righe = [dict(r) for r in db.execute(
+        "SELECT id,titolo,ente,fonte,testo FROM bandi "
         "WHERE analizzato_il IS NULL AND testo IS NOT NULL AND testo <> '' "
         "AND archiviato = 0 "
         # Prima quelli che Jev riconosce come bandi veri; chi non e' passato dal
         # portiere (niente chiave, credito finito) sta a meta', come prima.
-        "ORDER BY COALESCE(jev_bando, 0.5) DESC, trovato_il DESC LIMIT ?", (limite,))]
+        "ORDER BY COALESCE(jev_bando, 0.5) DESC, trovato_il DESC")]
+    prio = profilo_prioritario()
+    if prio:
+        # I bandi delle fonti che servono al profilo prioritario passano avanti; dentro ogni
+        # gruppo resta l'ordine di Jev (l'ordinamento di Python e' stabile). Una fonte che non
+        # dichiara «profili» serve a tutti.
+        import profili
+        padroni = profili.profili_delle_fonti()
+        righe.sort(key=lambda b: 0 if (padroni.get(b["fonte"]) is None
+                                       or prio in padroni[b["fonte"]]) else 1)
+    return righe[:limite]
 
 
 def leggi_bandi(db, prova=False):
@@ -695,7 +716,8 @@ def giudica_finalisti(db, prova=False, soglia=40):
         "WHERE ((a.llm_verdetto IS NULL AND a.punteggio >= ?) OR (a.rigiudica = 1 AND a.punteggio > 0)) "
         "AND b.aperto = 1 AND b.analizzato_il IS NOT NULL AND b.archiviato = 0 "
         # Prima quelli mai giudicati, poi i rifacimenti; dentro ognuno i piu' promettenti.
-        "ORDER BY (a.llm_verdetto IS NULL) DESC, a.punteggio DESC LIMIT 40", (soglia,))]
+        "ORDER BY (a.profilo_id = ?) DESC, (a.llm_verdetto IS NULL) DESC, a.punteggio DESC LIMIT 40",
+        (soglia, profilo_prioritario() or -1))]
     if not candidati:
         print("Nessun finalista da giudicare.")
         return 0
