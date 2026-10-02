@@ -275,16 +275,6 @@
         1,
         2
       ]
-    },
-    {
-      "nome": "Invitalia - incentivi",
-      "url": "https://www.invitalia.it/rss.xml",
-      "ente": "Invitalia",
-      "attivo": true,
-      "profili": [
-        1,
-        2
-      ]
     }
   ],
   "siti": [
@@ -1964,6 +1954,16 @@
         1,
         2
       ]
+    },
+    {
+      "nome": "Invitalia - incentivi",
+      "url": "https://www.invitalia.it/per-chi-vuole-fare-impresa/incentivi-e-strumenti",
+      "ente": "Invitalia",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     }
   ],
   "impostazioni": {
@@ -1999,6 +1999,20 @@
       "dopo": {
         "url": "https://www.comune.vibovalentia.vv.it/rss.xml",
         "tipo": "feed"
+      }
+    },
+    "Invitalia - incentivi": {
+      "quando": "2026-10-02T10:39:56+00:00",
+      "riuscita": true,
+      "errore": "non e' un feed valido",
+      "come": "trovata la sezione dei bandi del sito",
+      "prima": {
+        "url": "https://www.invitalia.it/rss.xml",
+        "tipo": "feed"
+      },
+      "dopo": {
+        "url": "https://www.invitalia.it/per-chi-vuole-fare-impresa/incentivi-e-strumenti",
+        "tipo": "sito"
       }
     }
   },
