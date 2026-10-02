@@ -275,6 +275,16 @@
         1,
         2
       ]
+    },
+    {
+      "nome": "Invitalia - incentivi",
+      "url": "https://www.invitalia.it/rss.xml",
+      "ente": "Invitalia",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     }
   ],
   "siti": [
