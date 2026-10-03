@@ -2014,6 +2014,18 @@
         "url": "https://www.invitalia.it/per-chi-vuole-fare-impresa/incentivi-e-strumenti",
         "tipo": "sito"
       }
+    },
+    "Audizioni - TuttoDanzaWeb": {
+      "quando": "2026-10-03T10:34:59+00:00",
+      "riuscita": false,
+      "errore": "non e' un feed valido",
+      "provati": 8
+    },
+    "Unione Buddhista 8x1000": {
+      "quando": "2026-10-03T10:35:20+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
     }
   },
   "proposte_scartate": [
