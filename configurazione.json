@@ -1970,7 +1970,18 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [],
+  "proposte": [
+    {
+      "nome": "Fondazione Cariplo",
+      "url": "https://www.fondazionecariplo.it/it/bandi",
+      "tipo": "sito",
+      "ente": "Fondazione Cariplo",
+      "a_chi_serve": "Fondazione Cariplo attualmente ha bandi attivi per progetti culturali e di terzo settore, offrendo contributi a fondo perduto che possono finanziare residenze artistiche, festival, e iniziative di teatro e danza, adatte a Garage68, LaboArt Tropea e a Mati.",
+      "quando_serve": "ora",
+      "bandi_visti": 7,
+      "trovata_il": "2026-10-05"
+    }
+  ],
   "archiviati": [],
   "riparazioni": {
     "MIMIT - Incentivi": {
@@ -2016,13 +2027,13 @@
       }
     },
     "Audizioni - TuttoDanzaWeb": {
-      "quando": "2026-10-04T11:18:32+00:00",
+      "quando": "2026-10-05T12:24:18+00:00",
       "riuscita": false,
       "errore": "non e' un feed valido",
       "provati": 8
     },
     "Unione Buddhista 8x1000": {
-      "quando": "2026-10-04T11:18:55+00:00",
+      "quando": "2026-10-05T12:24:38+00:00",
       "riuscita": false,
       "errore": "nessun collegamento a bandi trovato in questa pagina",
       "provati": 8
@@ -2035,10 +2046,12 @@
     "https://www.fondazionemediterraneo.org/index.php/attivita/amministrazione-trasparente-avvisi-bandi-e-gare"
   ],
   "esito_scoperta": {
-    "quando": "2026-09-28T11:47:44+00:00",
-    "esaminate": 20,
-    "trovate": 0,
-    "nomi": [],
+    "quando": "2026-10-05T12:49:00+00:00",
+    "esaminate": 9,
+    "trovate": 1,
+    "nomi": [
+      "Fondazione Cariplo"
+    ],
     "nota": ""
   },
   "richiesta_giro": "2026-09-30T20:34:16+00:00",
