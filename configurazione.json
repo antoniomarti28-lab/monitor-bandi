@@ -1964,24 +1964,22 @@
         1,
         2
       ]
+    },
+    {
+      "nome": "Fondazione Cariplo",
+      "url": "https://www.fondazionecariplo.it/it/bandi",
+      "ente": "Fondazione Cariplo",
+      "attivo": true,
+      "profili": [
+        1
+      ]
     }
   ],
   "impostazioni": {
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [
-    {
-      "nome": "Fondazione Cariplo",
-      "url": "https://www.fondazionecariplo.it/it/bandi",
-      "tipo": "sito",
-      "ente": "Fondazione Cariplo",
-      "a_chi_serve": "Fondazione Cariplo attualmente ha bandi attivi per progetti culturali e di terzo settore, offrendo contributi a fondo perduto che possono finanziare residenze artistiche, festival, e iniziative di teatro e danza, adatte a Garage68, LaboArt Tropea e a Mati.",
-      "quando_serve": "ora",
-      "bandi_visti": 7,
-      "trovata_il": "2026-10-05"
-    }
-  ],
+  "proposte": [],
   "archiviati": [],
   "riparazioni": {
     "MIMIT - Incentivi": {
