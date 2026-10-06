@@ -1187,7 +1187,10 @@ function aggiorna() {
 
 /** La sezione Preferiti: tutti i cuori, da tutti i profili, gli ultimi messi in cima. */
 function aggiornaPreferiti() {
-  const lista = elencoPreferiti();
+  // La ricerca vale anche qui; gli altri filtri (fonte, zona, nuovi) sono dei profili.
+  const q = $("cerca").value.trim().toLowerCase();
+  const lista = elencoPreferiti().filter((b) => !q
+    || [b.titolo, b.ente, b.riassunto, b.sommario, b.compagnia, b.citta].join(" ").toLowerCase().includes(q));
   $("segnalato").innerHTML = "";
   $("elenco").innerHTML = lista.length
     ? `<section class="sezione" id="sez-preferiti"><h2 class="titolo-sezione">Preferiti <span class="fioco">${lista.length}</span></h2>
