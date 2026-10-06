@@ -418,9 +418,12 @@ async function azione(nome, dati) {
     messaggio = "Riesame richiesto";
 
   } else if (nome === "archivia") {
+    // Una scheda puo' raccogliere piu' copie dello stesso annuncio (doppioni da fonti
+    // diverse): si archiviano tutte, o la copia rimasta tornerebbe fuori da sola.
+    const ids = String(dati.id).split(",").filter(Boolean);
     C.archiviati = dati.archivia
-      ? [...new Set([...C.archiviati, dati.id])]
-      : C.archiviati.filter((x) => x !== dati.id);
+      ? [...new Set([...C.archiviati, ...ids])]
+      : C.archiviati.filter((x) => !ids.includes(x));
     messaggio = "Archivio aggiornato";
 
   } else {
@@ -548,6 +551,187 @@ function stessoEnte(a, b) {
   return comuni / Math.min(A.size, B.size) >= 0.6;
 }
 
+// ------------------------------------------------------------------ doppioni
+//
+// 6 ott 2026, visto da lui: lo stesso annuncio compariva due volte. Su 141 aperti, 7 coppie:
+// la stessa pagina scritta con e senza barra finale (Conny Janssen, Monte-Carlo, Göteborg),
+// oppure lo stesso annuncio da due portali (Dancing Opportunities e au-di-tions.com).
+// Si uniscono SOLO in pagina: l'archivio resta com'e', perche' cambiare l'identita' di un
+// bando lo farebbe tornare «nuovo» e farebbe ripartire avvisi gia' mandati.
+
+const titoloPulito = (t) => (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const linkPulito = (u) => normalizza(u).replace(/[?#].*$/, "");
+const RANGO = { si: 0, forse: 1, no: 3 };
+const rangoDi = (b) => RANGO[b.llm_verdetto] ?? 2;
+
+/**
+ * Una scheda per annuncio. Due schede sono lo stesso annuncio se hanno lo stesso
+ * indirizzo (a meno di «www», barra finale e parametri), oppure lo stesso titolo E (lo
+ * stesso ente, o un titolo lungo almeno cinque parole): «Vacancies» di due compagnie
+ * diverse non e' un doppione. Resta la scheda con piu' informazioni (verdetto migliore,
+ * poi scadenza nota, poi piu' testo); le altre diventano «Trovato anche su».
+ */
+function unisciDoppioni(lista) {
+  const gruppi = [], perLink = new Map(), perTitolo = new Map();
+  lista.forEach((b) => {
+    const l = linkPulito(b.link), t = titoloPulito(b.titolo);
+    const lungo = t.split(" ").length >= 5;
+    let g = perLink.get(l);
+    if (!g && t) {
+      g = (perTitolo.get(t) || []).find((x) => lungo || x.some((y) => stessoEnte(y.ente || y.fonte, b.ente || b.fonte)));
+    }
+    if (!g) { g = []; gruppi.push(g); if (t) perTitolo.set(t, [...(perTitolo.get(t) || []), g]); }
+    g.push(b);
+    perLink.set(l, g);
+  });
+  return gruppi.map((g) => {
+    if (g.length === 1) return g[0];
+    const ordinati = [...g].sort((a, b) => rangoDi(a) - rangoDi(b)
+      || (b.scadenza ? 1 : 0) - (a.scadenza ? 1 : 0) || (b.quanto_testo || 0) - (a.quanto_testo || 0));
+    const capo = ordinati[0];
+    const altri = [], visti = new Set([linkPulito(capo.link)]);
+    ordinati.slice(1).forEach((x) => {
+      if (visti.has(linkPulito(x.link))) return;
+      visti.add(linkPulito(x.link));
+      altri.push({ fonte: x.fonte || x.ente || normalizza(x.link).split("/")[0], link: x.link });
+    });
+    return { ...capo, altri, ids: g.map((x) => x.id) };
+  });
+}
+
+// ------------------------------------------------------------------ il bagliore dei nuovi
+//
+// Lui: «quando ci sono bandi nuovi vorrei individuarli ad occhio in fretta, un leggero
+// bagliore che sparisce quando ci passo sopra». Chi e' gia' stato visto si ricorda in
+// questo browser, cosi' ricaricando la pagina il bagliore non torna. Il bollino «nuovo»
+// resta per le sue 48 ore: dice da quanto c'e', il bagliore dice «non l'hai ancora visto».
+const CHIAVE_VISTI = "monitor_bandi_visti";
+let VISTI = new Set();
+try { VISTI = new Set(JSON.parse(localStorage.getItem(CHIAVE_VISTI) || "[]")); } catch (e) { /* niente */ }
+function segnaVisto(id) {
+  if (VISTI.has(id)) return;
+  VISTI.add(id);
+  try { localStorage.setItem(CHIAVE_VISTI, JSON.stringify([...VISTI].slice(-600))); } catch (e) { /* niente */ }
+}
+
+// ------------------------------------------------------------------ preferiti
+//
+// Lui: «un cuoricino sui bandi, come fa Spotify; cliccandolo il bando va in una sezione
+// unica con tutti i preferiti; nei profili cambia solo il cuore, che si riempie».
+// Stanno in preferiti.json nel repository, letto e scritto col suo codice di accesso:
+// cosi' sono gli stessi sul computer e sul telefono. E' un file a parte apposta: un push
+// su configurazione.json farebbe ripartire il ricalcolo dei bandi a ogni cuore.
+// Di ogni preferito si tiene una COPIA dei dati principali: quando il bando chiude esce
+// dalla pagina pubblicata, ma dai preferiti non deve sparire.
+const CHIAVE_PREFERITI = "monitor_bandi_preferiti";
+const ICONA_CUORE = (pieno) => `<svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"
+  fill="${pieno ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+  <path d="M8 13.6S2 10.1 2 5.9A3.1 3.1 0 0 1 8 4.6a3.1 3.1 0 0 1 6 1.3c0 4.2-6 7.7-6 7.7z"/></svg>`;
+let PREFERITI = {}, PREFERITI_SHA = null, vistaPreferiti = false, codaPreferiti = Promise.resolve();
+try { PREFERITI = JSON.parse(localStorage.getItem(CHIAVE_PREFERITI) || "{}"); } catch (e) { PREFERITI = {}; }
+const ePreferito = (b) => (b.ids || [b.id]).some((id) => PREFERITI[id]);
+
+async function leggiPreferitiDaGitHub() {
+  const r = await fetch(API_GH("preferiti.json") + "?ref=main",
+    { headers: { Authorization: "Bearer " + codice, Accept: "application/vnd.github+json" }, cache: "no-store" });
+  if (r.status === 404) { PREFERITI_SHA = null; return {}; }
+  if (!r.ok) throw new Error("non riesco a leggere i preferiti (" + r.status + ")");
+  const d = await r.json();
+  PREFERITI_SHA = d.sha;
+  return JSON.parse(new TextDecoder().decode(
+    Uint8Array.from(atob(d.content.replace(/\n/g, "")), (c) => c.charCodeAt(0)))).bandi || {};
+}
+
+async function scriviPreferitiSuGitHub(messaggio) {
+  const testo = JSON.stringify({ bandi: PREFERITI }, null, 2);
+  const corpo = { message: messaggio + " (dalla pagina)", branch: "main",
+    content: btoa(String.fromCharCode(...new TextEncoder().encode(testo))) };
+  if (PREFERITI_SHA) corpo.sha = PREFERITI_SHA;
+  const r = await fetch(API_GH("preferiti.json"), { method: "PUT",
+    headers: { Authorization: "Bearer " + codice, Accept: "application/vnd.github+json" },
+    body: JSON.stringify(corpo) });
+  if (!r.ok) {
+    const e = new Error("salvataggio rifiutato (" + r.status + ")");
+    e.stato = r.status;
+    throw e;
+  }
+  PREFERITI_SHA = (await r.json()).content.sha;
+}
+
+const ricordaPreferitiQui = () => {
+  try { localStorage.setItem(CHIAVE_PREFERITI, JSON.stringify(PREFERITI)); } catch (e) { /* niente */ }
+};
+
+/** All'apertura: quelli su GitHub vincono su quelli ricordati in questo browser. */
+async function caricaPreferiti() {
+  if (!(STATICA && codice && REPO)) return;
+  try {
+    PREFERITI = await leggiPreferitiDaGitHub();
+    ricordaPreferitiQui();
+  } catch (e) { /* si resta con la copia di questo browser */ }
+}
+
+/** Mette o toglie il cuore. La scheda cambia subito; se GitHub rifiuta, si torna indietro. */
+function cambiaPreferito(b) {
+  const ids = b.ids || [b.id];
+  const togli = ids.some((id) => PREFERITI[id]);
+  const prima = JSON.stringify(PREFERITI);
+  if (togli) ids.forEach((id) => { delete PREFERITI[id]; });
+  else {
+    PREFERITI[b.id] = {
+      quando: new Date().toISOString(), profilo: profiloAttivo || null,
+      // la copia: serve quando il bando non e' piu' fra quelli pubblicati
+      titolo: b.titolo, link: b.link, ente: b.ente || b.fonte || "", fonte: b.fonte || "",
+      scadenza: b.scadenza || null, tipo_aiuto: b.tipo_aiuto || null, contributo: b.contributo || null,
+      riassunto: (b.riassunto || b.sommario || "").slice(0, 400),
+      llm_verdetto: b.llm_verdetto || null, llm_motivo: b.llm_motivo || null,
+    };
+  }
+  ricordaPreferitiQui();
+  disegnaBarraProfili();
+  aggiorna();
+  if (!STATICA || !codice) return;   // app locale: bastano quelli di questo browser
+  const messaggio = (togli ? "Tolto dai preferiti: " : "Preferito: ") + (b.titolo || "").slice(0, 60);
+  codaPreferiti = codaPreferiti.then(async () => {
+    try {
+      await scriviPreferitiSuGitHub(messaggio);
+    } catch (e) {
+      // 409/422: il file e' cambiato altrove (l'altro telefono). Si rilegge, si rifa' il
+      // cambiamento sopra quello e si riprova una volta.
+      if (e.stato === 409 || e.stato === 422) {
+        try {
+          const la = await leggiPreferitiDaGitHub();
+          const mio = JSON.parse(JSON.stringify(PREFERITI));
+          PREFERITI = la;
+          if (togli) ids.forEach((id) => { delete PREFERITI[id]; }); else PREFERITI[b.id] = mio[b.id];
+          await scriviPreferitiSuGitHub(messaggio);
+          ricordaPreferitiQui();
+          return;
+        } catch (e2) { /* sotto */ }
+      }
+      PREFERITI = JSON.parse(prima);
+      ricordaPreferitiQui();
+      disegnaBarraProfili();
+      aggiorna();
+      avvisa("Non sono riuscito a salvare il preferito: " + e.message, true);
+    }
+  });
+}
+
+/**
+ * I preferiti come schede: i dati di oggi se il bando e' ancora in pagina (nel profilo da
+ * cui l'hai segnato, se c'e'), altrimenti la copia presa quando hai messo il cuore.
+ */
+function elencoPreferiti() {
+  return Object.entries(PREFERITI).map(([id, p]) => {
+    const vivo = (LISTE[p.profilo || ""] || []).find((b) => b.id === id)
+      || Object.values(LISTE).flat().find((b) => b.id === id);
+    const profilo = PROFILI.find((x) => String(x.id) === String(p.profilo));
+    return { ...(vivo || { ...p, id, fuori: true }), daProfilo: profilo ? profilo.nome : null, quandoPreferito: p.quando };
+  }).sort((a, b) => (b.quandoPreferito || "").localeCompare(a.quandoPreferito || ""));
+}
+
 // ------------------------------------------------------------------ profili
 
 /**
@@ -556,7 +740,7 @@ function stessoEnte(a, b) {
  * preso un punteggio, chiusi e scartati compresi: il bottone diceva 104, l'elenco 92.
  */
 const contaPerProfilo = (pid) =>
-  (LISTE[pid] || []).filter((b) => eAperto(b) && b.llm_verdetto !== "no").length;
+  unisciDoppioni(LISTE[pid] || []).filter((b) => eAperto(b) && b.llm_verdetto !== "no").length;
 
 function disegnaBarraProfili() {
   const chip = (testo, attivo, extra = "") =>
@@ -566,11 +750,14 @@ function disegnaBarraProfili() {
 
   // Chi guarda senza poter modificare vede solo i profili: «Tutti i bandi» (che
   // mescola notizie e annunci di tutti) e le impostazioni sono cose da gestione.
+  const nPreferiti = Object.keys(PREFERITI).length;
   $("barra-profili").innerHTML =
-    (gestione ? chip("Tutti i bandi", profiloAttivo === "", 'data-scegli=""') : "") +
+    (gestione ? chip(`${ICONA_CUORE(vistaPreferiti)} Preferiti <span class="conta">${nPreferiti}</span>`,
+      vistaPreferiti, 'data-preferiti="1"') : "") +
+    (gestione ? chip("Tutti i bandi", !vistaPreferiti && profiloAttivo === "", 'data-scegli=""') : "") +
     PROFILI.map((p) => chip(
       `${attr(p.nome)} <span class="conta">${contaPerProfilo(String(p.id))}</span>`,
-      String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
+      !vistaPreferiti && String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
     (attivo && gestione ? `<button class="chip fantasma" data-modifica="${attivo.id}">Modifica</button>` : "") +
     (gestione ? `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>` : "");
 
@@ -582,8 +769,20 @@ function disegnaBarraProfili() {
     barra.scrollLeft = Math.max(0, scelto.offsetLeft - (barra.clientWidth - scelto.offsetWidth) / 2);
   }
 
+  const pref = $("barra-profili").querySelector("[data-preferiti]");
+  if (pref) {
+    pref.onclick = () => {
+      vistaPreferiti = true;
+      segnalato = null;
+      $("editor").hidden = true;
+      $("scheda-profilo").hidden = true;
+      disegnaBarraProfili();
+      aggiorna();
+    };
+  }
   $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
     b.onclick = () => {
+      vistaPreferiti = false;
       profiloAttivo = b.dataset.scegli;
       if (profiloAttivo) {
         try { localStorage.setItem(CHIAVE_PROFILO, profiloAttivo); } catch (e) { /* niente */ }
@@ -832,20 +1031,37 @@ function scheda(b) {
     ? `<img class="anteprima" src="${attr(b.immagine)}" alt="" loading="lazy"
            referrerpolicy="no-referrer" onerror="this.remove()">` : "";
 
-  return `<article class="bando" id="b-${b.id}">
+  // Lo stesso annuncio preso da altre fonti (vedi `unisciDoppioni`).
+  const anche = (b.altri || []).length
+    ? `<p class="anche">Trovato anche su: ${b.altri.map((x) =>
+        `<a href="${attr(x.link)}" target="_blank" rel="noopener noreferrer">${attr(x.fonte)}</a>`).join(", ")}</p>` : "";
+  // Solo nella sezione Preferiti: da quale profilo l'hai segnato, e se non e' piu' in pagina.
+  const daDove = vistaPreferiti && (b.daProfilo || b.fuori)
+    ? `<p class="da-profilo">${b.daProfilo ? "Dal profilo " + attr(b.daProfilo) : ""}${
+        b.fuori ? `${b.daProfilo ? " · " : ""}non è più fra i ${L.molti} pubblicati (chiuso o scaduto): questa è la copia salvata` : ""}</p>` : "";
+  const pieno = ePreferito(b);
+  const cuore = scrivibile()
+    ? `<button class="cuore${pieno ? " pieno" : ""}" data-cuore="${b.id}" aria-pressed="${pieno}"
+         aria-label="${pieno ? "Togli dai preferiti" : "Aggiungi ai preferiti"}" title="${pieno ? "Togli dai preferiti" : "Aggiungi ai preferiti"}">${ICONA_CUORE(pieno)}</button>` : "";
+  const bagliore = eNuovo(b) && !(b.ids || [b.id]).some((id) => VISTI.has(id)) && !vistaPreferiti;
+
+  return `<article class="bando${bagliore ? " bagliore" : ""}" id="b-${b.id}">
     ${anteprima}
     <div class="cima">${cima}</div>
     <h2><a href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${attr(b.titolo)}</a></h2>
     ${artista}${soldiRiga}
+    ${daDove}
     ${verdetto}
     ${riesame}
     ${perche(b)}
     ${sommario ? `<p class="sommario">${attr(sommario)}</p>` : ""}
+    ${anche}
     <div class="piede-scheda">
       ${ente ? `<span class="ente">${attr(ente)}</span>` : ""}
       <div class="tasti-scheda">
-        <button class="tasto piccolo" data-apri="${b.id}" aria-expanded="false" aria-controls="d-${b.id}">Dettagli</button>
-        ${scrivibile() ? `<button class="tasto piccolo" data-archivia="${b.id}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
+        ${cuore}
+        ${b.fuori ? "" : `<button class="tasto piccolo" data-apri="${b.id}" aria-expanded="false" aria-controls="d-${b.id}">Dettagli</button>`}
+        ${scrivibile() && !b.fuori ? `<button class="tasto piccolo" data-archivia="${(b.ids || [b.id]).join(",")}" data-stato="${b.archiviato}">${b.archiviato ? "Ripristina" : "Archivia"}</button>` : ""}
         ${tastoRiesame}
         <a class="tasto primario" href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${L.apri}</a>
       </div>
@@ -903,8 +1119,9 @@ function sezione(chiave, titolo, lista, nota = "") {
 }
 
 function aggiorna() {
+  if (vistaPreferiti) return aggiornaPreferiti();
   const L = lessico();
-  const tutta = LISTE[profiloAttivo] || [];
+  const tutta = unisciDoppioni(LISTE[profiloAttivo] || []);
   const lista = filtra(tutta);
 
   // Tendine e conteggi dei filtri: ognuno sull'elenco con tutti gli ALTRI filtri attivi.
@@ -968,7 +1185,38 @@ function aggiorna() {
   $("sottotitolo").textContent = eta().replace(/^ · /, "").replace(/^./, (c) => c.toUpperCase()) || " ";
 }
 
+/** La sezione Preferiti: tutti i cuori, da tutti i profili, gli ultimi messi in cima. */
+function aggiornaPreferiti() {
+  const lista = elencoPreferiti();
+  $("segnalato").innerHTML = "";
+  $("elenco").innerHTML = lista.length
+    ? `<section class="sezione" id="sez-preferiti"><h2 class="titolo-sezione">Preferiti <span class="fioco">${lista.length}</span></h2>
+        <p class="nota-sezione">I bandi a cui hai messo il cuore, da tutti i profili. Si vedono uguali sul computer e sul telefono.</p>
+        ${lista.map(scheda).join("")}</section>`
+    : `<div class="vuoto"><p>Nessun preferito per ora. Metti il cuore su un bando e lo ritrovi qui.</p></div>`;
+  $("conto").innerHTML = "";
+  collegaSchede(document);
+}
+
 function collegaSchede(radice) {
+  radice.querySelectorAll("[data-cuore]").forEach((c) => {
+    c.onclick = () => {
+      const id = c.dataset.cuore;
+      const tutte = vistaPreferiti ? elencoPreferiti() : unisciDoppioni(LISTE[profiloAttivo] || []);
+      const b = tutte.find((x) => x.id === id) || Object.values(LISTE).flat().find((x) => x.id === id);
+      if (b) cambiaPreferito(b);
+    };
+  });
+  // Il bagliore se ne va quando ci passi sopra (o la tocchi, al telefono) e non torna.
+  radice.querySelectorAll(".bando.bagliore").forEach((art) => {
+    const spegni = () => {
+      art.classList.remove("bagliore");
+      const b = unisciDoppioni(LISTE[profiloAttivo] || []).find((x) => "b-" + x.id === art.id);
+      (b ? (b.ids || [b.id]) : [art.id.slice(2)]).forEach(segnaVisto);
+    };
+    art.addEventListener("pointerenter", spegni, { once: true });
+    art.addEventListener("focusin", spegni, { once: true });
+  });
   radice.querySelectorAll("[data-apri]").forEach((b) => {
     b.onclick = () => {
       const pannello = $("d-" + b.dataset.apri);
@@ -1262,6 +1510,8 @@ function applicaPermessi() {
 
 async function ridisegnaTutto() {
   applicaPermessi();
+  if (!scrivibile()) vistaPreferiti = false;
+  await caricaPreferiti();
   await caricaProfili();
   if (scrivibile()) { await caricaFonti(); await caricaNotifiche(); }
   aggiorna();
@@ -1518,7 +1768,13 @@ function leggiIndirizzo() {
   if (segnalato && $("segnalato").firstElementChild) {
     $("segnalato").scrollIntoView({ block: "start" });
   }
-  if (scrivibile()) { await caricaFonti(); await caricaNotifiche(); }
+  if (scrivibile()) {
+    // Prima si disegna con i preferiti ricordati in questo browser, poi si allinea a GitHub.
+    await caricaPreferiti();
+    disegnaBarraProfili();
+    aggiorna();
+    await caricaFonti(); await caricaNotifiche();
+  }
 })();
 </script>
 </body>

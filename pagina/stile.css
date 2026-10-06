@@ -205,6 +205,33 @@ label.spunta input { width: 20px; height: 20px; margin: 0; accent-color: var(--a
   transition: border-color .15s; scroll-margin-top: 12px;
 }
 .bando:hover { border-color: var(--bordo-forte); }
+
+/* I nuovi non ancora visti: un alone morbido color terracotta. Sparisce quando ci passi
+   sopra (o la tocchi): lo toglie collegaSchede e la scheda si ricorda vista. */
+.bando { transition: border-color .15s, box-shadow .6s ease, background-color .6s ease; }
+.bando.bagliore {
+  border-color: color-mix(in srgb, var(--accento) 45%, var(--bordo));
+  background: color-mix(in srgb, var(--accento-tenue) 55%, var(--carta));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accento) 18%, transparent),
+              0 0 26px 2px color-mix(in srgb, var(--accento) 22%, transparent);
+}
+@media (prefers-reduced-motion: reduce) { .bando { transition: border-color .15s; } }
+
+/* Il cuore dei preferiti, come Spotify: vuoto, e pieno quando e' segnato. */
+.cuore {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--tocco); height: var(--tocco); border-radius: 999px; cursor: pointer;
+  background: none; border: 1px solid var(--bordo); color: var(--tenue);
+  transition: color .15s, border-color .15s, transform .15s;
+}
+.cuore:hover { color: var(--accento); border-color: var(--accento); }
+.cuore.pieno { color: var(--accento); border-color: color-mix(in srgb, var(--accento) 40%, var(--bordo)); }
+.cuore:active { transform: scale(.9); }
+.chip svg { vertical-align: -3px; margin-right: 4px; }
+
+.anche { font-size: 14px; color: var(--tenue); }
+.anche a { color: inherit; }
+.da-profilo { font-size: 13px; color: var(--tenue); text-transform: none; }
 .bando h2 { font-size: 19px; font-weight: 600; margin: 8px 0 0; line-height: 1.3; }
 .bando h2 a { color: inherit; text-decoration: none; }
 .bando h2 a:hover { color: var(--accento); }

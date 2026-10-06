@@ -686,3 +686,22 @@ Lui: «non essere pignolo, una volta trovato un bando ci si cuce qualcosa su mis
   **Errore mio trovato dalla prova**: la prima regola trasformava un «no» senza frase in
   «forse»; su «Festival, cori e bande» lo scarto era vero («singole associazioni» escluse).
   Ora resta «no». Stessa prova: LaboArt aveva un «si» SBAGLIATO su quel bando.
+
+
+## Doppioni, bagliore dei nuovi, preferiti (6 ott 2026)
+
+Tre richieste sue, tutte nella pagina (`pagina/index.html`, `stile.css`), niente nell'archivio.
+- **Doppioni** (`unisciDoppioni`): stesso indirizzo a meno di www/barra/parametri, oppure
+  stesso titolo E (stesso ente o titolo di almeno 5 parole: «Vacancies» di due compagnie non
+  si unisce). Resta la scheda migliore (verdetto, poi scadenza, poi testo), le altre in
+  «Trovato anche su». Vale per elenchi, numeri dei profili e Archivia (archivia tutte le
+  copie, `dati.id` con le virgole). Sui dati del 6 ott: 7 unioni, nessuna sbagliata. Non si
+  unisce nell'archivio apposta: cambiare l'id farebbe tornare «nuovo» il bando.
+- **Bagliore**: `.bando.bagliore` sui nuovi (stesso `eNuovo` del bollino) non ancora visti;
+  sparisce a `pointerenter`/`focusin` e l'id va in `localStorage` (`monitor_bandi_visti`).
+- **Preferiti**: cuore su ogni scheda (solo con accesso), chip «Preferiti» in testa ai profili.
+  File `preferiti.json` nel repository via API GitHub col suo codice: stessi su computer e
+  telefono, e NON fa partire il ricalcolo (nessun workflow guarda quel file). Copia dei dati
+  principali dentro il preferito, cosi' un bando chiuso (non piu' pubblicato) resta nei
+  preferiti come «copia salvata». Conflitto 409/422 (altro dispositivo): rilegge e riprova
+  una volta, altrimenti torna indietro e lo dice. Copia anche in `localStorage`.
