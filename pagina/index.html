@@ -34,6 +34,7 @@
 
   <nav class="profili" id="barra-profili" aria-label="Profili"></nav>
   <div class="strumenti-profili" id="strumenti-profili" hidden></div>
+  <nav class="isola" id="isola" aria-label="Profili (sempre a portata)" aria-hidden="true"></nav>
 
   <section class="scheda-profilo" id="scheda-profilo" hidden></section>
 
@@ -823,10 +824,7 @@ function disegnaBarraProfili() {
     strumenti.hidden = true;
     strumenti.innerHTML = "";
     const nuovo = gestione ? chip("+ Nuovo profilo", false, 'data-nuovo="1" style="--i:4"', "fantasma") : "";
-    const esploso = (etichetta, lista, acceso) => `<div class="esploso" data-esploso>
-        <button class="chip apri-esploso${acceso ? " attivo" : ""}" aria-haspopup="true" aria-expanded="false">${etichetta}${ICONA_GIU}</button>
-        <div class="pannello-esploso" role="group" aria-label="Profili" style="--colonne:${lista.length > 6 ? 2 : 1}">${lista.map((p, i) => profiloChip(p, i + 1)).join("")}${nuovo}</div>
-      </div>`;
+    const esploso = (etichetta, lista, acceso) => htmlEsploso(etichetta, lista, acceso, nuovo, profiloChip, "barra");
     let centro;
     if (VARIANTE_BARRA === "c") {
       // C: i primi 5 profili in vista (quello scelto sempre fra loro), gli altri in «Altri».
@@ -850,6 +848,24 @@ function disegnaBarraProfili() {
     collegaEsploso(barra);
   }
 
+  // ---- l'isola laterale (PC con schermo largo): solo il cuore e il profilo in uso, liberi,
+  // senza contenitore. Compare quando la barra in alto esce dallo schermo (`aggiornaIsola`).
+  const isola = $("isola");
+  isola.dataset.attiva = pc && VARIANTE_BARRA === "b" ? "1" : "";
+  if (isola.dataset.attiva) {
+    const etichettaIsola = vistaPreferiti ? "Preferiti" : tutti ? "Tutti i bandi"
+      : attivo ? attr(attivo.nome) : "Profili";
+    const nuovoIsola = gestione ? chip("+ Nuovo profilo", false, 'data-nuovo="1"', "fantasma") : "";
+    isola.innerHTML =
+      (gestione ? `<button class="cuore-isola${vistaPreferiti ? " attivo" : ""}" data-preferiti="1" aria-pressed="${vistaPreferiti}"
+          title="${vistaPreferiti ? "Esci dai preferiti" : "Preferiti"}" aria-label="${vistaPreferiti ? "Esci dai preferiti" : "Preferiti"}">${ICONA_CUORE(vistaPreferiti)}</button>` : "")
+      + htmlEsploso(etichettaIsola, PROFILI, Boolean(attivo && !vistaPreferiti && !tutti), nuovoIsola, profiloChip, "isola");
+    collegaEsploso(isola);
+  } else {
+    isola.innerHTML = "";
+  }
+  aggiornaIsola();
+
   // Preferiti: il cuore in testata (telefono) e la pastiglia (PC) fanno la stessa cosa,
   // e sono interruttori: dentro i preferiti, un secondo clic ne esce.
   const cambiaVistaPreferiti = () => {
@@ -863,9 +879,13 @@ function disegnaBarraProfili() {
   cuoreTestata.onclick = cambiaVistaPreferiti;
   const pref = barra.querySelector("[data-preferiti]");
   if (pref) pref.onclick = cambiaVistaPreferiti;
+  // Dall'isola si sta leggendo in mezzo all'elenco: cambiata la vista, si torna in cima.
+  const prefIsola = isola.querySelector("[data-preferiti]");
+  if (prefIsola) prefIsola.onclick = () => { cambiaVistaPreferiti(); tornaInCima(); };
 
-  document.querySelectorAll("#barra-profili [data-scegli], #strumenti-profili [data-scegli]").forEach((b) => {
+  document.querySelectorAll("#barra-profili [data-scegli], #strumenti-profili [data-scegli], #isola [data-scegli]").forEach((b) => {
     b.onclick = () => {
+      const daIsola = Boolean(b.closest("#isola"));
       vistaPreferiti = false;
       profiloAttivo = b.dataset.scegli;
       const p = PROFILI.find((x) => String(x.id) === profiloAttivo);
@@ -881,11 +901,12 @@ function disegnaBarraProfili() {
       // non compare mai: restava attaccato al profilo attivo al caricamento.
       disegnaBarraProfili();
       aggiorna();
+      if (daIsola) tornaInCima();
       if (CONFIG && scrivibile()) caricaFonti();   // le fonti cambiano col profilo
     };
   });
-  document.querySelectorAll("#barra-profili [data-nuovo], #strumenti-profili [data-nuovo]").forEach((b) => {
-    b.onclick = () => apriEditor(null);
+  document.querySelectorAll("#barra-profili [data-nuovo], #strumenti-profili [data-nuovo], #isola [data-nuovo]").forEach((b) => {
+    b.onclick = () => { const daIsola = Boolean(b.closest("#isola")); apriEditor(null); if (daIsola) tornaInCima(); };
   });
   document.querySelectorAll("#barra-profili [data-modifica], #strumenti-profili [data-modifica]").forEach((b) => {
     b.onclick = () => {
@@ -895,6 +916,51 @@ function disegnaBarraProfili() {
     };
   });
 }
+
+/**
+ * L'esploso dei profili. Fino a 5 profili e' un VENTAGLIO (8 ott 2026, il suo disegno):
+ * le pastiglie escono a destra della pastiglia del profilo su un arco (quelle centrali piu'
+ * in fuori), senza linee. Oltre 5 l'arco diventa un groviglio, e torna l'elenco in colonna.
+ * Nella barra il ventaglio scende dalla pastiglia; nell'isola si apre centrato su di essa.
+ */
+const VENTAGLIO_MAX = 5;
+function htmlEsploso(etichetta, profili, acceso, nuovo, chipFn, dove) {
+  const voci = profili.map((p, i) => chipFn(p, i + 1));
+  if (nuovo) voci.push(nuovo);
+  let pannello;
+  if (profili.length <= VENTAGLIO_MAX) {
+    const n = voci.length, meta = (n - 1) / 2;
+    pannello = `<div class="pannello-esploso ventaglio" role="group" aria-label="Profili" style="--n:${n}">${
+      voci.map((v, i) => {
+        const t = meta ? (i - meta) / meta : 0;              // -1 ... 1
+        const x = Math.round(14 + 30 * (1 - t * t));         // arco: in fuori al centro
+        return `<span class="posto" style="--x:${x}px;--y:${i * 52}px;--i:${Math.min(i, 4)}">${v}</span>`;
+      }).join("")}</div>`;
+  } else {
+    pannello = `<div class="pannello-esploso elenco" role="group" aria-label="Profili" style="--colonne:${profili.length > 6 ? 2 : 1}">${voci.join("")}</div>`;
+  }
+  return `<div class="esploso${dove === "isola" ? " da-isola" : ""}" data-esploso>
+      <button class="chip apri-esploso${acceso ? " attivo" : ""}" aria-haspopup="true" aria-expanded="false">${etichetta}${ICONA_GIU}</button>
+      ${pannello}
+    </div>`;
+}
+
+// L'isola compare solo quando la barra in alto non si vede piu': mai due comandi uguali
+// visibili insieme. Solo su schermi larghi (lo decide il CSS: serve spazio a sinistra).
+let barraInVista = true;
+function aggiornaIsola() {
+  const isola = $("isola");
+  const mostra = Boolean(isola.dataset.attiva) && !barraInVista;
+  isola.classList.toggle("in-vista", mostra);
+  isola.setAttribute("aria-hidden", String(!mostra));
+  if (!mostra) isola.querySelectorAll("[data-esploso].aperto").forEach((b) => b.classList.remove("aperto"));
+}
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(([voce]) => { barraInVista = voce.isIntersecting; aggiornaIsola(); })
+    .observe($("barra-profili"));
+}
+const tornaInCima = () => window.scrollTo({ top: 0,
+  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 
 /**
  * L'esploso: si apre passandoci sopra col cursore, col clic sulla pastiglia o con la
@@ -914,7 +980,8 @@ function collegaEsploso(radice) {
     };
     box.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") apri(); });
     box.addEventListener("pointerleave", (e) => {
-      if (e.pointerType === "mouse") chiudiEsplosoTra = setTimeout(chiudi, 180);
+      // Il ventaglio sta un po' staccato dalla pastiglia: piu' tolleranza per arrivarci.
+      if (e.pointerType === "mouse") chiudiEsplosoTra = setTimeout(chiudi, box.querySelector(".ventaglio") ? 280 : 180);
     });
     // Col mouse il pannello e' gia' aperto dal passaggio: un clic non deve richiuderlo.
     // Da tastiera (detail 0) o al tocco, la pastiglia apre e chiude.
