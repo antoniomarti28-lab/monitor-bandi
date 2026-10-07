@@ -474,7 +474,8 @@ tr.spenta { opacity: .45; }
 @media (max-width: 620px) {
   body { font-size: 16px; }
   .involucro { padding: 20px 16px 88px; }
-  .profili { margin: 0 -16px 4px; padding: 2px 16px 8px; }
+  /* a destra 44 px: l'ultima pastiglia resta fuori dalla sfumatura quando si arriva in fondo */
+  .profili { margin: 0 -16px 4px; padding: 2px 44px 8px 16px; }
   h1 { font-size: 26px; }
   .pannello-filtri { grid-template-columns: 1fr; }
   .bando { padding: 16px; }
