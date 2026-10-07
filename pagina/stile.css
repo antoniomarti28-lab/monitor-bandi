@@ -116,6 +116,40 @@ button.icona svg { width: 18px; height: 18px; }
   overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .profili::-webkit-scrollbar { display: none; }
+
+/* Telefono: la fila scorre, e una sfumatura a destra dice che c'e' altro. Il padding a
+   destra lascia l'ultima pastiglia fuori dalla sfumatura quando si arriva in fondo. */
+@media (max-width: 699px) {
+  .profili {
+    padding-right: 44px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+}
+/* PC: i profili sono pochi e c'e' spazio, quindi vanno a capo invece di scorrere. */
+@media (min-width: 700px) {
+  .profili { flex-wrap: wrap; margin: 0 0 6px; padding: 2px 0 8px; overflow: visible; }
+}
+
+/* Gli strumenti (solo per chi gestisce): testo discreto, non pastiglie. */
+.strumenti-profili { display: flex; flex-wrap: wrap; gap: 0 18px; margin: -2px 0 6px; }
+.link-tenue {
+  background: none; border: 0; padding: 0; min-height: 40px; cursor: pointer;
+  font: inherit; font-size: 14px; color: var(--tenue); text-underline-offset: 3px;
+}
+.link-tenue:hover { color: var(--accento); text-decoration: underline; }
+.link-tenue.attivo { color: var(--testo); font-weight: 600; }
+
+/* Il cuore dei Preferiti, in testata accanto agli altri tasti rotondi. */
+button.icona.tondo.cuore-testata { position: relative; }
+button.icona.tondo.cuore-testata.attivo { background: var(--accento); border-color: var(--accento); color: var(--su-accento); }
+.cuore-testata svg { width: 20px; height: 20px; }
+.cuore-testata .numerino {
+  position: absolute; top: -5px; right: -5px; min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 999px; background: var(--accento); color: var(--su-accento);
+  font-size: 11px; font-weight: 700; line-height: 19px; text-align: center; border: 2px solid var(--sfondo);
+}
+.cuore-testata.attivo .numerino { background: var(--su-accento); color: var(--accento); }
 .chip {
   flex: 0 0 auto; min-height: var(--tocco);
   background: var(--carta); border: 1px solid var(--bordo); border-radius: 999px;

@@ -20,6 +20,7 @@
     <div class="testata-riga">
       <h1>Monitor Bandi</h1>
       <div class="testata-tasti">
+        <button class="icona tondo cuore-testata" id="b-preferiti" hidden aria-pressed="false"></button>
         <button class="icona tondo" id="b-ricarica" title="Rileggi i dati più recenti" aria-label="Rileggi i dati più recenti"></button>
         <button class="icona tondo" id="b-tema" title="Chiaro, scuro o come il telefono"></button>
       </div>
@@ -32,6 +33,7 @@
   <button class="torna-su" id="torna-su" hidden aria-label="Torna in cima"></button>
 
   <nav class="profili" id="barra-profili" aria-label="Profili"></nav>
+  <div class="strumenti-profili" id="strumenti-profili" hidden></div>
 
   <section class="scheda-profilo" id="scheda-profilo" hidden></section>
 
@@ -750,16 +752,29 @@ function disegnaBarraProfili() {
 
   // Chi guarda senza poter modificare vede solo i profili: «Tutti i bandi» (che
   // mescola notizie e annunci di tutti) e le impostazioni sono cose da gestione.
+  // 7 ott 2026, layout: la barra mescolava tre cose diverse (i profili, le viste Preferiti e
+  // Tutti i bandi, gli strumenti Modifica e Nuovo profilo) e su PC era tagliata. Ora:
+  // i profili stanno da soli nella barra, il cuore dei Preferiti e' nella testata, e gli
+  // strumenti (solo per chi gestisce) sono una riga discreta di testo sotto.
   const nPreferiti = Object.keys(PREFERITI).length;
-  $("barra-profili").innerHTML =
-    (gestione ? chip(`${ICONA_CUORE(vistaPreferiti)} Preferiti <span class="conta">${nPreferiti}</span>`,
-      vistaPreferiti, 'data-preferiti="1"') : "") +
-    (gestione ? chip("Tutti i bandi", !vistaPreferiti && profiloAttivo === "", 'data-scegli=""') : "") +
-    PROFILI.map((p) => chip(
-      `${attr(p.nome)} <span class="conta">${contaPerProfilo(String(p.id))}</span>`,
-      !vistaPreferiti && String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("") +
-    (attivo && gestione ? `<button class="chip fantasma" data-modifica="${attivo.id}">Modifica</button>` : "") +
-    (gestione ? `<button class="chip fantasma" data-nuovo="1">+ Nuovo profilo</button>` : "");
+  const cuoreTestata = $("b-preferiti");
+  cuoreTestata.hidden = !gestione;
+  cuoreTestata.classList.toggle("attivo", vistaPreferiti);
+  cuoreTestata.setAttribute("aria-pressed", String(vistaPreferiti));
+  cuoreTestata.innerHTML = ICONA_CUORE(vistaPreferiti) + (nPreferiti ? `<span class="numerino">${nPreferiti}</span>` : "");
+  cuoreTestata.title = vistaPreferiti ? "Esci dai preferiti" : `Preferiti${nPreferiti ? " (" + nPreferiti + ")" : ""}`;
+  cuoreTestata.setAttribute("aria-label", cuoreTestata.title);
+
+  $("barra-profili").innerHTML = PROFILI.map((p) => chip(
+    `${attr(p.nome)} <span class="conta">${contaPerProfilo(String(p.id))}</span>`,
+    !vistaPreferiti && String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("");
+
+  const strumenti = $("strumenti-profili");
+  strumenti.hidden = !gestione;
+  strumenti.innerHTML = gestione
+    ? `<button class="link-tenue${!vistaPreferiti && profiloAttivo === "" ? " attivo" : ""}" data-scegli="">Tutti i bandi</button>` +
+      (attivo ? `<button class="link-tenue" data-modifica="${attivo.id}">Modifica «${attr(attivo.nome)}»</button>` : "") +
+      `<button class="link-tenue" data-nuovo="1">+ Nuovo profilo</button>` : "";
 
   // Al telefono la fila dei profili scorre di lato: quello scelto va portato in vista,
   // o Mati (terzo) restava fuori dallo schermo.
@@ -769,18 +784,16 @@ function disegnaBarraProfili() {
     barra.scrollLeft = Math.max(0, scelto.offsetLeft - (barra.clientWidth - scelto.offsetWidth) / 2);
   }
 
-  const pref = $("barra-profili").querySelector("[data-preferiti]");
-  if (pref) {
-    pref.onclick = () => {
-      vistaPreferiti = true;
-      segnalato = null;
-      $("editor").hidden = true;
-      $("scheda-profilo").hidden = true;
-      disegnaBarraProfili();
-      aggiorna();
-    };
-  }
-  $("barra-profili").querySelectorAll("[data-scegli]").forEach((b) => {
+  // Il cuore in testata e' un interruttore: dentro i preferiti, un secondo clic ne esce.
+  cuoreTestata.onclick = () => {
+    vistaPreferiti = !vistaPreferiti;
+    segnalato = null;
+    $("editor").hidden = true;
+    $("scheda-profilo").hidden = true;
+    disegnaBarraProfili();
+    aggiorna();
+  };
+  document.querySelectorAll("#barra-profili [data-scegli], #strumenti-profili [data-scegli]").forEach((b) => {
     b.onclick = () => {
       vistaPreferiti = false;
       profiloAttivo = b.dataset.scegli;
@@ -799,9 +812,9 @@ function disegnaBarraProfili() {
       if (CONFIG && scrivibile()) caricaFonti();   // le fonti cambiano col profilo
     };
   });
-  const nuovo = $("barra-profili").querySelector("[data-nuovo]");
+  const nuovo = strumenti.querySelector("[data-nuovo]");
   if (nuovo) nuovo.onclick = () => apriEditor(null);
-  const mod = $("barra-profili").querySelector("[data-modifica]");
+  const mod = strumenti.querySelector("[data-modifica]");
   if (mod) {
     mod.onclick = () => {
       const p = PROFILI.find((x) => String(x.id) === mod.dataset.modifica);
