@@ -744,48 +744,111 @@ function elencoPreferiti() {
 const contaPerProfilo = (pid) =>
   unisciDoppioni(LISTE[pid] || []).filter((b) => eAperto(b) && b.llm_verdetto !== "no").length;
 
+// ------------------------------------------------------------------ la barra dei profili
+//
+// Due modi, scelti dal dispositivo e non dalla larghezza sola:
+// - TELEFONO (o schermo senza mouse): i profili in fila che scorre, il cuore dei Preferiti
+//   in testata e gli strumenti in una riga di testo sotto (7 ott 2026, «sul telefono va
+//   bene cosi'»).
+// - PC CON MOUSE: la sua proposta B (7 ott 2026). Preferiti e Tutti i bandi fissi a
+//   sinistra, poi UNA pastiglia col profilo scelto: ci passi sopra col cursore e si apre
+//   l'esploso con tutti i profili e i loro numeri, piu' «+ Nuovo profilo» tratteggiato;
+//   «Modifica» in fondo a destra. Si apre anche col clic e con la tastiera (Invio, Esc):
+//   un menu che vive solo di hover lascia fuori tastiera e portatili col touch.
+//   Variante C da provare: indirizzo con ?barra=c (profili visibili, «Altri» oltre 5).
+//   Profili finti per provare: ?profili=6 (solo in questa pagina, non si salva niente).
+const MODO_PC = window.matchMedia("(min-width: 700px) and (hover: hover) and (pointer: fine)");
+const PARAMETRI = new URLSearchParams(location.search);
+const VARIANTE_BARRA = PARAMETRI.get("barra") === "c" ? "c" : "b";
+const PROFILI_DI_PROVA = Math.min(12, Number(PARAMETRI.get("profili")) || 0);
+const VISIBILI_C = 5;
+const ICONA_GIU = `<svg class="freccia" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>`;
+let chiudiEsplosoTra = null;
+
+/** I profili finti di ?profili=N, con nomi di lunghezza diversa apposta. */
+function aggiungiProfiliDiProva() {
+  const nomi = ["Compagnia di prova", "Associazione di prova con un nome lungo", "Prova 6",
+    "Festival di prova", "Profilo di prova 8", "APS di prova", "Prova 10", "Rete di prova", "Prova 12"];
+  for (let i = PROFILI.length; i < PROFILI_DI_PROVA; i++) {
+    PROFILI.push({ id: 9000 + i, nome: nomi[(i - 3 + nomi.length) % nomi.length], prova: true,
+      tipo_ente: "", settori: [], regioni: [], parole: [], escluse: [], racconto: "" });
+  }
+}
+if (MODO_PC.addEventListener) MODO_PC.addEventListener("change", () => disegnaBarraProfili());
+
 function disegnaBarraProfili() {
-  const chip = (testo, attivo, extra = "") =>
-    `<button class="chip${attivo ? " attivo" : ""}" ${extra}${attivo ? ' aria-current="true"' : ""}>${testo}</button>`;
+  const chip = (testo, attivo, extra = "", classe = "") =>
+    `<button class="chip${classe ? " " + classe : ""}${attivo ? " attivo" : ""}" ${extra}${attivo ? ' aria-current="true"' : ""}>${testo}</button>`;
   const attivo = PROFILI.find((p) => String(p.id) === profiloAttivo);
   const gestione = scrivibile();
-
-  // Chi guarda senza poter modificare vede solo i profili: «Tutti i bandi» (che
-  // mescola notizie e annunci di tutti) e le impostazioni sono cose da gestione.
-  // 7 ott 2026, layout: la barra mescolava tre cose diverse (i profili, le viste Preferiti e
-  // Tutti i bandi, gli strumenti Modifica e Nuovo profilo) e su PC era tagliata. Ora:
-  // i profili stanno da soli nella barra, il cuore dei Preferiti e' nella testata, e gli
-  // strumenti (solo per chi gestisce) sono una riga discreta di testo sotto.
+  const pc = MODO_PC.matches && !CONDIVISO && PROFILI.length > 1;
   const nPreferiti = Object.keys(PREFERITI).length;
+  const tutti = !vistaPreferiti && profiloAttivo === "";
+  const profiloChip = (p, i = 0) => chip(
+    `${attr(p.nome)} <span class="conta">${contaPerProfilo(String(p.id))}</span>`,
+    !vistaPreferiti && String(p.id) === profiloAttivo, `data-scegli="${p.id}" style="--i:${Math.min(i, 4)}"`);
+  document.body.classList.toggle("barra-pc", pc);
+
+  // Chi guarda senza poter modificare vede solo i profili: Preferiti, «Tutti i bandi» (che
+  // mescola notizie e annunci di tutti) e gli strumenti sono cose da gestione.
   const cuoreTestata = $("b-preferiti");
-  cuoreTestata.hidden = !gestione;
+  cuoreTestata.hidden = !gestione || pc;
   cuoreTestata.classList.toggle("attivo", vistaPreferiti);
   cuoreTestata.setAttribute("aria-pressed", String(vistaPreferiti));
   cuoreTestata.innerHTML = ICONA_CUORE(vistaPreferiti) + (nPreferiti ? `<span class="numerino">${nPreferiti}</span>` : "");
   cuoreTestata.title = vistaPreferiti ? "Esci dai preferiti" : `Preferiti${nPreferiti ? " (" + nPreferiti + ")" : ""}`;
   cuoreTestata.setAttribute("aria-label", cuoreTestata.title);
-
-  $("barra-profili").innerHTML = PROFILI.map((p) => chip(
-    `${attr(p.nome)} <span class="conta">${contaPerProfilo(String(p.id))}</span>`,
-    !vistaPreferiti && String(p.id) === profiloAttivo, `data-scegli="${p.id}"`)).join("");
-
   const strumenti = $("strumenti-profili");
-  strumenti.hidden = !gestione;
-  strumenti.innerHTML = gestione
-    ? `<button class="link-tenue${!vistaPreferiti && profiloAttivo === "" ? " attivo" : ""}" data-scegli="">Tutti i bandi</button>` +
-      (attivo ? `<button class="link-tenue" data-modifica="${attivo.id}">Modifica «${attr(attivo.nome)}»</button>` : "") +
-      `<button class="link-tenue" data-nuovo="1">+ Nuovo profilo</button>` : "";
+  const barra = $("barra-profili");
+  const modificabile = gestione && attivo && !attivo.prova && !vistaPreferiti;
 
-  // Al telefono la fila dei profili scorre di lato: quello scelto va portato in vista,
-  // o Mati (terzo) restava fuori dallo schermo.
-  const scelto = $("barra-profili").querySelector(".chip.attivo");
-  if (scelto) {
-    const barra = $("barra-profili");
-    barra.scrollLeft = Math.max(0, scelto.offsetLeft - (barra.clientWidth - scelto.offsetWidth) / 2);
+  if (!pc) {
+    // ---- telefono: com'era
+    barra.innerHTML = PROFILI.map((p) => profiloChip(p)).join("");
+    strumenti.hidden = !gestione;
+    strumenti.innerHTML = gestione
+      ? `<button class="link-tenue${tutti ? " attivo" : ""}" data-scegli="">Tutti i bandi</button>` +
+        (modificabile ? `<button class="link-tenue" data-modifica="${attivo.id}">Modifica «${attr(attivo.nome)}»</button>` : "") +
+        `<button class="link-tenue" data-nuovo="1">+ Nuovo profilo</button>` : "";
+    // La fila scorre di lato: quello scelto va portato in vista, o Mati (terzo) restava fuori.
+    const scelto = barra.querySelector(".chip.attivo");
+    if (scelto) barra.scrollLeft = Math.max(0, scelto.offsetLeft - (barra.clientWidth - scelto.offsetWidth) / 2);
+  } else {
+    // ---- PC con mouse
+    strumenti.hidden = true;
+    strumenti.innerHTML = "";
+    const nuovo = gestione ? chip("+ Nuovo profilo", false, 'data-nuovo="1" style="--i:4"', "fantasma") : "";
+    const esploso = (etichetta, lista, acceso) => `<div class="esploso" data-esploso>
+        <button class="chip apri-esploso${acceso ? " attivo" : ""}" aria-haspopup="true" aria-expanded="false">${etichetta}${ICONA_GIU}</button>
+        <div class="pannello-esploso" role="group" aria-label="Profili">${lista.map((p, i) => profiloChip(p, i + 1)).join("")}${nuovo}</div>
+      </div>`;
+    let centro;
+    if (VARIANTE_BARRA === "c") {
+      // C: i primi 5 profili in vista (quello scelto sempre fra loro), gli altri in «Altri».
+      let visibili = PROFILI.slice(0, VISIBILI_C);
+      if (attivo && !visibili.includes(attivo)) visibili = [...visibili.slice(0, VISIBILI_C - 1), attivo];
+      const altri = PROFILI.filter((p) => !visibili.includes(p));
+      centro = visibili.map((p) => profiloChip(p)).join("")
+        + (altri.length ? esploso(`Altri <span class="conta">${altri.length}</span>`, altri, false) : nuovo);
+    } else {
+      // B: una pastiglia sola, col profilo scelto e il suo numero.
+      const etichetta = attivo && !vistaPreferiti && !tutti
+        ? `${attr(attivo.nome)} <span class="conta">${contaPerProfilo(String(attivo.id))}</span>` : "Profili";
+      centro = esploso(etichetta, PROFILI, Boolean(attivo && !vistaPreferiti && !tutti));
+    }
+    barra.innerHTML =
+      (gestione ? chip(`${ICONA_CUORE(vistaPreferiti)} Preferiti <span class="conta">${nPreferiti}</span>`,
+        vistaPreferiti, 'data-preferiti="1"') : "")
+      + (gestione ? chip("Tutti i bandi", tutti, 'data-scegli=""') : "")
+      + centro
+      + (modificabile ? `<button class="tasto-matita" data-modifica="${attivo.id}" title="Modifica «${attr(attivo.nome)}»">${ICONA_MATITA}<span>Modifica</span></button>` : "");
+    collegaEsploso(barra);
   }
 
-  // Il cuore in testata e' un interruttore: dentro i preferiti, un secondo clic ne esce.
-  cuoreTestata.onclick = () => {
+  // Preferiti: il cuore in testata (telefono) e la pastiglia (PC) fanno la stessa cosa,
+  // e sono interruttori: dentro i preferiti, un secondo clic ne esce.
+  const cambiaVistaPreferiti = () => {
     vistaPreferiti = !vistaPreferiti;
     segnalato = null;
     $("editor").hidden = true;
@@ -793,11 +856,16 @@ function disegnaBarraProfili() {
     disegnaBarraProfili();
     aggiorna();
   };
+  cuoreTestata.onclick = cambiaVistaPreferiti;
+  const pref = barra.querySelector("[data-preferiti]");
+  if (pref) pref.onclick = cambiaVistaPreferiti;
+
   document.querySelectorAll("#barra-profili [data-scegli], #strumenti-profili [data-scegli]").forEach((b) => {
     b.onclick = () => {
       vistaPreferiti = false;
       profiloAttivo = b.dataset.scegli;
-      if (profiloAttivo) {
+      const p = PROFILI.find((x) => String(x.id) === profiloAttivo);
+      if (profiloAttivo && !(p && p.prova)) {
         try { localStorage.setItem(CHIAVE_PROFILO, profiloAttivo); } catch (e) { /* niente */ }
       }
       segnalato = null;
@@ -812,17 +880,61 @@ function disegnaBarraProfili() {
       if (CONFIG && scrivibile()) caricaFonti();   // le fonti cambiano col profilo
     };
   });
-  const nuovo = strumenti.querySelector("[data-nuovo]");
-  if (nuovo) nuovo.onclick = () => apriEditor(null);
-  const mod = strumenti.querySelector("[data-modifica]");
-  if (mod) {
-    mod.onclick = () => {
-      const p = PROFILI.find((x) => String(x.id) === mod.dataset.modifica);
+  document.querySelectorAll("#barra-profili [data-nuovo], #strumenti-profili [data-nuovo]").forEach((b) => {
+    b.onclick = () => apriEditor(null);
+  });
+  document.querySelectorAll("#barra-profili [data-modifica], #strumenti-profili [data-modifica]").forEach((b) => {
+    b.onclick = () => {
+      const p = PROFILI.find((x) => String(x.id) === b.dataset.modifica);
       if (scrivibile()) apriEditor(p);
       else mostraScheda(p);
     };
-  }
+  });
 }
+
+/**
+ * L'esploso: si apre passandoci sopra col cursore, col clic sulla pastiglia o con la
+ * tastiera; si chiude uscendo (con un attimo di tolleranza, per chi scivola in diagonale
+ * verso il pannello), con Esc o cliccando fuori.
+ */
+function collegaEsploso(radice) {
+  radice.querySelectorAll("[data-esploso]").forEach((box) => {
+    const apri = () => {
+      clearTimeout(chiudiEsplosoTra);
+      box.classList.add("aperto");
+      box.querySelector(".apri-esploso").setAttribute("aria-expanded", "true");
+    };
+    const chiudi = () => {
+      box.classList.remove("aperto");
+      box.querySelector(".apri-esploso").setAttribute("aria-expanded", "false");
+    };
+    box.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") apri(); });
+    box.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "mouse") chiudiEsplosoTra = setTimeout(chiudi, 180);
+    });
+    // Col mouse il pannello e' gia' aperto dal passaggio: un clic non deve richiuderlo.
+    // Da tastiera (detail 0) o al tocco, la pastiglia apre e chiude.
+    box.querySelector(".apri-esploso").onclick = (e) => {
+      if (!box.classList.contains("aperto")) apri();
+      else if (e.detail === 0 || e.pointerType !== "mouse") chiudi();
+    };
+    box.addEventListener("focusout", (e) => { if (!box.contains(e.relatedTarget)) chiudi(); });
+    box.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { chiudi(); box.querySelector(".apri-esploso").focus(); }
+      if (e.key === "ArrowDown" && e.target.classList.contains("apri-esploso")) {
+        e.preventDefault(); apri(); const primo = box.querySelector(".pannello-esploso .chip"); if (primo) primo.focus();
+      }
+    });
+  });
+}
+document.addEventListener("pointerdown", (e) => {
+  document.querySelectorAll("[data-esploso].aperto").forEach((box) => {
+    if (!box.contains(e.target)) {
+      box.classList.remove("aperto");
+      box.querySelector(".apri-esploso").setAttribute("aria-expanded", "false");
+    }
+  });
+});
 
 // Le impostazioni del profilo, in sola lettura: cosi' si vedono anche dalla pagina
 // pubblicata, dove l'editor non potrebbe salvare.
@@ -910,6 +1022,7 @@ $("b-elimina").onclick = async () => {
 
 async function caricaProfili() {
   PROFILI = await chiedi("/api/profili");
+  if (PROFILI_DI_PROVA > PROFILI.length && !CONDIVISO) aggiungiProfiliDiProva();
   // Se il profilo ricordato non c'e' piu' (o non ce n'era nessuno) si parte dal primo.
   // «Tutti i bandi» ("") vale solo per chi gestisce.
   const valido = PROFILI.some((p) => String(p.id) === profiloAttivo)

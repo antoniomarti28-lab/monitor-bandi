@@ -150,6 +150,56 @@ button.icona.tondo.cuore-testata.attivo { background: var(--accento); border-col
   font-size: 11px; font-weight: 700; line-height: 19px; text-align: center; border: 2px solid var(--sfondo);
 }
 .cuore-testata.attivo .numerino { background: var(--su-accento); color: var(--accento); }
+
+/* ---- PC con mouse: Preferiti e Tutti fissi, l'esploso dei profili, Modifica a destra ---- */
+
+body.barra-pc .profili {
+  flex-wrap: nowrap; align-items: center; overflow: visible;
+  margin: 0 0 6px; padding: 2px 0 8px; -webkit-mask-image: none; mask-image: none;
+}
+.chip svg { vertical-align: -3px; margin-right: 4px; }
+.chip .freccia { margin: 0 0 0 6px; vertical-align: -2px; transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+.esploso { position: relative; }
+.esploso.aperto .freccia { transform: rotate(180deg); }
+/* Il pannello: chiuso e' invisibile ma presente, cosi' si anima senza toccare la pagina
+   sotto (niente salti dell'elenco). Esce piu' in fretta di come entra. */
+.pannello-esploso {
+  position: absolute; top: 100%; left: 0; z-index: 30;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  width: max-content; max-width: min(560px, calc(100vw - 48px));
+  margin-top: 10px; padding: 12px;
+  background: var(--carta); border: 1px solid var(--bordo-forte); border-radius: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .06), 0 18px 40px rgba(0, 0, 0, .14);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(-6px) scale(.98); transform-origin: top left;
+  transition: opacity 140ms ease-in, transform 140ms ease-in, visibility 0s linear 140ms;
+}
+/* Il ponte invisibile fra pastiglia e pannello: scendendo col cursore non si chiude. */
+.pannello-esploso::before { content: ""; position: absolute; left: 0; right: 0; top: -12px; height: 12px; }
+.esploso.aperto .pannello-esploso {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+  transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
+}
+/* Le pastiglie arrivano una dopo l'altra, al massimo 100 ms di scarto in tutto. */
+.esploso.aperto .pannello-esploso > .chip {
+  animation: entra-profilo 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 25ms);
+}
+@keyframes entra-profilo { from { opacity: 0; transform: translateY(-4px); } }
+
+.tasto-matita {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  min-height: var(--tocco); padding: 0 4px 0 12px; background: none; border: 0; cursor: pointer;
+  font: inherit; font-size: 14px; color: var(--tenue);
+}
+.tasto-matita:hover { color: var(--accento); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pannello-esploso, .esploso.aperto .pannello-esploso { transform: none; transition: opacity 100ms linear, visibility 0s; }
+  .esploso.aperto .pannello-esploso > .chip { animation: none; }
+  .chip .freccia { transition: none; }
+}
 .chip {
   flex: 0 0 auto; min-height: var(--tocco);
   background: var(--carta); border: 1px solid var(--bordo); border-radius: 999px;
