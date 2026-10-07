@@ -705,3 +705,20 @@ Tre richieste sue, tutte nella pagina (`pagina/index.html`, `stile.css`), niente
   principali dentro il preferito, cosi' un bando chiuso (non piu' pubblicato) resta nei
   preferiti come «copia salvata». Conflitto 409/422 (altro dispositivo): rilegge e riprova
   una volta, altrimenti torna indietro e lo dice. Copia anche in `localStorage`.
+
+
+## Barra dei profili (7 ott 2026)
+
+Su PC con mouse (`MODO_PC`: >=700 px, hover e puntatore fine) vale la sua **proposta B**:
+Preferiti e Tutti i bandi fissi a sinistra, UNA pastiglia col profilo scelto che al passaggio
+del cursore apre l'«esploso» (elenco in colonna, due colonne oltre 6, numeri allineati, «+ Nuovo
+profilo» tratteggiato in fondo), «Modifica» a matita a destra. Si apre anche col clic e da
+tastiera (Invio/freccia giu', Esc); tolleranza 180 ms all'uscita e ponte invisibile fra
+pastiglia e pannello. Movimento secondo Impeccable: 220 ms `cubic-bezier(0.16,1,0.3,1)` in
+entrata, 140 ms in uscita, scarto fra voci 25 ms (max 100), con «riduci movimento» solo
+dissolvenza. Al telefono resta la versione con i profili che scorrono, il cuore in testata e
+la riga di strumenti (`barra-v2-testata` = quella versione per intero; `prima-barra-profili`
+= la barra originale). Prove: `?profili=6` aggiunge profili finti solo in pagina; `?barra=c`
+mostra la variante C (profili in vista, «Altri» oltre 5). **C non ci sta**: con 6 profili la
+fila e' larga 1510 px contro la colonna di 820, e gia' con 3 profili in vista piu' Preferiti,
+Tutti e Modifica supera la colonna.
