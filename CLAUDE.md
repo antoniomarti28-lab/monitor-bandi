@@ -722,3 +722,11 @@ la riga di strumenti (`barra-v2-testata` = quella versione per intero; `prima-ba
 mostra la variante C (profili in vista, «Altri» oltre 5). **C non ci sta**: con 6 profili la
 fila e' larga 1510 px contro la colonna di 820, e gia' con 3 profili in vista piu' Preferiti,
 Tutti e Modifica supera la colonna.
+- **8 ott: ventaglio e isola.** Fino a 5 profili l'esploso e' un ventaglio (`htmlEsploso`):
+  pastiglie su un arco a destra (x = 14 + 30*(1-t^2)), nessuna linea, sfocatura
+  (`backdrop-filter`) SOLO sotto ogni pastiglia, chiusura con 280 ms di tolleranza. Oltre 5
+  torna l'elenco in colonna. **Isola laterale** (`#isola`, fixed a sinistra, solo >=1260 px e
+  PC con mouse): cuore libero (senza numero) + pastiglia col profilo in uso (senza numero; i
+  numeri sono nel ventaglio), compare solo quando `#barra-profili` esce dallo schermo
+  (IntersectionObserver). Cambiare vista dall'isola riporta in cima (`tornaInCima`: lo
+  scorrimento morbido nel browser di prova restava fermo, quindi dopo 0,7 s si forza).
