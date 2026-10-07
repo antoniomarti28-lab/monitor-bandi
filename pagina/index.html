@@ -776,6 +776,10 @@ function aggiungiProfiliDiProva() {
   }
 }
 if (MODO_PC.addEventListener) MODO_PC.addEventListener("change", () => disegnaBarraProfili());
+// Non tutti i browser avvisano del cambio: si ricontrolla anche quando cambia la finestra.
+window.addEventListener("resize", () => {
+  if (PROFILI.length && document.body.classList.contains("barra-pc") !== (MODO_PC.matches && !CONDIVISO && PROFILI.length > 1)) disegnaBarraProfili();
+});
 
 function disegnaBarraProfili() {
   const chip = (testo, attivo, extra = "", classe = "") =>
@@ -821,7 +825,7 @@ function disegnaBarraProfili() {
     const nuovo = gestione ? chip("+ Nuovo profilo", false, 'data-nuovo="1" style="--i:4"', "fantasma") : "";
     const esploso = (etichetta, lista, acceso) => `<div class="esploso" data-esploso>
         <button class="chip apri-esploso${acceso ? " attivo" : ""}" aria-haspopup="true" aria-expanded="false">${etichetta}${ICONA_GIU}</button>
-        <div class="pannello-esploso" role="group" aria-label="Profili">${lista.map((p, i) => profiloChip(p, i + 1)).join("")}${nuovo}</div>
+        <div class="pannello-esploso" role="group" aria-label="Profili" style="--colonne:${lista.length > 6 ? 2 : 1}">${lista.map((p, i) => profiloChip(p, i + 1)).join("")}${nuovo}</div>
       </div>`;
     let centro;
     if (VARIANTE_BARRA === "c") {
