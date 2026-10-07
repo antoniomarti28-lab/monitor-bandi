@@ -959,8 +959,14 @@ if ("IntersectionObserver" in window) {
   new IntersectionObserver(([voce]) => { barraInVista = voce.isIntersecting; aggiornaIsola(); })
     .observe($("barra-profili"));
 }
-const tornaInCima = () => window.scrollTo({ top: 0,
-  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+// Prima lo scorrimento morbido; se dopo 0,7 s non e' arrivato (alcuni browser lo fermano
+// quando la pagina sotto cambia, o non lo animano), si va in cima subito. Provato l'8 ott
+// 2026: nel browser di prova il morbido restava fermo a 1400 px.
+function tornaInCima() {
+  const morbido = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: 0, behavior: morbido ? "smooth" : "auto" });
+  if (morbido) setTimeout(() => { if (window.scrollY > 4) window.scrollTo({ top: 0, behavior: "auto" }); }, 700);
+}
 
 /**
  * L'esploso: si apre passandoci sopra col cursore, col clic sulla pastiglia o con la
