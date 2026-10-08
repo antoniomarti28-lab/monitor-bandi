@@ -4,6 +4,8 @@ name: Ripubblica la pagina
 # Rigenera anteprima.html dall'archivio che c'e' gia' e la ripubblica: un minuto,
 # nessuna lettura di siti, nessun gettone speso, e non riscrive niente nel repository
 # (quindi non puo' richiamare se stesso).
+# 8 ott 2026: due pubblicazioni di fila fallite con «Deployment failed, try again later» e
+# nessun motivo, con GitHub che si diceva in salute. Si riprova piu' tardi con un push.
 on:
   push:
     paths:
