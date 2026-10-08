@@ -79,6 +79,43 @@
       "escluse": [],
       "importo_min": null,
       "importo_max": null
+    },
+    {
+      "id": 6,
+      "nome": "Antonio",
+      "tipo_ente": "Persona in cerca di lavoro",
+      "racconto": "Antonio e' una persona che cerca lavoro, non bandi di finanziamento: offerte di lavoro, stage, tirocini, apprendistati e concorsi pubblici. E' laureando in ingegneria meccanica, con diploma aeronautico (trasporti e logistica).\n\nCerca il primo ingresso in azienda a Torino e cintura, in logistica, supply chain, pianificazione, acquisti e spedizioni, automazione e miglioramento dei processi. Ruoli junior, stage, tirocinio, apprendistato, a tempo pieno o part-time. Gli interessano anche i concorsi pubblici con requisito di diploma o laurea triennale in ambito tecnico, logistico o amministrativo.\n\nNei concorsi pubblici vanno bene anche i profili amministrativi (per esempio istruttore o funzionario amministrativo, contabile), purche' il titolo richiesto sia il diploma o la laurea triennale.\n\nDa scartare (no): offerte che chiedono 3 o piu' anni di esperienza (se l'esperienza richiesta e' meno di 3 anni, o non e' detto quanta, NON e' un motivo di «no»: al massimo «forse»); ruoli solo commerciali o di call center; sedi fuori dal Piemonte, salvo lavoro da remoto (smart working).\n\nSe l'offerta richiede la laurea gia' conseguita, e' «forse», non «no»: Antonio e' laureando.\n\nNel giudizio conta, in quest'ordine: pertinenza del ruolo, requisiti (titolo di studio, anni di esperienza), sede, tipo di contratto, scadenza.",
+      "settori": [
+        "Lavoro tecnico e logistica"
+      ],
+      "regioni": [
+        "Piemonte",
+        "Tutta Italia"
+      ],
+      "parole": [
+        "logistica",
+        "supply chain",
+        "magazzino",
+        "pianificazione",
+        "acquisti",
+        "spedizioni",
+        "ufficio tecnico",
+        "automazione",
+        "robotica",
+        "miglioramento continuo",
+        "lean",
+        "tempi e metodi",
+        "operations",
+        "CAD",
+        "apprendistato",
+        "stage",
+        "tirocinio",
+        "neolaureato",
+        "junior"
+      ],
+      "escluse": [],
+      "importo_min": null,
+      "importo_max": null
     }
   ],
   "feed": [
@@ -274,6 +311,47 @@
       "profili": [
         1,
         2
+      ]
+    },
+    {
+      "nome": "Concorsi - Gazzetta Ufficiale (Piemonte)",
+      "url": "https://www.gazzettaufficiale.it/rss/S4",
+      "ente": "Gazzetta Ufficiale - 4a serie speciale Concorsi",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "filtra": [
+        "torino",
+        "piemonte",
+        "piemontes",
+        "cuneo",
+        "asti",
+        "alessandria",
+        "novara",
+        "biella",
+        "vercelli",
+        "verbania",
+        "verbano",
+        "ivrea",
+        "pinerolo",
+        "moncalieri",
+        "rivoli",
+        "chieri",
+        "collegno",
+        "settimo torinese",
+        "nichelino",
+        "grugliasco",
+        "orbassano",
+        "venaria",
+        "carmagnola",
+        "chivasso",
+        "savigliano",
+        "mondovi",
+        "casale monferrato",
+        "tortona",
+        "novi ligure",
+        "acqui terme"
       ]
     }
   ],
@@ -1973,6 +2051,66 @@
       "profili": [
         1
       ]
+    },
+    {
+      "nome": "Concorsi - Comune di Torino",
+      "url": "https://www.comune.torino.it/lavorare-comune/concorsi",
+      "ente": "Comune di Torino",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
+    },
+    {
+      "nome": "Tirocini - Comune di Torino",
+      "url": "https://www.comune.torino.it/lavorare-comune/tirocini",
+      "ente": "Comune di Torino",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
+    },
+    {
+      "nome": "Manpower Torino - logistica",
+      "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/funzioni/logistica",
+      "ente": "Manpower",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
+    },
+    {
+      "nome": "Manpower Torino - acquisti",
+      "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/funzioni/acquisti",
+      "ente": "Manpower",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
+    },
+    {
+      "nome": "Manpower Torino - engineering",
+      "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/funzioni/engineering",
+      "ente": "Manpower",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
+    },
+    {
+      "nome": "Manpower Torino - aerospazio e difesa",
+      "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/settori/aerospace-e-defence",
+      "ente": "Manpower",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
     }
   ],
   "impostazioni": {

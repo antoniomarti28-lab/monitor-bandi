@@ -382,22 +382,27 @@ def chiedi(chiave, modello, sistema, domanda, gettoni_max=700, sforzo="low"):
 
 # ---------------------------------------------------------------- le domande
 
-CAMPI_ARTISTA = """Solo se e' un'audizione, un casting o un'offerta di lavoro per artisti
-(altrimenti metti null in tutti e quattro):
-  "compagnia"   : il nome della compagnia, del coreografo o di chi cerca, come scritto.
+CAMPI_ARTISTA = """Solo se e' un'audizione, un casting, un'offerta di lavoro (anche non
+artistica: impiego, stage, tirocinio, apprendistato) o un concorso pubblico (altrimenti metti
+null in tutti e quattro):
+  "compagnia"   : il nome della compagnia, dell'azienda, dell'ente o di chi cerca, come
+                  scritto (per un'agenzia per il lavoro: l'agenzia, se l'azienda non e' detta).
   "citta"       : la citta' dove si lavora (o, se manca, dove si fa l'audizione);
-                  se e' all'estero aggiungi il paese, es. "Salisburgo, Austria".
+                  se e' all'estero aggiungi il paese, es. "Salisburgo, Austria"; se e'
+                  da remoto scrivi "da remoto".
   "ingaggio"    : UNA fra queste parole esatte:
-                  "pagato"      contratto o compenso per l'artista;
+                  "pagato"      contratto o compenso (per un impiego: qualunque contratto
+                                di lavoro retribuito, anche a tempo determinato);
                   "non pagato"  lavoro gratuito, a titolo volontario o solo rimborso spese;
                   "stage"       tirocinio, apprendistato, junior company, formazione in
                                 compagnia senza vero contratto;
                   "a pagamento" e' l'artista a dover pagare (workshop-audition, quota
                                 di iscrizione, corso travestito da audizione).
                   null se il testo non lo dice.
-  "lavoro"      : "in compagnia" se si entra in una compagnia o in una produzione con
-                  piu' date o una stagione; "lavoro singolo" se e' un ingaggio isolato
-                  (una serata, un evento, un video, uno spot, una singola performance)."""
+  "lavoro"      : solo per gli artisti: "in compagnia" se si entra in una compagnia o in una
+                  produzione con piu' date o una stagione; "lavoro singolo" se e' un ingaggio
+                  isolato (una serata, un evento, un video, uno spot, una singola
+                  performance). Per un impiego non artistico metti null."""
 
 SISTEMA_LETTURA = """Sei un assistente che legge bandi e avvisi pubblici italiani.
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
@@ -408,10 +413,18 @@ per presentare la domanda, scritto nel testo.
 
 Il testo puo' anche essere un'AUDIZIONE o un casting (una compagnia che cerca danzatori,
 attori, musicisti), in italiano o in un'altra lingua: per un artista vale come un bando.
+Puo' essere anche un'OFFERTA DI LAVORO (un'azienda o un'agenzia che cerca una persona, uno
+stage, un tirocinio, un apprendistato) o un CONCORSO PUBBLICO: per chi cerca lavoro vale
+come un bando. Per un'offerta: la scadenza e' il termine per candidarsi (null se non c'e'),
+il territorio e' la regione della sede di lavoro (["Italia"] se e' da remoto o con sedi in
+tutta Italia), e nel riassunto scrivi ruolo, azienda o ente, sede, tipo di contratto, titolo
+di studio e anni di esperienza richiesti, se sono scritti.
 
 Campi richiesti:
   "e_un_bando"  : true se e' un bando/avviso/concorso a cui ci si puo' candidare, oppure
-                  un'audizione, un casting o una open call per artisti;
+                  un'audizione, un casting o una open call per artisti, oppure una singola
+                  offerta di lavoro, stage o apprendistato (NON un elenco di offerte, una
+                  pagina di presentazione dell'azienda o un articolo sul mercato del lavoro);
                   false se e' una notizia, un articolo, una graduatoria o un resoconto.
   "aperto"      : true se le domande si possono ancora presentare, false se e' chiuso
                   o gia' assegnato, null se non si capisce.
@@ -430,7 +443,9 @@ Campi richiesti:
   "tipo_aiuto"  : che forma ha l'aiuto, UNA sola fra queste parole esatte:
                   "fondo perduto" (non si restituisce), "prestito agevolato",
                   "voucher", "premio", "servizi" (consulenza, spazi, formazione),
-                  "misto", "audizione" (una compagnia o produzione cerca artisti).
+                  "misto", "audizione" (una compagnia o produzione cerca artisti),
+                  "lavoro" (offerta di impiego, stage, tirocinio, apprendistato),
+                  "concorso" (concorso o selezione pubblica per un posto di lavoro).
                   Se dal testo non si capisce, metti null.
   "settori"     : da 1 a 4 parole sull'ambito (es. ["cultura", "teatro"]).
   "destinatari" : elenco breve di CHI PUO' PRESENTARE LA DOMANDA, come scritto nel testo
@@ -497,6 +512,12 @@ testo la esclude espressamente (solo enti pubblici, solo imprese, solo persone f
 solo enti iscritti a un albo che il profilo non ha). Un bando per «compagnie teatrali» o
 «organizzazioni culturali» non esclude un'associazione che fa teatro e cultura.
 
+Se il profilo e' una PERSONA IN CERCA DI LAVORO e l'annuncio e' un'offerta o un concorso,
+valuta nell'ordine: pertinenza del ruolo a cio' che il racconto dice di cercare, requisiti
+(titolo di studio, anni di esperienza), sede, tipo di contratto, scadenza; nel motivo cita
+quelli che decidono. Le regole su cosa scartare e cosa e' «forse» le da' il racconto, e
+valgono piu' di queste righe generali.
+
 Il territorio del profilo e' l'elenco «territori»: un bando di un paese o di una citta'
 che compare li' (per esempio Spagna, Regno Unito, Europa) e' valido per il profilo.
 
@@ -536,7 +557,9 @@ def domanda_giudizio(b, profilo):
     # Il racconto libero si manda davvero: il prompt diceva al modello di tenerne conto,
     # ma fino al 28 set 2026 non gli arrivava. Per un profilo come «Mati» (cerca SOLO
     # audizioni di compagnie contemporanee) e' la parte che decide.
-    racconto = " ".join((profilo.get("racconto") or "").split())[:600]
+    # 1.500 caratteri (8 ott 2026): con 600 si perdeva la coda dei racconti, cioe' proprio
+    # le esclusioni («non le interessano...» di Mati, «da scartare...» di Antonio).
+    racconto = " ".join((profilo.get("racconto") or "").split())[:1500]
     return ("PROFILO\n  tipo: %s\n  settori: %s\n  territori: %s\n  racconto: %s\n\n"
             "BANDO\n  titolo: %s\n  destinatari: %s\n  riassunto: %s") % (
         profilo.get("tipo_ente") or "non specificato",

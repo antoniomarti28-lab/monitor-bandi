@@ -280,7 +280,8 @@ def verifica(url):
 SISTEMA_SCOPERTA = """Guardi la pagina di un ente e decidi se vale la pena sorvegliarla
 per i profili descritti: non conta solo se oggi c'e' un bando aperto, conta se
 quell'ente pubblica, o potrebbe pubblicare in futuro, bandi, contributi, premi, call
-o residenze a cui questi profili potrebbero candidarsi (per un artista: audizioni).
+o residenze a cui questi profili potrebbero candidarsi (per un artista: audizioni; per
+chi cerca lavoro: offerte, stage, apprendistati e concorsi pubblici adatti a lui).
 Rispondi SOLO con un oggetto JSON, senza spiegazioni prima o dopo.
 
   "utile"  : "ora"       se ci sono gia' bandi aperti adatti a loro;

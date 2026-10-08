@@ -527,7 +527,7 @@ function pulisciTesto(t) {
 /** Le parole della pagina cambiano col profilo: a una ballerina non si parla di «bandi». */
 function lessico() {
   const p = PROFILI.find((x) => String(x.id) === profiloAttivo);
-  const artista = p && /^artista|privato/i.test(p.tipo_ente || "");
+  const artista = p && /^artista|privato|persona/i.test(p.tipo_ente || "");
   return artista
     ? { uno: "annuncio", molti: "annunci", apri: "Apri l'annuncio", si: "Puoi candidarti" }
     : { uno: "bando", molti: "bandi", apri: "Apri il bando", si: "Puoi parteciparci" };

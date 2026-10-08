@@ -730,3 +730,34 @@ Tutti e Modifica supera la colonna.
   numeri sono nel ventaglio), compare solo quando `#barra-profili` esce dallo schermo
   (IntersectionObserver). Cambiare vista dall'isola riporta in cima (`tornaInCima`: lo
   scorrimento morbido nel browser di prova restava fermo, quindi dopo 0,7 s si forza).
+
+
+## Profilo «Antonio»: una persona che cerca LAVORO (8 ott 2026)
+
+Come Mati, ma offerte di lavoro, stage, tirocini, apprendistati e concorsi pubblici.
+- **Parole**: tipo nuovo «Persona in cerca di lavoro» (`profili.TIPI_ENTE`), settore «Lavoro
+  tecnico e logistica», indizi di offerta in `INDIZI_BANDO`, `estrattore.PAROLE_LAVORO` e
+  l'opzione di fonte `"cerca": "lavoro"` (come «audizioni»: solo quei collegamenti, una pagina
+  senza offerte oggi non e' un errore), `ripara.PAROLE_SEZIONE`. Per «Persona» come per
+  «Artista», un annuncio fuori campo vale 0 (`valuta`).
+- **Il modello**: un'offerta o un concorso valgono come un bando; `tipo_aiuto` «lavoro» o
+  «concorso»; territorio = regione della sede (Italia se da remoto); `CAMPI_ARTISTA` vale anche
+  per gli impieghi (compagnia = azienda/ente, citta' = sede, ingaggio pagato/stage). Il
+  giudice riceve ora 1.500 caratteri di racconto (prima 600: si perdevano le esclusioni, anche
+  quelle di Mati) e per chi cerca lavoro guarda ruolo, requisiti, sede, contratto, scadenza.
+- **Feed con `"filtra"`** (`raccogli.leggi_un_feed`): tiene solo le voci con una delle parole
+  (inizio parola). Gazzetta Ufficiale 4a serie concorsi: 76 voci, 3 col filtro Piemonte.
+- **Fonti aperte una per una (8 ott)**. Tenute: GU concorsi (feed, filtro luoghi del Piemonte),
+  Comune di Torino concorsi e tirocini, Manpower Torino per area (logistica, acquisti,
+  engineering, aerospazio e difesa: la pagina generale di Torino era piena di pulizie e GDO).
+  Escluse: inPA (applicazione JavaScript, niente feed: buco dichiarato), Agenzia Piemonte
+  Lavoro (robots.txt vieta), IoLavoro (503), Citta' Metropolitana (ogni indirizzo porta alla
+  stessa pagina generica), Regione Piemonte e Politecnico (elenco non leggibile; i concorsi
+  passano dalla GU), UniTo (le selezioni stanno su un portale esterno, l'offerta laureati vuole
+  il login), Comau (solo LinkedIn), Avio Aero/GE e Thales (JavaScript), Stellantis (ricerca
+  JavaScript), Iveco (dominio careers inesistente), Prima Industrie (nessuna pagina lavoro),
+  Randstad e Adecco (elenchi caricati da JavaScript), Gi Group (non risponde), Umana (offerte
+  su api.cving.com, altro dominio).
+- **Prova col modello (6+2 annunci)**: «laurea gia' conseguita» → forse (3 su 3). Due errori
+  corretti nel racconto: «chiede esperienza» senza anni diventava «no»; un concorso da
+  istruttore amministrativo era «non pertinente» (lui vuole anche i profili amministrativi).

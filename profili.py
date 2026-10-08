@@ -40,6 +40,12 @@ SETTORI = {
     "Agricoltura": ["agricol", "agroaliment", "rurale", "pesca", "allevamento"],
     "Imprese e lavoro": ["impresa", "imprese", "occupazione", "autoimpiego", "lavoro",
                          "microcredito", "pmi"],
+    # Profilo «Antonio» (8 ott 2026): una persona che cerca lavoro, non bandi.
+    "Lavoro tecnico e logistica": ["logistic", "supply chain", "magazzin", "pianificazion",
+                                   "planning", "acquisti", "buyer", "procurement", "spedizion",
+                                   "ufficio tecnico", "automazion", "robotic", "miglioramento continuo",
+                                   "lean", "tempi e metodi", "operations", "produzione", "ingegner",
+                                   "meccanic", "industrial", "manutenzion", "qualita", "trasporti"],
 }
 
 REGIONI = {
@@ -116,7 +122,7 @@ TIPI_ENTE = [
     "Organizzazione di volontariato (ODV)", "Ente del Terzo Settore (ETS/ONLUS)",
     "Fondazione", "Impresa sociale", "Cooperativa", "Societa' (SRL, SPA)",
     "Ditta individuale / libero professionista", "Artista (persona singola)",
-    "Privato cittadino",
+    "Persona in cerca di lavoro", "Privato cittadino",
     "Comune o ente pubblico", "Scuola o universita'",
 ]
 
@@ -128,7 +134,13 @@ INDIZI_BANDO = ["bando", "avviso pubblico", "avviso", "contributo", "contributi"
                 "sostegno economico", "voucher", "manifestazione di interesse",
                 # Per un artista l'annuncio che conta e' l'audizione, spesso in inglese.
                 "audizion", "audition", "casting", "provini", "open call",
-                "cerchiamo danzat", "looking for dancers", "seeking dancers"]
+                "cerchiamo danzat", "looking for dancers", "seeking dancers",
+                # Per chi cerca lavoro (profilo «Antonio», 8 ott 2026): offerte, stage,
+                # apprendistati e concorsi pubblici.
+                "offerta di lavoro", "offerte di lavoro", "posizione aperta", "posizioni aperte",
+                "stage", "tirocini", "apprendistato", "ricerchiamo", "stiamo cercando",
+                "si ricerca", "assunzion", "selezione pubblica", "concorso pubblico",
+                "job description", "requisiti richiesti", "invia il tuo cv", "candidati ora"]
 
 # Parole che tradiscono un articolo di giornale invece di un bando aperto.
 # Attenzione: 'graduatoria' e 'vincitori' stanno QUI, non sopra: se c'e' la graduatoria
@@ -319,11 +331,12 @@ def valuta(bando, profilo):
     if colpiti:
         punti += min(len(colpiti) * PESI["settore"], PESI["settore_max"])
         motivi.append(", ".join(colpiti).lower())
-    elif (profilo.get("tipo_ente") or "").startswith("Artista") and not any(
+    elif (profilo.get("tipo_ente") or "").startswith(("Artista", "Persona")) and not any(
             p and contiene(testo, p) for p in profilo.get("parole", [])):
         # Un artista singolo senza regioni (le audizioni sono ovunque) non ha altri
         # filtri: senza questa regola a «Mati» arrivavano i contributi per la pesca,
-        # perche' un bando aperto e confermato vale gia' 40 punti da solo.
+        # perche' un bando aperto e confermato vale gia' 40 punti da solo. Lo stesso per
+        # chi cerca lavoro: un'offerta che non tocca il suo campo non vale niente.
         return 0, ["non parla del tuo campo"]
 
     # 4. Territorio.

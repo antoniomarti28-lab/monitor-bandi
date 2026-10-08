@@ -244,6 +244,16 @@ PAROLE_AUDIZIONE = ["audizion", "audition", "auditie", "audicion", "audicio", "v
                     "emploi", "lediga", "ledige stilling", "careers", "opportunit"]
 
 
+# Per le pagine «lavora con noi», concorsi e agenzie (profilo «Antonio», 8 ott 2026): solo i
+# collegamenti che portano a un'offerta, uno stage o un concorso. Come per le compagnie di
+# danza, le parole dei bandi («contributo», «premio») qui pescherebbero solo rumore.
+PAROLE_LAVORO = ["offert", "posizion", "job", "career", "carrier", "lavora-con-noi",
+                 "lavora con noi", "stage", "tirocin", "internship", "apprendist", "graduate",
+                 "concors", "selezion", "reclutament", "recruit", "assunzion", "vacanc",
+                 "candidat", "impiegat", "addett", "ingegner", "engineer", "tecnico",
+                 "logistic", "supply", "magazzin", "planner", "buyer", "acquisti", "operat"]
+
+
 def link_interessanti(link, url_base, massimo=25, parole=None):
     """Sceglie i collegamenti che sembrano portare a un bando, non al menu del sito.
 

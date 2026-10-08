@@ -299,10 +299,20 @@ def leggi_un_feed(db, f, oggi=None):
         else:
             elenco = leggi_feed(scarica(url))
             voci = len(elenco)
+            # «filtra» (8 ott 2026): un feed enorme di cui serve solo una parte. La Gazzetta
+            # Ufficiale dei concorsi ha ~80 voci per numero da tutta Italia: farle leggere
+            # tutte al modello consumerebbe la quota del giorno; con i luoghi del Piemonte
+            # ne restano 3. Le parole si cercano a inizio parola, come nei profili.
+            filtro = [w for w in (f.get("filtra") or []) if w]
+            if filtro:
+                import profili
             for v in elenco:
                 link = (v["link"] or "").strip()
                 titolo = pulisci(v["titolo"])
                 if not link or not titolo:
+                    continue
+                if filtro and not any(profili.contiene(profili._norm(titolo + " " + (v["sommario"] or "")), w)
+                                      for w in filtro):
                     continue
                 ident = hashlib.sha1(link.encode("utf-8")).hexdigest()
                 sommario = pulisci(v["sommario"])[:2000]

@@ -80,7 +80,11 @@ def controlla_sito(db, sito, opzioni=None):
                                un annuncio da leggere.
     """
     opzioni = opzioni or {}
-    solo_audizioni = opzioni.get("cerca") == "audizioni"
+    # «lavoro» (8 ott 2026, profilo «Antonio»): come le audizioni, ma con le parole delle
+    # offerte di lavoro e dei concorsi. Una pagina senza offerte oggi e' normale.
+    modalita = opzioni.get("cerca")
+    solo_audizioni = modalita in ("audizioni", "lavoro")
+    parole = {"audizioni": estrattore.PAROLE_AUDIZIONE, "lavoro": estrattore.PAROLE_LAVORO}.get(modalita)
     url = sito["url"]
     if not robots_permette(url):
         return "vietato da robots.txt", 0
@@ -94,8 +98,7 @@ def controlla_sito(db, sito, opzioni=None):
     if opzioni.get("pagina_audizioni"):
         nuovi += versione_nuova(db, sito, pagina, oggi)
 
-    candidati = estrattore.link_interessanti(
-        pagina["link"], url, parole=estrattore.PAROLE_AUDIZIONE if solo_audizioni else None)
+    candidati = estrattore.link_interessanti(pagina["link"], url, parole=parole)
     if not candidati:
         if solo_audizioni:
             db.commit()
