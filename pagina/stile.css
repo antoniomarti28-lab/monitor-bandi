@@ -628,21 +628,22 @@ button.cal-cella:hover { border-color: var(--accento); }
 .cal-altri { font-size: 12px; color: var(--tenue); }
 
 .cal-data { font-size: 16px; font-weight: 600; margin: 20px 0 6px; display: flex; gap: 6px; align-items: baseline; }
-/* Il giorno scelto in griglia: bordo e fondo terracotta nell'agenda, casella piena sopra (resta finche' non ne scegli un altro). */
-.cal-blocco { scroll-margin-top: 16px; border: 1px solid transparent; border-radius: var(--raggio); margin: 0 -12px; padding: 0 12px; }
-.cal-blocco.scelto { border-color: var(--accento); background: var(--accento-tenue); margin-top: 14px; }
-.cal-blocco.scelto .cal-data { color: var(--accento); margin-top: 12px; }
-.cal-blocco.scelto .cal-voce { border-color: var(--bordo-forte); }
-.cal-blocco.lampo { animation: cal-lampo 1.1s cubic-bezier(0.16, 1, 0.3, 1); }
+/* Il giorno cliccato in griglia (8 ott 2026, sue parole): «non voglio che rimanga fisso,
+   deve solo segnalarmi la posizione» e «posizionalo un po' piu' basso». Quindi: arriva a un
+   quinto dello schermo invece che incollato in cima, si accende in terracotta e in due
+   secondi torna normale da solo. */
+.cal-blocco { scroll-margin-top: 20vh; border: 1px solid transparent; border-radius: var(--raggio); margin: 0 -12px; padding: 0 12px; }
+.cal-blocco.lampo { animation: cal-lampo 2.2s ease-out; }
+.cal-blocco.lampo .cal-data { animation: cal-lampo-titolo 2.2s ease-out; }
 @keyframes cal-lampo {
-  0%, 35% { box-shadow: 0 0 0 4px var(--accento); }
-  100% { box-shadow: 0 0 0 0 transparent; }
+  0%, 40% { background: var(--accento-tenue); border-color: var(--accento); }
+  100% { background: transparent; border-color: transparent; }
 }
-.cal-cella.scelta { background: var(--accento); border-color: var(--accento); }
-.cal-cella.scelta .cal-num, .cal-cella.scelta .cal-segno span, .cal-cella.scelta .cal-altri { color: var(--su-accento); }
-.cal-cella.scelta .cal-segno i { border-color: var(--su-accento); background: var(--su-accento); }
-.cal-cella.scelta .cal-segno.forse i { background: transparent; }
-@media (prefers-reduced-motion: reduce) { .cal-blocco.lampo { animation: none; } }
+@keyframes cal-lampo-titolo { 0%, 40% { color: var(--accento); } }
+@media (prefers-reduced-motion: reduce) {
+  /* niente movimento: solo il fondo, che sparisce di colpo dopo lo stesso tempo */
+  .cal-blocco.lampo { animation: cal-lampo 2.2s steps(1, end); }
+}
 .cal-data::first-letter { text-transform: uppercase; }
 .cal-data .fioco { font-size: 14px; font-family: Inter, system-ui, sans-serif; }
 .cal-data.passato { color: var(--tenue); }

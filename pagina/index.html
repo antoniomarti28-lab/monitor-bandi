@@ -1580,15 +1580,14 @@ function aggiornaCalendario() {
   el.querySelectorAll("[data-vai-mese]").forEach((t) => { t.onclick = () => { meseCalendario = t.dataset.vaiMese; aggiorna(); }; });
   el.querySelectorAll("[data-giorno]").forEach((t) => {
     // Lui (8 ott 2026): scorrendo giu' i giorni sono tutti uguali e non trovava quello
-    // cliccato. Ora il giorno scelto resta acceso, in griglia e nell'agenda, finche' non
-    // se ne sceglie un altro; all'arrivo lampeggia una volta.
+    // cliccato. Il blocco del giorno si accende all'arrivo e si spegne da solo («non deve
+    // restare fisso, deve solo segnalarmi la posizione»); dove si ferma lo decide
+    // `scroll-margin-top` in stile.css (un quinto di schermo sotto il bordo).
     t.onclick = () => {
       const blocco = $("g-" + t.dataset.giorno);
       if (!blocco) return;
-      el.querySelectorAll(".cal-blocco.scelto, .cal-cella.scelta").forEach((x) => x.classList.remove("scelto", "scelta"));
-      t.classList.add("scelta");
-      blocco.classList.add("scelto");
-      blocco.classList.remove("lampo");
+      el.querySelectorAll(".cal-blocco.lampo").forEach((x) => x.classList.remove("lampo"));
+      blocco.onanimationend = (e) => { if (e.target === blocco) blocco.classList.remove("lampo"); };
       void blocco.offsetWidth;          // fa ripartire l'animazione se si riclicca lo stesso giorno
       blocco.classList.add("lampo");
       blocco.scrollIntoView({ behavior: "smooth", block: "start" });
