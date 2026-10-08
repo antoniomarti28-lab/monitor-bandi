@@ -665,8 +665,10 @@ button.cal-cella:hover { border-color: var(--accento); }
   .cal-segno span, .cal-altri { display: none; }
   .cal-segno i { width: 8px; height: 8px; }
   .cal-giorno-sett { font-size: 11px; letter-spacing: 0; }
-  .cal-voce { flex-wrap: wrap; }
-  .cal-google-uno { margin-left: 24px; }
+  /* pallino a sinistra del titolo, «+ Google» sotto il testo */
+  .cal-voce { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 4px 10px; align-items: start; }
+  .cal-voce .cal-pallino { margin-top: 6px; }
+  .cal-google-uno { grid-column: 2; justify-self: start; min-height: 36px; }
 }
 
 /* ---- telefono ---- */

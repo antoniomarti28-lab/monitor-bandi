@@ -1444,6 +1444,10 @@ function vociCalendario(pid) {
     || [b.titolo, b.ente, b.riassunto, b.sommario, b.compagnia, b.citta].join(" ").toLowerCase().includes(q));
 }
 
+/** Nella casella ci stanno due parole: via «Offerte di lavoro per» e « - Manpower Italia». */
+const titoloBreve = (t) => String(t || "").replace(/^offert[ae] di lavoro (per|come)\s+/i, "")
+  .replace(/\s+[-–|]\s+[^-–|]{2,40}$/, "").replace(/^(bando|avviso)( pubblico)?\s*[:-]?\s*/i, "") || String(t || "");
+
 /** Indirizzo del calendario da dare a Google: accanto alla pagina pubblicata (anche da una condivisa). */
 function indirizzoCalendario(pid) {
   if (!STATICA || !/^https?:$/.test(location.protocol)) return "";
@@ -1503,7 +1507,7 @@ function aggiornaCalendario() {
     const classi = ["cal-cella", iso === oggi ? "oggi" : "", iso < oggi ? "passato" : "", qui.length ? "piena" : ""]
       .filter(Boolean).join(" ");
     const segni = qui.slice(0, 3).map((b) =>
-      `<span class="cal-segno ${attr(b.llm_verdetto || "")}${ePreferito(b) ? " cuore" : ""}"><i></i><span>${attr(b.titolo)}</span></span>`).join("")
+      `<span class="cal-segno ${attr(b.llm_verdetto || "")}${ePreferito(b) ? " cuore" : ""}"><i></i><span>${attr(titoloBreve(b.titolo))}</span></span>`).join("")
       + (qui.length > 3 ? `<span class="cal-altri">+${qui.length - 3}</span>` : "");
     celle += qui.length
       ? `<button class="${classi}" data-giorno="${iso}" aria-label="${g} ${MESI[mese - 1]}: ${qui.length} ${qui.length === 1 ? "scadenza" : "scadenze"}">
