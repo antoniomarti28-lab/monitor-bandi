@@ -804,3 +804,15 @@ come offerte», altrimenti la regola dell'AMBITO del giudice («imprese e filier
 li scarterebbe. Parole nuove (via «magazzino» e «spedizioni»). Prova su 14 annunci veri:
 magazziniere/operatori -> no, tirocinio ingegnere Settimo -> si, planner/procurement restano forse.
 **Manca**: fonti di corsi e di progetti europei (oggi solo Manpower, Comune di Torino, GU).
+**Fonti aggiunte la stessa sera** (provate su una copia dell'archivio: 31 annunci):
+Torino Giovani (Informagiovani del Comune) offerte di lavoro (`cerca: lavoro`), corsi di
+formazione e tirocini all'estero (modo normale: i link «scopri ...» passano dal ripiego sui
+titoli lunghi); i due master in apprendistato di alta formazione del COREP/UniTo (Industrial
+Operations, iscrizioni entro 30/10/2026; Innovation Manager e Data Driven Business
+Transformation) con l'opzione nuova **`"solo_pagina": true`** (`siti.controlla_sito`: si
+sorveglia il testo della pagina con `versione_nuova` e non si segue nessun collegamento).
+Scartate: Torino Giovani concorsi (li porta gia' la GU), Corpo europeo di solidarieta'
+(volontariato fuori dai suoi campi), Eurodesk tirocini (istituzioni UE), Polito avvisi (bandi
+accademici), corep.it (elenco non leggibile: si sorvegliano i siti dei master), ticonsiglio
+(aggregatore nazionale rumoroso), Regione Piemonte corsi (pagina di menu, niente elenco).
+I master in apprendistato chiedono la laurea gia' presa e meno di 30 anni.

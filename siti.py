@@ -95,8 +95,14 @@ def controlla_sito(db, sito, opzioni=None):
 
     oggi = datetime.now(timezone.utc).isoformat(timespec="seconds")
     nuovi = 0
-    if opzioni.get("pagina_audizioni"):
+    if opzioni.get("pagina_audizioni") or opzioni.get("solo_pagina"):
         nuovi += versione_nuova(db, sito, pagina, oggi)
+    # «solo_pagina» (8 ott 2026, i siti dei master in apprendistato per Antonio): la pagina
+    # E' l'annuncio, e i suoi collegamenti sono solo programma, costi, contatti. Si sorveglia
+    # il testo e basta, senza seguire niente.
+    if opzioni.get("solo_pagina"):
+        db.commit()
+        return "ok", nuovi
 
     candidati = estrattore.link_interessanti(pagina["link"], url, parole=parole)
     if not candidati:

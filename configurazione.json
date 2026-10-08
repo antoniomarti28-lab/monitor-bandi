@@ -2125,6 +2125,58 @@
         1,
         2
       ]
+    },
+    {
+      "nome": "Torino Giovani - offerte di lavoro",
+      "url": "https://www.torinogiovani.it/lavoro/offerte",
+      "ente": "Torino Giovani (Comune di Torino)",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "cerca": "lavoro"
+    },
+    {
+      "nome": "Torino Giovani - corsi di formazione",
+      "url": "https://www.torinogiovani.it/formazione/corsi-di-formazione",
+      "ente": "Torino Giovani (Comune di Torino)",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "nota": "Corsi gratuiti o finanziati segnalati dall'Informagiovani di Torino."
+    },
+    {
+      "nome": "Torino Giovani - tirocini all'estero",
+      "url": "https://www.torinogiovani.it/estero/tirocini-workstudy-lavoro-alla-pari",
+      "ente": "Torino Giovani (Comune di Torino)",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "nota": "Tirocini europei e internazionali (Erasmus+, istituzioni UE): molte sono schede fisse, il giudice tiene solo quelle utili."
+    },
+    {
+      "nome": "Master in apprendistato - Industrial Operations",
+      "url": "https://www.masterindustrialoperations.it/",
+      "ente": "COREP / Universita' di Torino",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "solo_pagina": true,
+      "nota": "Master gratuito con assunzione in apprendistato di alta formazione: si sorveglia la pagina, ogni cambiamento diventa un annuncio."
+    },
+    {
+      "nome": "Master in apprendistato - Innovation Manager e Data Driven Business Transformation",
+      "url": "https://www.masterinnovationmanager.it/",
+      "ente": "COREP / Universita' di Torino",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "solo_pagina": true,
+      "nota": "Master gratuito con assunzione in apprendistato di alta formazione: si sorveglia la pagina, ogni cambiamento diventa un annuncio."
     }
   ],
   "impostazioni": {
