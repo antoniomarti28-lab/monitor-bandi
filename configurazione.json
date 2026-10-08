@@ -438,16 +438,6 @@
       ]
     },
     {
-      "nome": "EU Culture Calls",
-      "url": "https://culture.ec.europa.eu/funding/calls",
-      "ente": "European Commission – Culture and Creativity Calls",
-      "attivo": true,
-      "profili": [
-        1,
-        2
-      ]
-    },
-    {
       "nome": "Spettacolo.gov.it",
       "url": "https://spettacolo.cultura.gov.it",
       "ente": "Spettacolo – Direzione generale",
@@ -2112,6 +2102,16 @@
         6
       ],
       "cerca": "lavoro"
+    },
+    {
+      "nome": "EU Culture Calls",
+      "url": "https://culture.ec.europa.eu/cultural-heritage/funding-opportunities-for-cultural-heritage",
+      "ente": "European Commission – Culture and Creativity Calls",
+      "attivo": true,
+      "profili": [
+        1,
+        2
+      ]
     }
   ],
   "impostazioni": {
@@ -2138,17 +2138,19 @@
         "tipo": "sito"
       }
     },
-    "Audizioni - TuttoDanzaWeb": {
-      "quando": "2026-10-08T11:06:31+00:00",
-      "riuscita": false,
-      "errore": "non e' un feed valido",
-      "provati": 8
-    },
-    "Unione Buddhista 8x1000": {
-      "quando": "2026-10-08T11:06:53+00:00",
-      "riuscita": false,
+    "EU Culture Calls": {
+      "quando": "2026-10-08T11:50:52+00:00",
+      "riuscita": true,
       "errore": "nessun collegamento a bandi trovato in questa pagina",
-      "provati": 8
+      "come": "trovata la sezione dei bandi del sito",
+      "prima": {
+        "url": "https://culture.ec.europa.eu/funding/calls",
+        "tipo": "sito"
+      },
+      "dopo": {
+        "url": "https://culture.ec.europa.eu/cultural-heritage/funding-opportunities-for-cultural-heritage",
+        "tipo": "sito"
+      }
     }
   },
   "proposte_scartate": [
