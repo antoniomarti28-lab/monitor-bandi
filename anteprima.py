@@ -240,7 +240,100 @@ window.fetch = async (url, opzioni) => {
     completa = pagina.replace("<script>", finto + "<script>", 1)
     (BASE / "anteprima.html").write_text(completa, encoding="utf-8")
     condivise(pagina, finto_modello, dati, adesso, oggi)
+    calendari(dati, oggi)
     return len(bandi), len(elenco_profili)
+
+
+def _ics_testo(s):
+    """Un testo dentro un file .ics: barre, punti e virgola, virgole e a capo si scrivono
+    con la barra rovesciata davanti (RFC 5545, 3.3.11)."""
+    s = str(s or "").replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,")
+    return s.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\\n")
+
+
+def _ics_riga(riga):
+    """Le righe di un .ics non superano 75 byte: le piu' lunghe si spezzano e la
+    continuazione comincia con uno spazio. Si spezza fra un carattere e l'altro, mai
+    dentro una lettera accentata."""
+    pezzi, corrente = [], ""
+    for c in riga:
+        if len((corrente + c).encode("utf-8")) > (75 if not pezzi else 74):
+            pezzi.append(corrente)
+            corrente = ""
+        corrente += c
+    pezzi.append(corrente)
+    return "\r\n ".join(pezzi)
+
+
+def calendari(dati, oggi):
+    """Un calendario per profilo, da aggiungere a Google Calendar «da URL»:
+    `calendari/profilo-<id>.ics`, accanto alla pagina pubblicata.
+
+    Dentro, come nel calendario della pagina: le scadenze dei «si», dei «forse» e dei
+    preferiti segnati da quel profilo (anche se scartati: il cuore lo mette lui), dagli
+    ultimi 60 giorni in avanti. Un evento di un giorno intero per scadenza. Il repository
+    e' pubblico, quindi questi file non sono segreti: dicono le stesse cose della pagina.
+    Si rigenera a ogni pubblicazione (giro, impostazioni, cambio di codice o di preferiti)."""
+    import re
+    import shutil
+    from datetime import timedelta
+    cartella = BASE / "calendari"
+    if cartella.exists():
+        shutil.rmtree(cartella)
+    cartella.mkdir()
+    try:
+        preferiti = json.loads((BASE / "preferiti.json").read_text(encoding="utf-8")).get("bandi") or {}
+    except (OSError, ValueError):
+        preferiti = {}
+    dal = (date.fromisoformat(oggi) - timedelta(days=60)).isoformat()
+    timbro = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    pulito = lambda u: re.sub(r"^https?://(www\.)?|[?#].*$|/+$", "", str(u or "").lower())
+    etichette = {"si": "Puoi candidarti", "forse": "Forse", "no": "Scartato dal modello"}
+
+    for profilo in dati["profili"]:
+        pid = str(profilo["id"])
+        voci, visti = [], set()
+        for b in dati["bandi"]:
+            mio = b["punteggi"].get(pid)
+            cuore = b["id"] in preferiti
+            if not mio or b["archiviato"] or not b["scadenza"]:
+                continue
+            if mio.get("llm_verdetto") not in ("si", "forse") and not cuore:
+                continue
+            voci.append(dict(b, llm_verdetto=mio.get("llm_verdetto"), llm_motivo=mio.get("llm_motivo"), cuore=cuore))
+        for id_, p in preferiti.items():
+            if str(p.get("profilo")) == pid and p.get("scadenza") and not any(v["id"] == id_ for v in voci):
+                voci.append(dict(p, id=id_, cuore=True))
+        righe = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Monitor Bandi//IT", "CALSCALE:GREGORIAN",
+                 "METHOD:PUBLISH", "X-WR-CALNAME:" + _ics_testo("Monitor Bandi · " + profilo["nome"]),
+                 "X-WR-TIMEZONE:Europe/Rome", "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H"]
+        for v in sorted(voci, key=lambda x: x["scadenza"]):
+            chiave = pulito(v.get("link")) + "|" + v["scadenza"]
+            if v["scadenza"] < dal or chiave in visti:
+                continue      # troppo vecchio, o lo stesso annuncio preso da due fonti
+            visti.add(chiave)
+            giorno = date.fromisoformat(v["scadenza"])
+            stato = etichette.get(v.get("llm_verdetto"), "Non ancora letto")
+            if v.get("cuore"):
+                stato += " · nei preferiti"
+            descrizione = "\n".join(x for x in [
+                stato + (": " + v["llm_motivo"] if v.get("llm_motivo") else ""),
+                " · ".join(x for x in [v.get("compagnia") or v.get("ente") or v.get("fonte"), v.get("citta")] if x),
+                "", v.get("link") or ""] if x is not None)
+            righe += ["BEGIN:VEVENT",
+                      "UID:%s-%s@monitor-bandi" % (v["id"], pid),
+                      "DTSTAMP:" + timbro,
+                      "DTSTART;VALUE=DATE:" + giorno.strftime("%Y%m%d"),
+                      "DTEND;VALUE=DATE:" + (giorno + timedelta(days=1)).strftime("%Y%m%d"),
+                      "SUMMARY:" + _ics_testo(("♥ " if v.get("cuore") else "") + "Scade: " + (v.get("titolo") or "")),
+                      "DESCRIPTION:" + _ics_testo(descrizione[:1500]),
+                      "URL:" + str(v.get("link") or "").replace("\n", ""),
+                      "TRANSP:TRANSPARENT",
+                      "END:VEVENT"]
+        righe.append("END:VCALENDAR")
+        (cartella / ("profilo-%s.ics" % pid)).write_bytes(
+            ("\r\n".join(_ics_riga(r) for r in righe) + "\r\n").encode("utf-8"))
+        print("calendario per %s: %d scadenze" % (profilo["nome"], len(visti)))
 
 
 def condivise(pagina, finto_modello, dati, adesso, oggi):

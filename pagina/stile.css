@@ -576,6 +576,99 @@ tr.spenta { opacity: .45; }
 .torna-su svg { width: 20px; height: 20px; }
 .torna-su:hover { color: var(--testo); }
 
+/* ---- calendario (8 ott 2026) ----
+   Un segno per annuncio: «si» pallino verde pieno, «forse» anello verde, cuore terracotta.
+   Al telefono la griglia mostra solo i segni; i titoli stanno nell'agenda sotto. */
+
+.tasto-calendario { display: inline-flex; align-items: center; gap: 7px; }
+.tasto-calendario[aria-pressed="true"] { border-color: var(--accento); color: var(--accento); }
+.calendario { margin-top: 14px; }
+.cal-testa { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.cal-mese { font-size: 22px; margin: 0; min-width: 9ch; text-align: center; }
+.cal-mese::first-letter { text-transform: uppercase; }
+.cal-freccia { font-size: 20px; width: var(--tocco); padding: 0; }
+.cal-testa .tasto:last-child:not(.cal-freccia) { margin-left: auto; }
+.cal-legenda { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; color: var(--tenue); margin: 0 0 12px; }
+.cal-legenda span { display: inline-flex; align-items: center; gap: 7px; }
+
+.cal-pallino {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 12px; height: 12px; border-radius: 50%; background: var(--bordo-forte);
+}
+.cal-pallino.si { background: var(--positivo); }
+.cal-pallino.forse { background: transparent; border: 2px solid var(--positivo); }
+.cal-pallino.no { background: var(--allarme); }
+.cal-pallino.cuore { width: 16px; height: 16px; background: none; border: 0; color: var(--accento); }
+.cal-pallino.cuore svg { width: 16px; height: 16px; }
+
+.cal-griglia {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;
+  margin-bottom: 22px;
+}
+.cal-giorno-sett { font-size: 12px; color: var(--tenue); text-align: center; text-transform: uppercase; letter-spacing: .04em; padding-bottom: 2px; }
+.cal-cella {
+  min-height: 92px; padding: 6px 7px; border: 1px solid var(--bordo); border-radius: 10px;
+  background: var(--carta); color: var(--testo); font: inherit; text-align: left;
+  display: flex; flex-direction: column; gap: 3px; overflow: hidden;
+}
+.cal-cella.fuori { border: 0; background: none; }
+.cal-cella.passato { opacity: .55; }
+.cal-cella.oggi { border-color: var(--accento); box-shadow: inset 0 0 0 1px var(--accento); }
+.cal-cella.oggi .cal-num { color: var(--accento); font-weight: 600; }
+button.cal-cella { cursor: pointer; }
+button.cal-cella:hover { border-color: var(--accento); }
+.cal-num { font-size: 13px; color: var(--tenue); line-height: 1.2; }
+.cal-segni { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cal-segno { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 12px; line-height: 1.3; }
+.cal-segno i { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--bordo-forte); }
+.cal-segno.si i { background: var(--positivo); }
+.cal-segno.forse i { background: transparent; border: 1.5px solid var(--positivo); }
+.cal-segno.cuore i { background: var(--accento); border: 0; }
+.cal-segno span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-altri { font-size: 12px; color: var(--tenue); }
+
+.cal-data { font-size: 16px; font-weight: 600; margin: 20px 0 6px; scroll-margin-top: 12px; display: flex; gap: 6px; align-items: baseline; }
+.cal-data::first-letter { text-transform: uppercase; }
+.cal-data .fioco { font-size: 14px; font-family: Inter, system-ui, sans-serif; }
+.cal-data.passato { color: var(--tenue); }
+.cal-lista { list-style: none; margin: 0; padding: 0; }
+.cal-voce {
+  display: flex; align-items: center; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--bordo);
+}
+.cal-voce:last-child { border-bottom: 0; }
+.cal-testo { flex: 1 1 auto; min-width: 0; }
+.cal-testo a { color: var(--testo); text-decoration: none; font-weight: 500; }
+.cal-testo a:hover { color: var(--accento); text-decoration: underline; }
+.cal-sotto { margin: 2px 0 0; font-size: 14px; color: var(--tenue); }
+.cal-google-uno { flex: 0 0 auto; }
+
+.cal-senza, .cal-google {
+  margin-top: 22px; border: 1px solid var(--bordo); border-radius: var(--raggio);
+  background: var(--sfondo-tenue); padding: 4px 16px;
+}
+.cal-senza summary, .cal-google summary {
+  cursor: pointer; min-height: var(--tocco); display: flex; align-items: center; gap: 8px; font-weight: 500;
+}
+.cal-google[open] { padding-bottom: 14px; }
+.cal-google p { margin: 8px 0; max-width: 62ch; }
+.cal-google .fioco { font-size: 14px; }
+.cal-indirizzo { display: flex; gap: 8px; margin: 10px 0; }
+.cal-indirizzo input { flex: 1 1 auto; min-width: 0; font-size: 14px; }
+
+@media (max-width: 699px) {
+  .tasto-calendario { padding: 0 13px; }
+  .tasto-calendario span { display: none; }   /* al telefono basta l'icona: la riga e' stretta */
+  .cal-griglia { gap: 3px; }
+  .cal-cella { min-height: 50px; padding: 5px 4px; align-items: center; }
+  .cal-segni { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 3px; }
+  .cal-segno span, .cal-altri { display: none; }
+  .cal-segno i { width: 8px; height: 8px; }
+  .cal-giorno-sett { font-size: 11px; letter-spacing: 0; }
+  .cal-voce { flex-wrap: wrap; }
+  .cal-google-uno { margin-left: 24px; }
+}
+
 /* ---- telefono ---- */
 
 @media (max-width: 620px) {

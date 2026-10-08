@@ -7,3 +7,5 @@ __pycache__/
 anteprima-*.html
 # Pagine condivise: le genera anteprima.py e le pubblicano i lavori, non si salvano
 condivisi/
+# Calendari per Google (.ics): li genera anteprima.py e li pubblicano i lavori
+calendari/

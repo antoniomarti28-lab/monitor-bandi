@@ -109,6 +109,8 @@
     <input type="search" id="cerca" placeholder="Cerca per parola…" aria-label="Cerca per parola">
     <button class="tasto-filtri" id="b-filtri" aria-expanded="false" aria-controls="pannello-filtri">
       Filtri<span class="conta-filtri" id="conta-filtri"></span></button>
+    <button class="tasto-filtri tasto-calendario" id="b-calendario" aria-pressed="false" hidden
+      title="Le scadenze di questo profilo in un calendario" aria-label="Calendario"></button>
   </div>
 
   <div class="pannello-filtri" id="pannello-filtri" hidden>
@@ -1322,7 +1324,16 @@ function sezione(chiave, titolo, lista, nota = "") {
 }
 
 function aggiorna() {
+  // Il calendario e' di un profilo: non c'e' in «Tutti i bandi» ne' nei Preferiti.
+  const conCalendario = Boolean(profiloAttivo) && !vistaPreferiti;
+  $("b-calendario").hidden = !conCalendario;
+  $("b-calendario").setAttribute("aria-pressed", String(vistaCalendario && conCalendario));
+  $("b-calendario").innerHTML = ICONA_CALENDARIO + `<span>${vistaCalendario && conCalendario ? "Elenco" : "Calendario"}</span>`;
+  $("b-calendario").setAttribute("aria-label", vistaCalendario && conCalendario ? "Torna all'elenco" : "Calendario");
+  $("b-filtri").hidden = vistaCalendario && conCalendario;
+  if (vistaCalendario && conCalendario) $("pannello-filtri").hidden = true;
   if (vistaPreferiti) return aggiornaPreferiti();
+  if (vistaCalendario && conCalendario) return aggiornaCalendario();
   const L = lessico();
   const tutta = unisciDoppioni(LISTE[profiloAttivo] || []);
   const lista = filtra(tutta);
@@ -1402,6 +1413,173 @@ function aggiornaPreferiti() {
     : `<div class="vuoto"><p>Nessun preferito per ora. Metti il cuore su un bando e lo ritrovi qui.</p></div>`;
   $("conto").innerHTML = "";
   collegaSchede(document);
+}
+
+// ------------------------------------------------------------------ calendario
+//
+// Lui (8 ott 2026): «ogni profilo deve avere il suo calendario; lo scopo e' avere una
+// visione piu' diretta degli annunci che mi interessano, quindi non solo quelli che posso
+// applicare». Dentro: le scadenze dei «si», dei «forse» e di quelli col cuore (anche se il
+// modello li ha scartati: il cuore lo mette lui). Lo stesso contenuto, per Google Calendar,
+// sta in calendari/profilo-<id>.ics, scritto da anteprima.py a ogni pubblicazione.
+const ICONA_CALENDARIO = `<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor"
+  stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2"/>
+  <path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"/></svg>`;
+const MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto",
+  "settembre", "ottobre", "novembre", "dicembre"];
+const GIORNI = ["lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"];
+let vistaCalendario = false;
+let meseCalendario = oggiISO().slice(0, 7);   // «2026-10»
+
+/** Gli annunci del calendario di un profilo: si, forse e cuori, anche quelli non piu' in pagina. */
+function vociCalendario(pid) {
+  const q = $("cerca").value.trim().toLowerCase();
+  const lista = unisciDoppioni(LISTE[pid] || []).filter((b) => !b.archiviato
+    && (b.llm_verdetto === "si" || b.llm_verdetto === "forse" || ePreferito(b)));
+  const presi = new Set(lista.flatMap((b) => b.ids || [b.id]));
+  Object.entries(PREFERITI).forEach(([id, p]) => {
+    if (String(p.profilo) === pid && !presi.has(id)) lista.push({ ...p, id, fuori: true });
+  });
+  return lista.filter((b) => !q
+    || [b.titolo, b.ente, b.riassunto, b.sommario, b.compagnia, b.citta].join(" ").toLowerCase().includes(q));
+}
+
+/** Indirizzo del calendario da dare a Google: accanto alla pagina pubblicata (anche da una condivisa). */
+function indirizzoCalendario(pid) {
+  if (!STATICA || !/^https?:$/.test(location.protocol)) return "";
+  const radice = location.href.replace(/[?#].*$/, "").replace(/condivisi\/[^/]+\/.*$/, "").replace(/[^/]*$/, "");
+  return radice + "calendari/profilo-" + pid + ".ics";
+}
+
+/** Un evento di un giorno intero su Google Calendar, per un annuncio solo. */
+function linkGoogle(b) {
+  const giorno = b.scadenza.replace(/-/g, "");
+  const dopo = new Date(b.scadenza + "T12:00:00Z");
+  dopo.setUTCDate(dopo.getUTCDate() + 1);
+  const dettagli = [b.llm_verdetto ? ({ si: "Puoi candidarti", forse: "Forse", no: "Scartato dal modello" })[b.llm_verdetto]
+    + (b.llm_motivo ? ": " + b.llm_motivo : "") : "", b.link].filter(Boolean).join("\n\n");
+  return "https://calendar.google.com/calendar/render?" + new URLSearchParams({
+    action: "TEMPLATE", text: "Scade: " + (b.titolo || ""),
+    dates: giorno + "/" + dopo.toISOString().slice(0, 10).replace(/-/g, ""), details: dettagli.slice(0, 1500),
+  });
+}
+
+function rigaCalendario(b) {
+  const L = lessico();
+  const etichetta = { si: L.si, forse: "Forse", no: "Scartato dal modello" }[b.llm_verdetto] || "Non ancora letto";
+  const sotto = [etichetta, b.compagnia || b.ente || b.fonte, b.citta,
+    b.fuori ? "non più in pagina" : ""].filter(Boolean).map(attr).join(" · ");
+  const google = b.scadenza
+    ? `<a class="tasto piccolo cal-google-uno" href="${attr(linkGoogle(b))}" target="_blank" rel="noopener noreferrer"
+         title="Aggiungi questa scadenza a Google Calendar">+ Google</a>` : "";
+  return `<li class="cal-voce">
+    <span class="cal-pallino ${attr(b.llm_verdetto || "")}${ePreferito(b) ? " cuore" : ""}" aria-hidden="true">${ePreferito(b) ? ICONA_CUORE(true) : ""}</span>
+    <div class="cal-testo"><a href="${attr(b.link)}" target="_blank" rel="noopener noreferrer">${attr(b.titolo)}</a>
+      <p class="cal-sotto">${sotto}</p></div>
+    ${google}
+  </li>`;
+}
+
+function aggiornaCalendario() {
+  const pid = profiloAttivo;
+  const voci = vociCalendario(pid);
+  const [anno, mese] = meseCalendario.split("-").map(Number);
+  const delMese = voci.filter((b) => b.scadenza && b.scadenza.slice(0, 7) === meseCalendario)
+    .sort((a, b) => a.scadenza.localeCompare(b.scadenza) || rangoDi(a) - rangoDi(b));
+  const senzaData = voci.filter((b) => !b.scadenza && (b.fuori || eAperto(b)));
+  const perGiorno = {};
+  delMese.forEach((b) => { (perGiorno[b.scadenza] = perGiorno[b.scadenza] || []).push(b); });
+
+  // La griglia: settimane da lunedi' a domenica, i giorni degli altri mesi vuoti.
+  const primo = new Date(Date.UTC(anno, mese - 1, 1));
+  const vuotiPrima = (primo.getUTCDay() + 6) % 7;
+  const giorniNelMese = new Date(Date.UTC(anno, mese, 0)).getUTCDate();
+  const oggi = oggiISO();
+  let celle = "";
+  for (let i = 0; i < vuotiPrima; i++) celle += `<div class="cal-cella fuori" aria-hidden="true"></div>`;
+  for (let g = 1; g <= giorniNelMese; g++) {
+    const iso = `${meseCalendario}-${String(g).padStart(2, "0")}`;
+    const qui = perGiorno[iso] || [];
+    const classi = ["cal-cella", iso === oggi ? "oggi" : "", iso < oggi ? "passato" : "", qui.length ? "piena" : ""]
+      .filter(Boolean).join(" ");
+    const segni = qui.slice(0, 3).map((b) =>
+      `<span class="cal-segno ${attr(b.llm_verdetto || "")}${ePreferito(b) ? " cuore" : ""}"><i></i><span>${attr(b.titolo)}</span></span>`).join("")
+      + (qui.length > 3 ? `<span class="cal-altri">+${qui.length - 3}</span>` : "");
+    celle += qui.length
+      ? `<button class="${classi}" data-giorno="${iso}" aria-label="${g} ${MESI[mese - 1]}: ${qui.length} ${qui.length === 1 ? "scadenza" : "scadenze"}">
+          <span class="cal-num">${g}</span><span class="cal-segni">${segni}</span></button>`
+      : `<div class="${classi}"><span class="cal-num">${g}</span></div>`;
+  }
+  const intestazione = GIORNI.map((d) => `<div class="cal-giorno-sett" aria-hidden="true">${d.slice(0, 3)}</div>`).join("");
+
+  // Sotto la griglia, gli stessi annunci in fila: al telefono e' questa la parte da leggere.
+  let agenda = Object.keys(perGiorno).sort().map((iso) => {
+    const d = new Date(iso + "T12:00:00Z");
+    const nome = `${GIORNI[(d.getUTCDay() + 6) % 7]} ${d.getUTCDate()} ${MESI[d.getUTCMonth()]}`;
+    const quando = iso === oggi ? " · oggi" : iso < oggi ? " · passato" : ` · tra ${giorniMancanti(iso)} giorni`;
+    return `<h3 class="cal-data${iso < oggi ? " passato" : ""}" id="g-${iso}">${nome}<span class="fioco">${quando}</span></h3>
+      <ul class="cal-lista">${perGiorno[iso].map(rigaCalendario).join("")}</ul>`;
+  }).join("");
+  if (!agenda) {
+    const prossima = voci.filter((b) => b.scadenza && b.scadenza > `${meseCalendario}-31`)
+      .sort((a, b) => a.scadenza.localeCompare(b.scadenza))[0];
+    agenda = `<div class="vuoto"><p>Nessuna scadenza a ${MESI[mese - 1]}${
+      prossima ? `. La prossima è il ${dataItaliana(prossima.scadenza)}.` : "."}</p>${
+      prossima ? `<button class="tasto" data-vai-mese="${prossima.scadenza.slice(0, 7)}">Vai a ${MESI[Number(prossima.scadenza.slice(5, 7)) - 1]}</button>` : ""}</div>`;
+  }
+
+  const url = indirizzoCalendario(pid);
+  const nomeProfilo = (PROFILI.find((p) => String(p.id) === pid) || {}).nome || "";
+  const google = url ? `<details class="cal-google">
+      <summary>${ICONA_CALENDARIO} Vedi queste scadenze nel tuo Google Calendar</summary>
+      <p>Il calendario di «${attr(nomeProfilo)}» si aggiunge a Google una volta sola: poi le scadenze nuove compaiono da sole.</p>
+      <p><a class="tasto primario" href="https://calendar.google.com/calendar/render?cid=${encodeURIComponent(url.replace(/^https?:/, "webcal:"))}"
+          target="_blank" rel="noopener noreferrer">Aggiungi a Google Calendar</a></p>
+      <p class="fioco">Se il tasto non funziona: copia l'indirizzo qui sotto, apri
+        <a href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl" target="_blank" rel="noopener noreferrer">Google Calendar, «Da URL»</a>,
+        incollalo e premi «Aggiungi calendario».</p>
+      <div class="cal-indirizzo"><input type="text" readonly value="${attr(url)}" aria-label="Indirizzo del calendario">
+        <button class="tasto piccolo" id="b-copia-calendario">Copia</button></div>
+      <p class="fioco">Google lo rilegge per conto suo: di solito più volte al giorno, a volte con un giorno di ritardo.
+        Per avere subito una scadenza sola, usa «+ Google» accanto all'annuncio.</p>
+    </details>` : "";
+
+  $("segnalato").innerHTML = "";
+  $("elenco").innerHTML = `<section class="calendario" aria-label="Calendario">
+      <div class="cal-testa">
+        <button class="tasto piccolo cal-freccia" data-sposta="-1" aria-label="Mese prima">‹</button>
+        <h2 class="cal-mese">${MESI[mese - 1]} ${anno}</h2>
+        <button class="tasto piccolo cal-freccia" data-sposta="1" aria-label="Mese dopo">›</button>
+        ${meseCalendario !== oggi.slice(0, 7) ? `<button class="tasto piccolo" data-vai-mese="${oggi.slice(0, 7)}">Oggi</button>` : ""}
+      </div>
+      <p class="cal-legenda"><span><i class="cal-pallino si"></i>${attr(lessico().si)}</span>
+        <span><i class="cal-pallino forse"></i>Forse</span>
+        <span><i class="cal-pallino cuore">${ICONA_CUORE(true)}</i>Col cuore, anche se non fa per te</span></p>
+      <div class="cal-griglia">${intestazione}${celle}</div>
+      <div class="cal-agenda">${agenda}</div>
+      ${senzaData.length ? `<details class="cal-senza"><summary>Senza scadenza indicata <span class="fioco">${senzaData.length}</span></summary>
+        <ul class="cal-lista">${senzaData.sort((a, b) => rangoDi(a) - rangoDi(b)).map(rigaCalendario).join("")}</ul></details>` : ""}
+      ${google}
+    </section>`;
+  $("conto").innerHTML = `<span>${delMese.length} ${delMese.length === 1 ? "scadenza" : "scadenze"} a ${MESI[mese - 1]}</span>`;
+
+  const el = $("elenco");
+  el.querySelectorAll("[data-sposta]").forEach((t) => {
+    t.onclick = () => {
+      const d = new Date(Date.UTC(anno, mese - 1 + Number(t.dataset.sposta), 1));
+      meseCalendario = d.toISOString().slice(0, 7);
+      aggiorna();
+    };
+  });
+  el.querySelectorAll("[data-vai-mese]").forEach((t) => { t.onclick = () => { meseCalendario = t.dataset.vaiMese; aggiorna(); }; });
+  el.querySelectorAll("[data-giorno]").forEach((t) => {
+    t.onclick = () => { const h = $("g-" + t.dataset.giorno); if (h) h.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  });
+  if ($("b-copia-calendario")) $("b-copia-calendario").onclick = async () => {
+    const campo = el.querySelector(".cal-indirizzo input");
+    try { await navigator.clipboard.writeText(campo.value); } catch (e) { campo.select(); document.execCommand("copy"); }
+    $("b-copia-calendario").textContent = "Copiato";
+  };
 }
 
 function collegaSchede(radice) {
@@ -1941,6 +2119,7 @@ $("cerca").oninput = () => { clearTimeout(attesa); attesa = setTimeout(() => { l
 ["fonte", "zona", "nuovi", "chiusi"].forEach((id) => { $(id).onchange = () => { limiti = {}; aggiorna(); }; });
 $("archiviati").onchange = async () => { await caricaListe(); disegnaBarraProfili(); aggiorna(); };
 $("b-azzera").onclick = azzeraFiltri;
+$("b-calendario").onclick = () => { vistaCalendario = !vistaCalendario; segnalato = null; aggiorna(); };
 $("b-filtri").onclick = () => {
   const aperto = $("pannello-filtri").hidden;
   $("pannello-filtri").hidden = !aperto;
