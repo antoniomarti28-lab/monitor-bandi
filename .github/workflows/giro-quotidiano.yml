@@ -82,3 +82,15 @@ jobs:
       - uses: actions/deploy-pages@v5
         if: ${{ !cancelled() }}
         id: pubblica
+        # 8 ott 2026: quattro pubblicazioni di fila fallite per un intoppo di GitHub
+        # («Fetching artifact metadata failed», «Deployment temporarily failed»): il
+        # pacchetto della pagina c'era, ma il servizio non lo ritrovava subito. Se il primo
+        # tentativo fallisce si aspetta un minuto e si riprova; se fallisce anche il secondo,
+        # il lavoro risulta fallito come prima.
+        continue-on-error: true
+      - name: Se la pubblicazione e' fallita, aspetta un minuto
+        if: ${{ !cancelled() && steps.pubblica.outcome == 'failure' }}
+        run: sleep 60
+      - uses: actions/deploy-pages@v5
+        if: ${{ !cancelled() && steps.pubblica.outcome == 'failure' }}
+        id: pubblica_di_nuovo
