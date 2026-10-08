@@ -1521,8 +1521,10 @@ function aggiornaCalendario() {
     const d = new Date(iso + "T12:00:00Z");
     const nome = `${GIORNI[(d.getUTCDay() + 6) % 7]} ${d.getUTCDate()} ${MESI[d.getUTCMonth()]}`;
     const quando = iso === oggi ? " · oggi" : iso < oggi ? " · passato" : ` · tra ${giorniMancanti(iso)} giorni`;
-    return `<h3 class="cal-data${iso < oggi ? " passato" : ""}" id="g-${iso}">${nome}<span class="fioco">${quando}</span></h3>
-      <ul class="cal-lista">${perGiorno[iso].map(rigaCalendario).join("")}</ul>`;
+    // Il giorno intero in un blocco: e' il blocco che si accende quando lo scegli in griglia.
+    return `<div class="cal-blocco" id="g-${iso}">
+      <h3 class="cal-data${iso < oggi ? " passato" : ""}">${nome}<span class="fioco">${quando}</span></h3>
+      <ul class="cal-lista">${perGiorno[iso].map(rigaCalendario).join("")}</ul></div>`;
   }).join("");
   if (!agenda) {
     const prossima = voci.filter((b) => b.scadenza && b.scadenza > `${meseCalendario}-31`)
@@ -1577,7 +1579,20 @@ function aggiornaCalendario() {
   });
   el.querySelectorAll("[data-vai-mese]").forEach((t) => { t.onclick = () => { meseCalendario = t.dataset.vaiMese; aggiorna(); }; });
   el.querySelectorAll("[data-giorno]").forEach((t) => {
-    t.onclick = () => { const h = $("g-" + t.dataset.giorno); if (h) h.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    // Lui (8 ott 2026): scorrendo giu' i giorni sono tutti uguali e non trovava quello
+    // cliccato. Ora il giorno scelto resta acceso, in griglia e nell'agenda, finche' non
+    // se ne sceglie un altro; all'arrivo lampeggia una volta.
+    t.onclick = () => {
+      const blocco = $("g-" + t.dataset.giorno);
+      if (!blocco) return;
+      el.querySelectorAll(".cal-blocco.scelto, .cal-cella.scelta").forEach((x) => x.classList.remove("scelto", "scelta"));
+      t.classList.add("scelta");
+      blocco.classList.add("scelto");
+      blocco.classList.remove("lampo");
+      void blocco.offsetWidth;          // fa ripartire l'animazione se si riclicca lo stesso giorno
+      blocco.classList.add("lampo");
+      blocco.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
   });
   if ($("b-copia-calendario")) $("b-copia-calendario").onclick = async () => {
     const campo = el.querySelector(".cal-indirizzo input");

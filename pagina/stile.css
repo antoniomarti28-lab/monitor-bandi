@@ -627,7 +627,22 @@ button.cal-cella:hover { border-color: var(--accento); }
 .cal-segno span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cal-altri { font-size: 12px; color: var(--tenue); }
 
-.cal-data { font-size: 16px; font-weight: 600; margin: 20px 0 6px; scroll-margin-top: 12px; display: flex; gap: 6px; align-items: baseline; }
+.cal-data { font-size: 16px; font-weight: 600; margin: 20px 0 6px; display: flex; gap: 6px; align-items: baseline; }
+/* Il giorno scelto in griglia: bordo e fondo terracotta nell'agenda, casella piena sopra. */
+.cal-blocco { scroll-margin-top: 16px; border: 1px solid transparent; border-radius: var(--raggio); margin: 0 -12px; padding: 0 12px; }
+.cal-blocco.scelto { border-color: var(--accento); background: var(--accento-tenue); margin-top: 14px; }
+.cal-blocco.scelto .cal-data { color: var(--accento); margin-top: 12px; }
+.cal-blocco.scelto .cal-voce { border-color: var(--bordo-forte); }
+.cal-blocco.lampo { animation: cal-lampo 1.1s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes cal-lampo {
+  0%, 35% { box-shadow: 0 0 0 4px var(--accento); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.cal-cella.scelta { background: var(--accento); border-color: var(--accento); }
+.cal-cella.scelta .cal-num, .cal-cella.scelta .cal-segno span, .cal-cella.scelta .cal-altri { color: var(--su-accento); }
+.cal-cella.scelta .cal-segno i { border-color: var(--su-accento); background: var(--su-accento); }
+.cal-cella.scelta .cal-segno.forse i { background: transparent; }
+@media (prefers-reduced-motion: reduce) { .cal-blocco.lampo { animation: none; } }
 .cal-data::first-letter { text-transform: uppercase; }
 .cal-data .fioco { font-size: 14px; font-family: Inter, system-ui, sans-serif; }
 .cal-data.passato { color: var(--tenue); }
