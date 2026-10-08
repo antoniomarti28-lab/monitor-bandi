@@ -628,7 +628,7 @@ button.cal-cella:hover { border-color: var(--accento); }
 .cal-altri { font-size: 12px; color: var(--tenue); }
 
 .cal-data { font-size: 16px; font-weight: 600; margin: 20px 0 6px; display: flex; gap: 6px; align-items: baseline; }
-/* Il giorno scelto in griglia: bordo e fondo terracotta nell'agenda, casella piena sopra. */
+/* Il giorno scelto in griglia: bordo e fondo terracotta nell'agenda, casella piena sopra (resta finche' non ne scegli un altro). */
 .cal-blocco { scroll-margin-top: 16px; border: 1px solid transparent; border-radius: var(--raggio); margin: 0 -12px; padding: 0 12px; }
 .cal-blocco.scelto { border-color: var(--accento); background: var(--accento-tenue); margin-top: 14px; }
 .cal-blocco.scelto .cal-data { color: var(--accento); margin-top: 12px; }
