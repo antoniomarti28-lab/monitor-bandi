@@ -260,7 +260,9 @@ def link_interessanti(link, url_base, massimo=25, parole=None):
     Con `parole` si cercano solo quelle, e senza ripiego sui titoli lunghi: sulla home
     di una compagnia il ripiego prenderebbe ogni articolo."""
     dominio = urlparse(url_base).netloc
-    visti, buoni, ripiego = set(), [], []
+    # La pagina stessa non e' un annuncio: il «Salta al contenuto» (…/concorsi#main) del
+    # Comune di Torino riportava alla pagina elenco, che finiva fra le offerte (8 ott 2026).
+    visti, buoni, ripiego = {url_base.split("#")[0].rstrip("/")}, [], []
 
     for href, testo in link:
         pulito = href.split("#")[0].rstrip("/")

@@ -84,7 +84,7 @@
       "id": 6,
       "nome": "Antonio",
       "tipo_ente": "Persona in cerca di lavoro",
-      "racconto": "Antonio e' una persona che cerca lavoro, non bandi di finanziamento: offerte di lavoro, stage, tirocini, apprendistati e concorsi pubblici. E' laureando in ingegneria meccanica, con diploma aeronautico (trasporti e logistica).\n\nCerca il primo ingresso in azienda a Torino e cintura, in logistica, supply chain, pianificazione, acquisti e spedizioni, automazione e miglioramento dei processi. Ruoli junior, stage, tirocinio, apprendistato, a tempo pieno o part-time. Gli interessano anche i concorsi pubblici con requisito di diploma o laurea triennale in ambito tecnico, logistico o amministrativo.\n\nNei concorsi pubblici vanno bene anche i profili amministrativi (per esempio istruttore o funzionario amministrativo, contabile), purche' il titolo richiesto sia il diploma o la laurea triennale.\n\nDa scartare (no): offerte che chiedono 3 o piu' anni di esperienza (se l'esperienza richiesta e' meno di 3 anni, o non e' detto quanta, NON e' un motivo di «no»: al massimo «forse»); ruoli solo commerciali o di call center; sedi fuori dal Piemonte, salvo lavoro da remoto (smart working).\n\nSe l'offerta richiede la laurea gia' conseguita, e' «forse», non «no»: Antonio e' laureando.\n\nNel giudizio conta, in quest'ordine: pertinenza del ruolo, requisiti (titolo di studio, anni di esperienza), sede, tipo di contratto, scadenza.",
+      "racconto": "Antonio cerca lavoro, non finanziamenti: offerte, stage, tirocini, apprendistati e concorsi pubblici. Laureando in ingegneria meccanica; ha GIA' il diploma (tecnico aeronautico, trasporti e logistica): un requisito «diploma» e' soddisfatto, e un concorso per «diploma o laurea triennale» e' «si'» se il ruolo e' pertinente.\n\nCerca il primo ingresso in azienda a Torino e cintura: logistica, supply chain, pianificazione, acquisti, spedizioni, automazione e miglioramento dei processi. Ruoli junior, stage, tirocinio, apprendistato, tempo pieno o part-time. Nei concorsi pubblici vanno bene anche i profili tecnici, logistici e amministrativi (istruttore, funzionario, contabile).\n\n«No» se: chiede 3 o piu' anni di esperienza; ruolo solo commerciale o call center; sede fuori dal Piemonte, salvo lavoro da remoto. Meno di 3 anni (1-2, almeno 2, 2-3) o esperienza non quantificata: «forse», mai «no».\n\nLaurea gia' conseguita richiesta: «forse», non «no» (e' laureando).\n\nNel giudizio conta, in ordine: pertinenza del ruolo, requisiti (titolo, esperienza), sede, contratto, scadenza.",
       "settori": [
         "Lavoro tecnico e logistica"
       ],
@@ -2119,7 +2119,10 @@
     "massimo_messaggi": 8
   },
   "proposte": [],
-  "archiviati": [],
+  "archiviati": [
+    "24aa18ccccc46efa169e43eb905cb59651536f55",
+    "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
+  ],
   "riparazioni": {
     "Invitalia - incentivi": {
       "quando": "2026-10-02T10:39:56+00:00",

@@ -531,7 +531,10 @@ o il testo non basta per capirlo, e' «si» o «forse».
 Il profilo e' disposto a costruire un progetto SU MISURA per il bando. Quindi distingui:
 - requisiti FISSI, che il profilo non puo' cambiare: territorio, forma giuridica esclusa
   espressamente, albo che non ha, si paga per partecipare, eta' o requisiti personali di
-  chi fa domanda quando e' una persona. Questi danno «no».
+  chi fa domanda quando e' una persona. Questi danno «no». ECCEZIONE: per una persona in
+  cerca di lavoro, titolo di studio e anni di esperienza si giudicano con le soglie scritte
+  nel suo racconto, non come requisiti fissi (8 ott 2026: «2-3 anni» diventava «no» anche se
+  il racconto diceva che sotto i 3 anni e' «forse»).
 - requisiti ADATTABILI, che si soddisfano costruendo il progetto apposta: coinvolgere
   artisti o persone con certe caratteristiche, fare un partenariato, presentarsi come
   gruppo informale o impresa se il racconto dice che puo', aggiungere un'attivita'
