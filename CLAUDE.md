@@ -791,3 +791,16 @@ Google Calendar?».
   Ogni riga ha anche «+ Google» (evento singolo, `action=TEMPLATE`), che non dipende dal .ics.
 - Limite noto: Google rilegge i calendari «da URL» quando vuole lui (ore, a volte un giorno);
   l'unica data che abbiamo e' la scadenza, non il giorno dell'audizione o della prova.
+
+## Profilo Antonio: l'obiettivo (8 ott 2026, sera)
+Lui: non tutti i lavori adatti, solo «le occasioni per sbloccarmi», cioe' i passi verso
+**junior process engineer** (lean, industrial engineer, business analyst di processo, digital
+transformation, operations anche in consulenza). Racconto riscritto (1.487 caratteri, sotto il
+taglio di 1.500 del giudice): si = stage/tirocini (anche curriculari)/apprendistati/junior nei
+processi, corsi gratuiti o finanziati (Lean, Six Sigma, Excel, SQL, Power BI), concorsi tecnici,
+progetti europei per giovani; forse = logistica/acquisti/ufficio tecnico, corsi a pagamento;
+no = lavoro solo manuale, commerciale, >=3 anni. Frase apposta: corsi e progetti europei «valgono
+come offerte», altrimenti la regola dell'AMBITO del giudice («imprese e filiere industriali» = no)
+li scarterebbe. Parole nuove (via «magazzino» e «spedizioni»). Prova su 14 annunci veri:
+magazziniere/operatori -> no, tirocinio ingegnere Settimo -> si, planner/procurement restano forse.
+**Manca**: fonti di corsi e di progetti europei (oggi solo Manpower, Comune di Torino, GU).
