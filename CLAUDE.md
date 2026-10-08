@@ -770,3 +770,24 @@ Come Mati, ma offerte di lavoro, stage, tirocini, apprendistati e concorsi pubbl
   nei requisiti fissi per chi cerca lavoro. Prova: 3 su 4 giusti; «Ispettore di cantiere»
   (laurea + 2 anni) resta «no» per errore del modello: per questi c'e' Riesamina.
   Primo raccolto: 33 annunci, 2 si', 16 forse, 14 no.
+
+
+## Calendario per profilo (8 ott 2026)
+
+Lui: «ogni profilo deve avere il suo calendario; lo scopo e' una visione piu' diretta degli
+annunci che mi interessano, quindi non solo quelli che posso applicare», e «collegarlo a
+Google Calendar?».
+- **Pagina**: tasto «Calendario» accanto a Filtri (solo dentro un profilo; al telefono solo
+  l'icona). Griglia del mese lun-dom + agenda sotto, giorno per giorno; senza scadenza in un
+  riquadro a parte. Dentro: «si», «forse» e i preferiti segnati da quel profilo (anche se
+  scartati o non piu' in pagina). Segni: si = pallino verde, forse = anello verde, cuore
+  terracotta. La ricerca per parola vale anche qui; gli altri filtri no.
+- **Google**: `anteprima.calendari()` scrive `calendari/profilo-<id>.ics` (eventi di un
+  giorno intero, ultimi 60 giorni in avanti, doppioni per link+data tolti, `♥` nel titolo dei
+  preferiti). Non va su git (`.gitignore`): lo copiano in `sito/calendari` i tre lavori che
+  pubblicano. `ripubblica-pagina` parte anche quando cambia `preferiti.json`, cosi' un cuore
+  nuovo entra nel .ics in un minuto. In pagina: tasto «Aggiungi a Google Calendar»
+  (`calendar.google.com/calendar/render?cid=webcal://...`) + indirizzo da copiare per «Da URL».
+  Ogni riga ha anche «+ Google» (evento singolo, `action=TEMPLATE`), che non dipende dal .ics.
+- Limite noto: Google rilegge i calendari «da URL» quando vuole lui (ore, a volte un giorno);
+  l'unica data che abbiamo e' la scadenza, non il giorno dell'audizione o della prova.
