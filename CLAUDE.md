@@ -761,3 +761,12 @@ Come Mati, ma offerte di lavoro, stage, tirocini, apprendistati e concorsi pubbl
 - **Prova col modello (6+2 annunci)**: «laurea gia' conseguita» → forse (3 su 3). Due errori
   corretti nel racconto: «chiede esperienza» senza anni diventava «no»; un concorso da
   istruttore amministrativo era «non pertinente» (lui vuole anche i profili amministrativi).
+- **Stesso giorno, dopo il primo giro vero.** (1) Il lavoro delle impostazioni calcolava i
+  punteggi PRIMA di leggere le fonti: i 68 annunci nuovi restavano senza profilo fino al giorno
+  dopo. Ora `riabbina` anche a fine `giro_fonti` e in `intelligenza.giro` dopo la lettura.
+  (2) `link_interessanti` scarta la pagina stessa (il «Salta al contenuto» del Comune di
+  Torino portava all'elenco, finito fra gli annunci). (3) Il giudice ignorava il diploma e
+  trattava «2-3 anni» come requisito fisso: racconto riscritto (1.080 caratteri) ed eccezione
+  nei requisiti fissi per chi cerca lavoro. Prova: 3 su 4 giusti; «Ispettore di cantiere»
+  (laurea + 2 anni) resta «no» per errore del modello: per questi c'e' Riesamina.
+  Primo raccolto: 33 annunci, 2 si', 16 forse, 14 no.
