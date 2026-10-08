@@ -1140,6 +1140,11 @@ def giro(prova=False):
         prova = True
     leggi_bandi(db, prova)
     print()
+    # Dopo la lettura i punteggi cambiano (aperto confermato, territorio): vanno ricalcolati
+    # prima di scegliere chi giudicare, come fa gia' il giro del mattino.
+    if not prova:
+        import profili as mod_profili
+        mod_profili.riabbina(db)
     giudica_finalisti(db, prova)
     db.close()
 

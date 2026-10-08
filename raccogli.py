@@ -421,6 +421,7 @@ def giro_fonti():
     rimessi a mano come pagine, cioe' rotti di nuovo.
     """
     import configurazione
+    import profili
     import ripara
     import siti
     db = apri_db()
@@ -436,6 +437,10 @@ def giro_fonti():
     siti.giro_siti(db)
     print()
     ripara.ripara(db)
+    # 8 ott 2026: senza questa riga gli annunci appena raccolti restavano senza profilo fino
+    # al giro del mattino dopo (i punteggi si calcolavano solo PRIMA di leggere le fonti):
+    # il profilo «Antonio», appena creato, aveva 68 annunci nuovi e nessuno collegato a lui.
+    print("Compatibilita' ricalcolata: %d" % profili.riabbina(db))
     db.close()
 
 
