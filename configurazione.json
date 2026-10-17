@@ -2189,20 +2189,6 @@
     "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
   ],
   "riparazioni": {
-    "Invitalia - incentivi": {
-      "quando": "2026-10-02T10:39:56+00:00",
-      "riuscita": true,
-      "errore": "non e' un feed valido",
-      "come": "trovata la sezione dei bandi del sito",
-      "prima": {
-        "url": "https://www.invitalia.it/rss.xml",
-        "tipo": "feed"
-      },
-      "dopo": {
-        "url": "https://www.invitalia.it/per-chi-vuole-fare-impresa/incentivi-e-strumenti",
-        "tipo": "sito"
-      }
-    },
     "EU Culture Calls": {
       "quando": "2026-10-08T11:50:52+00:00",
       "riuscita": true,
@@ -2216,6 +2202,18 @@
         "url": "https://culture.ec.europa.eu/cultural-heritage/funding-opportunities-for-cultural-heritage",
         "tipo": "sito"
       }
+    },
+    "Audizioni - TuttoDanzaWeb": {
+      "quando": "2026-10-17T09:25:47+00:00",
+      "riuscita": false,
+      "errore": "non e' un feed valido",
+      "provati": 8
+    },
+    "Unione Buddhista 8x1000": {
+      "quando": "2026-10-17T09:26:09+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
     }
   },
   "proposte_scartate": [
