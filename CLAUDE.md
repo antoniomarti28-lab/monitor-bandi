@@ -816,3 +816,21 @@ Scartate: Torino Giovani concorsi (li porta gia' la GU), Corpo europeo di solida
 accademici), corep.it (elenco non leggibile: si sorvegliano i siti dei master), ticonsiglio
 (aggregatore nazionale rumoroso), Regione Piemonte corsi (pagina di menu, niente elenco).
 I master in apprendistato chiedono la laurea gia' presa e meno di 30 anni.
+
+## Profilo Antonio diventa un radar di aiuti (17 ott 2026)
+Lui ha trovato un tirocinio in un'azienda metalmeccanica: il profilo non cerca piu' lavoro ma
+**aiuti per reggere il primo periodo da tirocinante fuorisede** (affitto, trasporti, EDISU, bonus).
+- Tipo nuovo «Persona (aiuti e agevolazioni per se')» (inizia per «Persona»: un annuncio fuori
+  campo vale 0), settore nuovo «Casa, trasporti e agevolazioni», racconto di 1.360 caratteri.
+- Giudice (`SISTEMA_GIUDIZIO`): per una persona che cerca aiuti per se' la regola dell'ambito
+  «consumatori privati» non scarta; eta', ISEE, iscrizione, residenza non dette = «forse».
+- Opzione di fonte nuova **`"parole": [...]`** (`siti.controlla_sito`): le parole dei
+  collegamenti da seguire le dice la fonte; zero collegamenti oggi non e' un errore.
+- Fonti nuove: EDISU novita' (solo avvio/termine/scadenza presentazione), EDISU borse e
+  contributi, Piemove della Regione (`solo_pagina`: c'e' una proposta di estenderlo a
+  tirocinanti e apprendisti), Torino Giovani abitare / come muoversi / borse e agevolazioni.
+  Le 12 fonti di lavoro di Antonio sono SPENTE (attivo: false, nota col motivo), non tolte.
+- Prova su copia (39 annunci, 16 letti e giudicati): borsa EDISU = forse (ISEE e residenza),
+  invalidita'/dottorati = no; il giudice si contraddice sulla «dichiarazione di alloggio a
+  titolo oneroso» (una volta «rivolto a enti», sbagliato). Buco: il Comune di Torino non ha
+  una pagina leggibile di contributi affitto.

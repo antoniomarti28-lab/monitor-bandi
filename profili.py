@@ -46,6 +46,14 @@ SETTORI = {
                                    "ufficio tecnico", "automazion", "robotic", "miglioramento continuo",
                                    "lean", "tempi e metodi", "operations", "produzione", "ingegner",
                                    "meccanic", "industrial", "manutenzion", "qualita", "trasporti"],
+    # Profilo «Antonio» dal 17 ott 2026: ha trovato un tirocinio e vuole gli aiuti per
+    # reggere il primo periodo da fuorisede (casa, trasporti, borse, bonus).
+    "Casa, trasporti e agevolazioni": ["affitt", "locazion", "fuorisede", "fuori sede",
+                                       "alloggi", "posto letto", "residenze temporanee",
+                                       "abbonament", "trasporto pubblico", "trasporti pubblici",
+                                       "piemove", "gtt", "bonus", "agevolazion", "agevolat",
+                                       "detrazion", "borsa di studio", "borse di studio",
+                                       "edisu", "mensa", "rimborso", "tirocinant"],
 }
 
 REGIONI = {
@@ -122,7 +130,7 @@ TIPI_ENTE = [
     "Organizzazione di volontariato (ODV)", "Ente del Terzo Settore (ETS/ONLUS)",
     "Fondazione", "Impresa sociale", "Cooperativa", "Societa' (SRL, SPA)",
     "Ditta individuale / libero professionista", "Artista (persona singola)",
-    "Persona in cerca di lavoro", "Privato cittadino",
+    "Persona in cerca di lavoro", "Persona (aiuti e agevolazioni per se')", "Privato cittadino",
     "Comune o ente pubblico", "Scuola o universita'",
 ]
 

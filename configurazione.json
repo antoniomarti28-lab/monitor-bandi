@@ -83,48 +83,39 @@
     {
       "id": 6,
       "nome": "Antonio",
-      "tipo_ente": "Persona in cerca di lavoro",
-      "racconto": "OBIETTIVO: diventare junior process engineer (lean e miglioramento continuo, industrial engineer, business analyst che mappa i processi, digital transformation e automazione dei processi, operations, anche in consulenza). Cerca SOLO cio' che e' un passo verso questo obiettivo, non qualunque lavoro.\n\nLaureando in ingegneria meccanica con GIA' il diploma (tecnico aeronautico, trasporti e logistica): il requisito «diploma» e' soddisfatto. Laurea richiesta: «forse», mai «no».\n\nDove: Torino e provincia; fuori dal Piemonte solo se da remoto, online o progetto europeo per giovani.\n\nCorsi, tirocini e progetti europei valgono come offerte e si giudicano con queste regole, anche se parlano di industria o imprese.\n\n«Si»: stage, tirocinio (anche curriculare), apprendistato o ruolo junior in processi, lean, tempi e metodi, industrializzazione, pianificazione della produzione, qualita', operations, supply chain, automazione; corsi gratuiti o finanziati su Lean, Six Sigma, Excel, SQL, Power BI, analisi dati; concorsi per diplomati o laureati triennali in ambito tecnico, logistico o amministrativo; progetti europei per giovani in questi campi. Anche part-time.\n«Forse»: logistica, acquisti, spedizioni, ufficio tecnico, se il ruolo fa vedere e migliorare i processi; corsi a pagamento.\n«No»: lavoro solo manuale o esecutivo (magazziniere, mulettista, operaio, pulizie), solo commerciale o call center, 3 o piu' anni di esperienza. Meno di 3 anni o esperienza non quantificata: «forse».",
+      "tipo_ente": "Persona (aiuti e agevolazioni per se')",
+      "racconto": "Antonio ha appena iniziato un TIROCINIO in un'azienda metalmeccanica a Torino ed e' fuorisede. Non cerca lavoro: cerca AIUTI CONCRETI per reggere il primo periodo di tirocinio, quando l'indennita' e' bassa.\n\nGli interessano: affitto (contributi, bonus e detrazioni per giovani in affitto, alloggi o posti letto a prezzo calmierato, residenze temporanee); trasporti (abbonamenti gratuiti o agevolati GTT e treni, Piemove, bonus trasporti); borse, contributi, mense e alloggi EDISU; bonus per giovani, tirocinanti o lavoratori con reddito basso; rimborsi spese; aiuti per chi si trasferisce per lavoro.\n\nLaureando in ingegneria meccanica. Eta', ISEE, reddito, iscrizione all'universita' e residenza non sono ancora nel profilo: se l'aiuto dipende da questi, «forse», mai «no».\n\nBonus, contributi e agevolazioni per persone fisiche valgono come bandi, anche se rivolti a privati cittadini.\n\n«Si»: un aiuto a cui un giovane tirocinante fuorisede a Torino o in Piemonte puo' chiedere accesso, oppure nazionale.\n«Forse»: dipende da requisiti personali non noti (eta', ISEE, iscrizione, residenza, contratto di affitto registrato), oppure il testo non basta.\n«No»: aiuti solo per imprese o enti; solo per altre regioni o altri comuni; solo per famiglie con figli, anziani o persone con disabilita'; offerte di lavoro, corsi e concorsi; notizie senza un aiuto da chiedere.",
       "settori": [
-        "Lavoro tecnico e logistica"
+        "Casa, trasporti e agevolazioni",
+        "Giovani"
       ],
       "regioni": [
         "Piemonte",
         "Tutta Italia"
       ],
       "parole": [
-        "process engineer",
-        "industrial engineer",
-        "processi",
-        "lean",
-        "six sigma",
-        "kaizen",
-        "miglioramento continuo",
-        "tempi e metodi",
-        "industrializzazione",
-        "pianificazione",
-        "operations",
-        "supply chain",
-        "business analyst",
-        "process analyst",
-        "digital transformation",
-        "automazione",
-        "robotica",
-        "logistica",
-        "acquisti",
-        "ufficio tecnico",
-        "apprendistato",
-        "stage",
-        "tirocinio",
-        "neolaureato",
-        "junior",
-        "corso",
-        "formazione",
-        "Excel",
-        "SQL",
-        "Power BI",
-        "Erasmus",
-        "Corpo europeo di solidarieta"
+        "affitto",
+        "locazione",
+        "fuorisede",
+        "fuori sede",
+        "alloggio",
+        "posto letto",
+        "abbonamento",
+        "trasporto pubblico",
+        "Piemove",
+        "GTT",
+        "bonus",
+        "agevolazione",
+        "detrazione",
+        "contributo",
+        "borsa di studio",
+        "EDISU",
+        "mensa",
+        "rimborso",
+        "tirocinante",
+        "tirocinanti",
+        "under 26",
+        "under 30"
       ],
       "escluse": [],
       "importo_min": null,
@@ -330,7 +321,7 @@
       "nome": "Concorsi - Gazzetta Ufficiale (Piemonte)",
       "url": "https://www.gazzettaufficiale.it/rss/S4",
       "ente": "Gazzetta Ufficiale - 4a serie speciale Concorsi",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
@@ -366,7 +357,7 @@
         "novi ligure",
         "acqui terme"
       ],
-      "nota": "Concorsi di tutta Italia: si tengono solo le voci che nominano un luogo del Piemonte (filtra)."
+      "nota": "Concorsi di tutta Italia: si tengono solo le voci che nominano un luogo del Piemonte (filtra). Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     }
   ],
   "siti": [
@@ -2060,61 +2051,67 @@
       "nome": "Concorsi - Comune di Torino",
       "url": "https://www.comune.torino.it/lavorare-comune/concorsi",
       "ente": "Comune di Torino",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Tirocini - Comune di Torino",
       "url": "https://www.comune.torino.it/lavorare-comune/tirocini",
       "ente": "Comune di Torino",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Manpower Torino - logistica",
       "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/funzioni/logistica",
       "ente": "Manpower",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Manpower Torino - acquisti",
       "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/funzioni/acquisti",
       "ente": "Manpower",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Manpower Torino - engineering",
       "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/funzioni/engineering",
       "ente": "Manpower",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Manpower Torino - aerospazio e difesa",
       "url": "https://www.manpower.it/it/trova-lavoro/citta/torino/settori/aerospace-e-defence",
       "ente": "Manpower",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "EU Culture Calls",
@@ -2130,53 +2127,119 @@
       "nome": "Torino Giovani - offerte di lavoro",
       "url": "https://www.torinogiovani.it/lavoro/offerte",
       "ente": "Torino Giovani (Comune di Torino)",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "cerca": "lavoro"
+      "cerca": "lavoro",
+      "nota": "Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Torino Giovani - corsi di formazione",
       "url": "https://www.torinogiovani.it/formazione/corsi-di-formazione",
       "ente": "Torino Giovani (Comune di Torino)",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "nota": "Corsi gratuiti o finanziati segnalati dall'Informagiovani di Torino."
+      "nota": "Corsi gratuiti o finanziati segnalati dall'Informagiovani di Torino. Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Torino Giovani - tirocini all'estero",
       "url": "https://www.torinogiovani.it/estero/tirocini-workstudy-lavoro-alla-pari",
       "ente": "Torino Giovani (Comune di Torino)",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
-      "nota": "Tirocini europei e internazionali (Erasmus+, istituzioni UE): molte sono schede fisse, il giudice tiene solo quelle utili."
+      "nota": "Tirocini europei e internazionali (Erasmus+, istituzioni UE): molte sono schede fisse, il giudice tiene solo quelle utili. Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Master in apprendistato - Industrial Operations",
       "url": "https://www.masterindustrialoperations.it/",
       "ente": "COREP / Universita' di Torino",
-      "attivo": true,
+      "attivo": false,
       "profili": [
         6
       ],
       "solo_pagina": true,
-      "nota": "Master gratuito con assunzione in apprendistato di alta formazione: si sorveglia la pagina, ogni cambiamento diventa un annuncio."
+      "nota": "Master gratuito con assunzione in apprendistato di alta formazione: si sorveglia la pagina, ogni cambiamento diventa un annuncio. Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
     },
     {
       "nome": "Master in apprendistato - Innovation Manager e Data Driven Business Transformation",
       "url": "https://www.masterinnovationmanager.it/",
       "ente": "COREP / Universita' di Torino",
+      "attivo": false,
+      "profili": [
+        6
+      ],
+      "solo_pagina": true,
+      "nota": "Master gratuito con assunzione in apprendistato di alta formazione: si sorveglia la pagina, ogni cambiamento diventa un annuncio. Spenta il 17/10/2026: Antonio ha trovato un tirocinio, il profilo cerca aiuti e non piu' lavoro."
+    },
+    {
+      "nome": "EDISU Piemonte - novita' e scadenze",
+      "url": "https://www.edisu.piemonte.it/novita",
+      "ente": "EDISU Piemonte",
+      "attivo": true,
+      "profili": [
+        6
+      ],
+      "parole": [
+        "avvio-presentazione",
+        "termine-presentazione",
+        "scadenza-presentazione",
+        "apertura",
+        "bando",
+        "contribut"
+      ],
+      "nota": "Si seguono solo le aperture e le scadenze delle domande (borse, alloggi, contributi), non graduatorie e avvisi."
+    },
+    {
+      "nome": "EDISU Piemonte - borse e contributi",
+      "url": "https://www.edisu.piemonte.it/borse-e-contributi",
+      "ente": "EDISU Piemonte",
+      "attivo": true,
+      "profili": [
+        6
+      ]
+    },
+    {
+      "nome": "Regione Piemonte - Piemove (trasporti gratis under 26)",
+      "url": "https://www.regione.piemonte.it/web/temi/ambiente-territorio/ambiente/aria/tessera-piemove-piemonte-viaggia-studia",
+      "ente": "Regione Piemonte",
       "attivo": true,
       "profili": [
         6
       ],
       "solo_pagina": true,
-      "nota": "Master gratuito con assunzione in apprendistato di alta formazione: si sorveglia la pagina, ogni cambiamento diventa un annuncio."
+      "nota": "Si sorveglia la pagina: se Piemove si allarga a tirocinanti e apprendisti (proposta in Consiglio regionale) arriva un annuncio."
+    },
+    {
+      "nome": "Torino Giovani - abitare a Torino",
+      "url": "https://www.torinogiovani.it/vivere-a-torino/abitare-a-torino",
+      "ente": "Torino Giovani (Comune di Torino)",
+      "attivo": true,
+      "profili": [
+        6
+      ]
+    },
+    {
+      "nome": "Torino Giovani - come muoversi a Torino",
+      "url": "https://www.torinogiovani.it/vivere-a-torino/come-muoversi-a-torino",
+      "ente": "Torino Giovani (Comune di Torino)",
+      "attivo": true,
+      "profili": [
+        6
+      ]
+    },
+    {
+      "nome": "Torino Giovani - borse di studio e agevolazioni",
+      "url": "https://www.torinogiovani.it/formazione/borse-di-studio-e-agevolazioni",
+      "ente": "Torino Giovani (Comune di Torino)",
+      "attivo": true,
+      "profili": [
+        6
+      ]
     }
   ],
   "impostazioni": {

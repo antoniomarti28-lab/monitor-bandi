@@ -518,6 +518,12 @@ valuta nell'ordine: pertinenza del ruolo a cio' che il racconto dice di cercare,
 quelli che decidono. Le regole su cosa scartare e cosa e' «forse» le da' il racconto, e
 valgono piu' di queste righe generali.
 
+Se il profilo e' una PERSONA che cerca AIUTI PER SE' (bonus, contributi, borse, agevolazioni
+su casa, trasporti, studio), un aiuto rivolto alle persone fisiche vale come un bando e la
+regola dell'ambito qui sotto («consumatori privati») NON lo scarta. Eta', ISEE, reddito,
+iscrizione all'universita', residenza o tipo di contratto che il racconto non dice danno
+«forse», mai «no»; il racconto decide il resto.
+
 Il territorio del profilo e' l'elenco «territori»: un bando di un paese o di una citta'
 che compare li' (per esempio Spagna, Regno Unito, Europa) e' valido per il profilo.
 

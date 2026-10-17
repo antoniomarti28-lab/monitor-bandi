@@ -85,6 +85,12 @@ def controlla_sito(db, sito, opzioni=None):
     modalita = opzioni.get("cerca")
     solo_audizioni = modalita in ("audizioni", "lavoro")
     parole = {"audizioni": estrattore.PAROLE_AUDIZIONE, "lavoro": estrattore.PAROLE_LAVORO}.get(modalita)
+    # «parole» (17 ott 2026, EDISU per Antonio): le parole da seguire le dice la fonte stessa.
+    # Le scadenze di EDISU si chiamano «Avvio presentazione domanda borsa di studio...»,
+    # senza nessuna delle parole da bando. Come per le audizioni, zero collegamenti oggi e' normale.
+    if opzioni.get("parole"):
+        parole = [p.lower() for p in opzioni["parole"]]
+        solo_audizioni = True
     url = sito["url"]
     if not robots_permette(url):
         return "vietato da robots.txt", 0
