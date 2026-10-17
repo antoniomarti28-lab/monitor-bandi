@@ -274,8 +274,12 @@ function normalizza(url) {
 const API_GH = (percorso) => `https://api.github.com/repos/${REPO}/contents/${percorso}`;
 
 async function leggiConfigDaGitHub() {
+  // «no-store»: GitHub dice al browser di tenere questa risposta 60 secondi, e una seconda
+  // modifica fatta subito dopo la prima ripartiva dalla copia vecchia (17 ott 2026:
+  // «is at 6568c49 but expected 78fde7f»).
   const r = await fetch(API_GH("configurazione.json") + "?ref=main", {
     headers: { Authorization: "Bearer " + codice, Accept: "application/vnd.github+json" },
+    cache: "no-store",
   });
   if (!r.ok) throw new Error("non riesco a leggere le impostazioni (" + r.status + ")");
   const d = await r.json();
@@ -294,7 +298,11 @@ async function scriviConfigSuGitHub(messaggio) {
   });
   if (!r.ok) {
     const errore = await r.json().catch(() => ({}));
-    throw new Error(errore.message || "salvataggio rifiutato (" + r.status + ")");
+    const e = new Error(errore.message || "salvataggio rifiutato (" + r.status + ")");
+    // Il file e' cambiato su GitHub dopo che l'avevamo letto (un giro automatico, l'altro
+    // telefono): non e' un errore vero, `azione` rilegge e rifa' la modifica.
+    e.conflitto = r.status === 409 || /expected|does not match/i.test(errore.message || "");
+    throw e;
   }
   CONFIG_SHA = (await r.json()).content.sha;
 }
@@ -321,8 +329,25 @@ async function salvaConfig(messaggio) {
   return chiedi("/api/configurazione", CONFIG);
 }
 
-async function azione(nome, dati) {
-  if (!CONFIG) CONFIG = await caricaConfig();
+/**
+ * Le modifiche passano una alla volta (un doppio clic non ne manda due insieme) e, se
+ * GitHub risponde che il file e' cambiato nel frattempo, si rilegge e si rifa' una volta.
+ */
+let codaAzioni = Promise.resolve();
+function azione(nome, dati) {
+  const questa = codaAzioni.then(() => azioneUnaVolta(nome, dati).catch((e) => {
+    if (STATICA && e.conflitto) return azioneUnaVolta(nome, dati);
+    throw e;
+  }));
+  codaAzioni = questa.catch(() => {});
+  return questa;
+}
+
+async function azioneUnaVolta(nome, dati) {
+  // Sulla pagina pubblicata si rilegge SEMPRE il file prima di cambiarlo: la copia presa
+  // all'apertura invecchia appena un giro automatico salva (17 ott 2026). Costa una
+  // lettura, ed evita di riscrivere sopra quello che il giro ha appena aggiunto.
+  if (!CONFIG || STATICA) CONFIG = await caricaConfig();
   const C = CONFIG;
   let messaggio = "Impostazioni aggiornate", risposta = { ok: true };
 
