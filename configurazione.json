@@ -2246,7 +2246,18 @@
     "soglia_avviso": 55,
     "massimo_messaggi": 8
   },
-  "proposte": [],
+  "proposte": [
+    {
+      "nome": "Fondazione CRT",
+      "url": "https://www.fondazionecrt.it/category/progetti-e-bandi",
+      "tipo": "sito",
+      "ente": "Fondazione CRT",
+      "a_chi_serve": "Finanzia progetti culturali e artistici a livello nazionale, potenzialmente includendo residenze e call per artisti e associazioni culturali",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 15,
+      "trovata_il": "2026-10-19"
+    }
+  ],
   "archiviati": [
     "24aa18ccccc46efa169e43eb905cb59651536f55",
     "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
@@ -2265,18 +2276,6 @@
         "url": "https://culture.ec.europa.eu/cultural-heritage/funding-opportunities-for-cultural-heritage",
         "tipo": "sito"
       }
-    },
-    "Audizioni - TuttoDanzaWeb": {
-      "quando": "2026-10-18T09:46:08+00:00",
-      "riuscita": false,
-      "errore": "non e' un feed valido",
-      "provati": 8
-    },
-    "Unione Buddhista 8x1000": {
-      "quando": "2026-10-18T09:46:30+00:00",
-      "riuscita": false,
-      "errore": "nessun collegamento a bandi trovato in questa pagina",
-      "provati": 8
     }
   },
   "proposte_scartate": [
@@ -2286,10 +2285,12 @@
     "https://www.fondazionemediterraneo.org/index.php/attivita/amministrazione-trasparente-avvisi-bandi-e-gare"
   ],
   "esito_scoperta": {
-    "quando": "2026-10-12T13:37:59+00:00",
-    "esaminate": 10,
-    "trovate": 0,
-    "nomi": [],
+    "quando": "2026-10-19T11:22:57+00:00",
+    "esaminate": 14,
+    "trovate": 1,
+    "nomi": [
+      "Fondazione CRT"
+    ],
     "nota": ""
   },
   "richiesta_giro": "2026-09-30T20:34:16+00:00",
