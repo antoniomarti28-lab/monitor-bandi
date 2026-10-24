@@ -2262,7 +2262,14 @@
     "24aa18ccccc46efa169e43eb905cb59651536f55",
     "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
   ],
-  "riparazioni": {},
+  "riparazioni": {
+    "Con i Bambini": {
+      "quando": "2026-10-24T09:53:43+00:00",
+      "riuscita": false,
+      "errore": "errore HTTP 404",
+      "provati": 8
+    }
+  },
   "proposte_scartate": [
     "https://www.fondazionecariplo.it/bandi",
     "https://www.fondazionecariplo.it/feed/",
