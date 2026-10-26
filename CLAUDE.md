@@ -834,3 +834,12 @@ Lui ha trovato un tirocinio in un'azienda metalmeccanica: il profilo non cerca p
   invalidita'/dottorati = no; il giudice si contraddice sulla «dichiarazione di alloggio a
   titolo oneroso» (una volta «rivolto a enti», sbagliato). Buco: il Comune di Torino non ha
   una pagina leggibile di contributi affitto.
+
+## Tasto «Condividi» per ogni profilo (26 ott 2026)
+Accanto a «Modifica» (PC: icona + «Condividi»; telefono: «Condividi «nome»» nella riga di
+strumenti), solo con l'accesso e sulla pagina pubblicata. `condividiProfilo`: rilegge
+configurazione.json; se `condivisi` ha gia' il profilo usa quel codice, altrimenti azione
+«condividi» aggiunge `{profilo, nome, codice}` (12 caratteri casuali, `crypto.getRandomValues`).
+Telefono: `navigator.share`; computer: copia negli appunti; se nessuna delle due va, il link
+compare nell'avviso. `ripubblica-pagina` parte ora anche su `configurazione.json`, cosi' la
+pagina condivisa nuova esiste in un paio di minuti (prima di allora 404, e l'avviso lo dice).

@@ -447,6 +447,16 @@ async function azioneUnaVolta(nome, dati) {
     C.riesami.push({ bando: dati.bando, profilo: dati.profilo, quando: new Date().toISOString() });
     messaggio = "Riesame richiesto";
 
+  } else if (nome === "condividi") {
+    // Un link per profilo: se c'e' gia' (creato altrove) si restituisce quello.
+    C.condivisi = C.condivisi || [];
+    let voce = C.condivisi.find((x) => String(x.profilo) === String(dati.profilo));
+    if (voce) return { ok: true, voce };
+    voce = { profilo: dati.profilo, nome: dati.nome, codice: dati.codice };
+    C.condivisi.push(voce);
+    messaggio = "Link di sola lettura per «" + dati.nome + "»";
+    risposta = { ok: true, voce };
+
   } else if (nome === "archivia") {
     // Una scheda puo' raccogliere piu' copie dello stesso annuncio (doppioni da fonti
     // diverse): si archiviano tutte, o la copia rimasta tornerebbe fuori da sola.
@@ -510,6 +520,7 @@ const DISEGNO = (percorso) => `<svg viewBox="0 0 16 16" width="15" height="15" f
   aria-hidden="true">${percorso}</svg>`;
 const ICONA_MATITA = DISEGNO('<path d="M11.3 2.2l2.5 2.5L6 12.5l-3.2.7.7-3.2z"/>');
 const ICONA_CROCE = DISEGNO('<path d="M4 4l8 8M12 4l-8 8"/>');
+const ICONA_CONDIVIDI = DISEGNO('<path d="M8 10V2.5M5 5.2L8 2.2l3 3"/><path d="M3.5 8.5v5h9v-5"/>');
 
 const oggiISO = () => new Date().toISOString().slice(0, 10);
 
@@ -842,6 +853,7 @@ function disegnaBarraProfili() {
     strumenti.innerHTML = gestione
       ? `<button class="link-tenue${tutti ? " attivo" : ""}" data-scegli="">Tutti i bandi</button>` +
         (modificabile ? `<button class="link-tenue" data-modifica="${attivo.id}">Modifica «${attr(attivo.nome)}»</button>` : "") +
+        (modificabile && STATICA ? `<button class="link-tenue" data-condividi="${attivo.id}">Condividi «${attr(attivo.nome)}»</button>` : "") +
         `<button class="link-tenue" data-nuovo="1">+ Nuovo profilo</button>` : "";
     // La fila scorre di lato: quello scelto va portato in vista, o Mati (terzo) restava fuori.
     const scelto = barra.querySelector(".chip.attivo");
@@ -871,7 +883,9 @@ function disegnaBarraProfili() {
         vistaPreferiti, 'data-preferiti="1"') : "")
       + (gestione ? chip("Tutti i bandi", tutti, 'data-scegli=""') : "")
       + centro
-      + (modificabile ? `<button class="tasto-matita" data-modifica="${attivo.id}" title="Modifica «${attr(attivo.nome)}»">${ICONA_MATITA}<span>Modifica</span></button>` : "");
+      + (modificabile ? `<button class="tasto-matita" data-modifica="${attivo.id}" title="Modifica «${attr(attivo.nome)}»">${ICONA_MATITA}<span>Modifica</span></button>` : "")
+      + (modificabile && STATICA ? `<button class="tasto-matita tasto-condividi" data-condividi="${attivo.id}"
+          title="Copia il link di sola lettura di «${attr(attivo.nome)}», da mandare a chi vuoi">${ICONA_CONDIVIDI}<span>Condividi</span></button>` : "");
     collegaEsploso(barra);
   }
 
@@ -942,6 +956,69 @@ function disegnaBarraProfili() {
       else mostraScheda(p);
     };
   });
+  document.querySelectorAll("#barra-profili [data-condividi], #strumenti-profili [data-condividi]").forEach((b) => {
+    b.onclick = () => condividiProfilo(PROFILI.find((x) => String(x.id) === b.dataset.condividi), b);
+  });
+}
+
+// ------------------------------------------------------------------ condividere un profilo
+//
+// Lui (26 ott 2026): «per ogni profilo un tasto per condividere il link di sola lettura».
+// E' la pagina che prima si faceva a mano per il vicepresidente di Garage 68 (`condivisi`
+// in configurazione.json, scritta da anteprima.condivise): dentro solo quel profilo, solo
+// «si» e «forse», niente fonti, niente codici. Il repository e' pubblico: il codice
+// nell'indirizzo serve a non farla trovare per caso, non e' segretezza.
+
+/** Indirizzo della pagina condivisa di un profilo, accanto alla pagina pubblicata. */
+const indirizzoCondiviso = (codiceProfilo) =>
+  location.href.replace(/[?#].*$/, "").replace(/[^/]*$/, "") + "condivisi/" + codiceProfilo + "/";
+
+/** 12 lettere e cifre a caso: lo stesso formato del link di Garage 68 (anteprima le controlla). */
+function nuovoCodiceCondivisione() {
+  const alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const casuali = crypto.getRandomValues(new Uint8Array(12));
+  return Array.from(casuali, (n) => alfabeto[n % alfabeto.length]).join("");
+}
+
+async function condividiProfilo(p, tasto) {
+  if (!p) return;
+  tasto.disabled = true;
+  try {
+    // Si legge il file fresco: il link potrebbe averlo creato l'altro telefono.
+    const C = await caricaConfig();
+    CONFIG = C;
+    let voce = (C.condivisi || []).find((x) => String(x.profilo) === String(p.id));
+    let nuovo = false;
+    if (!voce) {
+      const esito = await prova("condividi", { profilo: p.id, nome: p.nome, codice: nuovoCodiceCondivisione() });
+      if (!esito) return;
+      voce = esito.voce;
+      nuovo = true;
+    }
+    const url = indirizzoCondiviso(voce.codice);
+    const testo = `I bandi per ${p.nome}, in sola lettura`;
+    // Al telefono si apre la condivisione del sistema (WhatsApp, Telegram, mail...);
+    // sul computer si copia il link. Se il browser non lascia fare nessuna delle due,
+    // il link si mostra a schermo, cosi' lo si copia a mano.
+    let fatto = "";
+    if (navigator.share && !MODO_PC.matches) {
+      try { await navigator.share({ title: testo, url }); fatto = "condiviso"; }
+      catch (e) { if (e.name === "AbortError") fatto = "annullato"; }
+    }
+    if (!fatto) {
+      try { await navigator.clipboard.writeText(url); fatto = "copiato"; } catch (e) { fatto = ""; }
+    }
+    const attesa = nuovo
+      ? " È nuovo: GitHub lo pubblica in un paio di minuti, prima di allora dà «pagina non trovata»."
+      : "";
+    if (fatto === "copiato") avvisa(`Link di «${p.nome}» copiato: ${url}${attesa}`);
+    else if (fatto === "condiviso") avvisa(`Link di «${p.nome}» condiviso.${attesa}`);
+    else if (fatto !== "annullato") avvisa(`Ecco il link di «${p.nome}», copialo: ${url}${attesa}`);
+  } catch (e) {
+    avvisa("Non sono riuscito a preparare il link: " + e.message, true);
+  } finally {
+    tasto.disabled = false;
+  }
 }
 
 /**

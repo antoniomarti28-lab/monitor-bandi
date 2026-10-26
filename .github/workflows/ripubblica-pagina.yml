@@ -13,6 +13,9 @@ on:
       - anteprima.py
       - profili.py
       - preferiti.json
+      # 26 ott 2026: un link di sola lettura appena creato dalla pagina («Condividi») deve
+      # funzionare in un paio di minuti, non dopo il ricalcolo lungo delle impostazioni.
+      - configurazione.json
       - .github/workflows/ripubblica-pagina.yml
   workflow_dispatch:
 

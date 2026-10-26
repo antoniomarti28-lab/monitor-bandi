@@ -250,6 +250,9 @@ body.barra-pc .profili {
   font: inherit; font-size: 14px; color: var(--tenue);
 }
 .tasto-matita:hover { color: var(--accento); }
+/* «Condividi» sta subito dopo «Modifica», tutti e due in fondo a destra */
+.tasto-matita.tasto-condividi { margin-left: 0; }
+.tasto-matita:disabled { opacity: .5; cursor: progress; }
 
 @media (prefers-reduced-motion: reduce) {
   .pannello-esploso, .esploso.aperto .pannello-esploso { transform: none; transition: opacity 100ms linear, visibility 0s; }
