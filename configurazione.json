@@ -2264,21 +2264,9 @@
   ],
   "riparazioni": {
     "Con i Bambini": {
-      "quando": "2026-10-29T11:54:53+00:00",
+      "quando": "2026-10-30T11:44:34+00:00",
       "riuscita": false,
       "errore": "errore HTTP 404",
-      "provati": 8
-    },
-    "Audizioni - TuttoDanzaWeb": {
-      "quando": "2026-10-29T11:54:32+00:00",
-      "riuscita": false,
-      "errore": "non e' un feed valido",
-      "provati": 8
-    },
-    "Unione Buddhista 8x1000": {
-      "quando": "2026-10-29T11:55:14+00:00",
-      "riuscita": false,
-      "errore": "nessun collegamento a bandi trovato in questa pagina",
       "provati": 8
     }
   },
