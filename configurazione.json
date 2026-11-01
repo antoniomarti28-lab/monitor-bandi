@@ -2264,9 +2264,33 @@
   ],
   "riparazioni": {
     "Con i Bambini": {
-      "quando": "2026-10-31T11:20:15+00:00",
+      "quando": "2026-11-01T12:16:15+00:00",
       "riuscita": false,
       "errore": "errore HTTP 404",
+      "provati": 8
+    },
+    "Camera di commercio": {
+      "quando": "2026-11-01T12:16:35+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    },
+    "NUOVO IMAIE": {
+      "quando": "2026-11-01T12:16:56+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    },
+    "Audizioni - DanzaSi": {
+      "quando": "2026-11-01T12:17:18+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    },
+    "European Cultural Foundation": {
+      "quando": "2026-11-01T12:17:41+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
       "provati": 8
     }
   },
