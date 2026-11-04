@@ -2262,26 +2262,7 @@
     "24aa18ccccc46efa169e43eb905cb59651536f55",
     "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
   ],
-  "riparazioni": {
-    "Con i Bambini": {
-      "quando": "2026-11-03T13:12:17+00:00",
-      "riuscita": false,
-      "errore": "errore HTTP 404",
-      "provati": 8
-    },
-    "Audizioni - TuttoDanzaWeb": {
-      "quando": "2026-11-03T13:11:57+00:00",
-      "riuscita": false,
-      "errore": "non e' un feed valido",
-      "provati": 8
-    },
-    "Unione Buddhista 8x1000": {
-      "quando": "2026-11-03T13:12:37+00:00",
-      "riuscita": false,
-      "errore": "nessun collegamento a bandi trovato in questa pagina",
-      "provati": 8
-    }
-  },
+  "riparazioni": {},
   "proposte_scartate": [
     "https://www.fondazionecariplo.it/bandi",
     "https://www.fondazionecariplo.it/feed/",
