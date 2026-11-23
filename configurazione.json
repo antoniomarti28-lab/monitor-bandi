@@ -2256,26 +2256,43 @@
       "quando_serve": "in_futuro",
       "bandi_visti": 15,
       "trovata_il": "2026-10-19"
+    },
+    {
+      "nome": "Finanziamento APS Calabria",
+      "url": "https://www.regione.calabria.it/bandi/avviso-pubblico-per-il-finanziamento-di-iniziative-e-progetti-di-rilevanza-regionale-promossi-da-organizzazioni-di-volontariato-odv-associazioni-di-promozione-sociale-aps-e-fondazioni-del-terzo-s",
+      "tipo": "sito",
+      "ente": "Regione Calabria",
+      "a_chi_serve": "finanziamento per progetti culturali di APS, utile per Garage68 e Labo Art Tropea",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 3,
+      "trovata_il": "2026-11-23"
+    },
+    {
+      "nome": "Erasmus+ Opportunità per organizzazioni",
+      "url": "https://erasmus-plus.ec.europa.eu/opportunities/organisations",
+      "tipo": "sito",
+      "ente": "Erasmus+",
+      "a_chi_serve": "Erasmus+ offre finanziamenti per progetti culturali, mobilità artistica e collaborazioni transnazionali, che possono supportare residenze, festival e programmi di inclusione di Garage68 e Labo Art Tropea, oltre a opportunità di mobilità per artisti come Mati.",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 3,
+      "trovata_il": "2026-11-23"
+    },
+    {
+      "nome": "Erasmus+ Applicazione Individuale",
+      "url": "https://erasmus-plus.ec.europa.eu/opportunities/opportunities-for-individuals/applying-by-yourself",
+      "tipo": "sito",
+      "ente": "Erasmus+",
+      "a_chi_serve": "Erasmus+ offre opportunità di scambio, stage e progetti di cooperazione culturale che Garage68 può sfruttare per promuovere la sua attività di rigenerazione urbana e arte contemporanea.",
+      "quando_serve": "in_futuro",
+      "bandi_visti": 8,
+      "trovata_il": "2026-11-23"
     }
   ],
   "archiviati": [
     "24aa18ccccc46efa169e43eb905cb59651536f55",
     "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
   ],
-  "riparazioni": {
-    "Audizioni - TuttoDanzaWeb": {
-      "quando": "2026-11-22T13:24:56+00:00",
-      "riuscita": false,
-      "errore": "non e' un feed valido",
-      "provati": 8
-    },
-    "Unione Buddhista 8x1000": {
-      "quando": "2026-11-22T13:25:16+00:00",
-      "riuscita": false,
-      "errore": "nessun collegamento a bandi trovato in questa pagina",
-      "provati": 8
-    }
-  },
+  "riparazioni": {},
   "proposte_scartate": [
     "https://www.fondazionecariplo.it/bandi",
     "https://www.fondazionecariplo.it/feed/",
@@ -2283,10 +2300,14 @@
     "https://www.fondazionemediterraneo.org/index.php/attivita/amministrazione-trasparente-avvisi-bandi-e-gare"
   ],
   "esito_scoperta": {
-    "quando": "2026-11-16T14:10:52+00:00",
-    "esaminate": 9,
-    "trovate": 0,
-    "nomi": [],
+    "quando": "2026-11-23T16:30:16+00:00",
+    "esaminate": 13,
+    "trovate": 3,
+    "nomi": [
+      "Finanziamento APS Calabria",
+      "Erasmus+ Opportunità per organizzazioni",
+      "Erasmus+ Applicazione Individuale"
+    ],
     "nota": ""
   },
   "richiesta_giro": "2026-09-30T20:34:16+00:00",
