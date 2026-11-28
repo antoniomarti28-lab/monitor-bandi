@@ -2292,7 +2292,32 @@
     "24aa18ccccc46efa169e43eb905cb59651536f55",
     "c6abfc9dd38dacce39573f4d98738c8ea9a85974"
   ],
-  "riparazioni": {},
+  "riparazioni": {
+    "Camera di commercio": {
+      "quando": "2026-11-28T14:18:03+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    },
+    "NUOVO IMAIE": {
+      "quando": "2026-11-28T14:18:25+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    },
+    "Audizioni - DanzaSi": {
+      "quando": "2026-11-28T14:18:49+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    },
+    "European Cultural Foundation": {
+      "quando": "2026-11-28T14:19:11+00:00",
+      "riuscita": false,
+      "errore": "nessun collegamento a bandi trovato in questa pagina",
+      "provati": 8
+    }
+  },
   "proposte_scartate": [
     "https://www.fondazionecariplo.it/bandi",
     "https://www.fondazionecariplo.it/feed/",
